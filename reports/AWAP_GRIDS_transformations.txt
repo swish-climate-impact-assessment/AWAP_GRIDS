@@ -1,0 +1,260 @@
+Transformation
+	description
+		R-init
+	output
+		R-init
+	notes
+		Initialize the project workspace
+	ttype
+		report
+
+Transformation
+	description
+		go
+	inputs
+		R-init
+	output
+		go
+	notes
+		
+	ttype
+		report
+
+Transformation
+	description
+		tools
+	inputs
+		go
+		vars
+		get_data_range
+		read.asciigrid2
+		grid2csv
+	output
+		tools
+	notes
+		
+	ttype
+		report
+
+Transformation
+	description
+		variable names
+	output
+		vars
+	notes
+		
+		 At the BoM website the urls for our files can be like the following combinations:
+		 rain                http://www.bom.gov.au/web03/ncc/www/awap/   rainfall/totals/daily/    grid/0.05/history/nat/2010120120101201.grid.Z
+		 tmax                http://www.bom.gov.au/web03/ncc/www/awap/   temperature/maxave/daily/ grid/0.05/history/nat/2012020620120206.grid.Z
+		 tmin                http://www.bom.gov.au/web03/ncc/www/awap/   temperature/minave/daily/ grid/0.05/history/nat/2012020620120206.grid.Z
+		 vapour pressure 9am http://www.bom.gov.au/web03/ncc/www/awap/   vprp/vprph09/daily/       grid/0.05/history/nat/2012020620120206.grid.Z
+		 vapour pressure 3pm http://www.bom.gov.au/web03/ncc/www/awap/   vprp/vprph15/daily/       grid/0.05/history/nat/2012020620120206.grid.Z
+		 solar               http://www.bom.gov.au/web03/ncc/www/awap/   solar/solarave/daily/     grid/0.05/history/nat/2012020720120207.grid.Z
+		 NDVI                http://reg.bom.gov.au/web03/ncc/www/awap/   ndvi/ndviave/month/       grid/history/nat/2012010120120131.grid.Z
+		 
+	ttype
+		report
+
+Transformation
+	description
+		get data range
+	inputs
+		get_data
+	output
+		get_data_range
+	notes
+		
+	ttype
+		report
+
+Transformation
+	description
+		read.asciigrid2
+	output
+		read.asciigrid2
+	notes
+		
+	ttype
+		report
+
+Transformation
+	description
+		grid2csv
+	output
+		grid2csv
+	notes
+		
+	ttype
+		report
+
+Transformation
+	description
+		download
+	inputs
+		tools
+		foundMissings
+	output
+		data/{year}/{month}
+	notes
+		
+	ttype
+		report
+
+Transformation
+	description
+		uncompress-newnode
+	inputs
+		data/{year}/{month}
+	output
+		grids
+		csvs
+	notes
+		
+	ttype
+		report
+
+Transformation
+	description
+		check
+	inputs
+		grids
+	output
+		fig1.jpg
+	notes
+		
+	ttype
+		report
+
+Transformation
+	description
+		loadCsv2delphe test
+	inputs
+		csvs
+	output
+		test. too slow
+	notes
+		
+	ttype
+		transformations
+
+Transformation
+	description
+		loadCsv2delpheUsingCOPY-newnode
+	inputs
+		csvs
+	output
+		awap_grids.vprph_master
+		check4duplicates
+		check4missings
+	notes
+		
+	ttype
+		transformations
+
+	TASK
+		
+		**** TODO NEED TO REMOVE GRID POLYGONS
+		 
+
+
+Transformation
+	description
+		check4duplicates
+	inputs
+		check4duplicates
+	output
+		response by bom
+	notes
+		
+	ttype
+		transformations
+
+Transformation
+	description
+		check4missings
+	inputs
+		check4missings
+	output
+		foundMissings
+	notes
+		
+	ttype
+		transformations
+
+Transformation
+	description
+		checkAstation-newnode
+	inputs
+		awap_grids.vprph_master
+	output
+		fig2.jpg
+		checkAstation
+	notes
+		
+	ttype
+		transformations
+
+Transformation
+	description
+		function to extract timeseries
+	inputs
+		awap_grids.vprph_master
+	output
+		function to extract timeseries
+	notes
+		
+	ttype
+		transformations
+
+Transformation
+	description
+		test function
+	inputs
+		function to extract timeseries
+	output
+		test function
+	notes
+		
+	ttype
+		transformations
+
+Transformation
+	description
+		publish function
+	inputs
+		test function
+	output
+		to NCEPH PostGIS wiki
+		to ivanstools
+		metadata
+	notes
+		
+	ttype
+		transformations
+
+Transformation
+	description
+		Archives
+	inputs
+		metadata
+	output
+		Archives
+	notes
+		
+	ttype
+		transformations
+
+Transformation
+	description
+		The end
+	output
+		transformations
+	notes
+		
+	ttype
+		transformations
+
+	dontshow
+		TRUE
+
+

@@ -1,0 +1,92 @@
+digraph transformations {
+t1 [ shape=record, label="{{ {description|notes|ttype} | {R-init|Initialize the project workspace|report} }}" , URL="START\NEND" ]
+ds1 [ label="R-init" ]
+t1 -> ds1
+t2 [ shape=record, label="{{ {description|notes|ttype} | {go||report} }}" , URL="START\NEND" ]
+ds1 -> t2
+ds2 [ label="go" ]
+t2 -> ds2
+t3 [ shape=record, label="{{ {description|notes|ttype} | {tools||report} }}" , URL="START\NEND" ]
+ds2 -> t3
+ds3 [ label="vars" ]
+ds3 -> t3
+ds4 [ label="get_data_range" ]
+ds4 -> t3
+ds5 [ label="read.asciigrid2" ]
+ds5 -> t3
+ds6 [ label="grid2csv" ]
+ds6 -> t3
+ds7 [ label="tools" ]
+t3 -> ds7
+t4 [ shape=record, label="{{ {description|notes|ttype} | {variable names|...|report} }}" , URL="START\NEND" ]
+t4 -> ds3
+t5 [ shape=record, label="{{ {description|notes|ttype} | {get data range||report} }}" , URL="START\NEND" ]
+ds8 [ label="get_data" ]
+ds8 -> t5
+t5 -> ds4
+t6 [ shape=record, label="{{ {description|notes|ttype} | {read.asciigrid2||report} }}" , URL="START\NEND" ]
+t6 -> ds5
+t7 [ shape=record, label="{{ {description|notes|ttype} | {grid2csv||report} }}" , URL="START\NEND" ]
+t7 -> ds6
+t8 [ shape=record, label="{{ {description|notes|ttype} | {download||report} }}" , URL="START\NEND" ]
+ds7 -> t8
+ds9 [ label="foundMissings" ]
+ds9 -> t8
+ds10 [ label="data/{year}/{month}" ]
+t8 -> ds10
+t9 [ shape=record, label="{{ {description|notes|ttype} | {uncompress-newnode||report} }}" , URL="START\NEND" ]
+ds10 -> t9
+ds11 [ label="grids" ]
+t9 -> ds11
+ds12 [ label="csvs" ]
+t9 -> ds12
+t10 [ shape=record, label="{{ {description|notes|ttype} | {check||report} }}" , URL="START\NEND" ]
+ds11 -> t10
+ds13 [ label="fig1.jpg" ]
+t10 -> ds13
+t11 [ shape=record, label="{{ {description|notes|ttype} | {loadCsv2delphe test||transformations} }}" , URL="START\NEND" ]
+ds12 -> t11
+ds14 [ label="test. too slow" ]
+t11 -> ds14
+t12 [ shape=record, style=filled, color=".7 .3 1.0", label="{{ {description|TASK|notes|ttype} | {loadCsv2delpheUsingCOPY-newnode|, **** TODO NEED TO REMOVE GRID POLYGONS, ||transformations} }}" , URL="START\NEND" ]
+ds12 -> t12
+ds15 [ label="awap_grids.vprph_master" ]
+t12 -> ds15
+ds16 [ label="check4duplicates" ]
+t12 -> ds16
+ds17 [ label="check4missings" ]
+t12 -> ds17
+t13 [ shape=record, label="{{ {description|notes|ttype} | {check4duplicates||transformations} }}" , URL="START\NEND" ]
+ds16 -> t13
+ds18 [ label="response by bom" ]
+t13 -> ds18
+t14 [ shape=record, label="{{ {description|notes|ttype} | {check4missings||transformations} }}" , URL="START\NEND" ]
+ds17 -> t14
+t14 -> ds9
+t15 [ shape=record, label="{{ {description|notes|ttype} | {checkAstation-newnode||transformations} }}" , URL="START\NEND" ]
+ds15 -> t15
+ds19 [ label="fig2.jpg" ]
+t15 -> ds19
+ds20 [ label="checkAstation" ]
+t15 -> ds20
+t16 [ shape=record, label="{{ {description|notes|ttype} | {function to extract timeseries||transformations} }}" , URL="START\NEND" ]
+ds15 -> t16
+ds21 [ label="function to extract timeseries" ]
+t16 -> ds21
+t17 [ shape=record, label="{{ {description|notes|ttype} | {test function||transformations} }}" , URL="START\NEND" ]
+ds21 -> t17
+ds22 [ label="test function" ]
+t17 -> ds22
+t18 [ shape=record, label="{{ {description|notes|ttype} | {publish function||transformations} }}" , URL="START\NEND" ]
+ds22 -> t18
+ds23 [ label="to NCEPH PostGIS wiki" ]
+t18 -> ds23
+ds24 [ label="to ivanstools" ]
+t18 -> ds24
+ds25 [ label="metadata" ]
+t18 -> ds25
+t19 [ shape=record, label="{{ {description|notes|ttype} | {Archives||transformations} }}" , URL="START\NEND" ]
+ds25 -> t19
+ds26 [ label="Archives" ]
+t19 -> ds26
+}

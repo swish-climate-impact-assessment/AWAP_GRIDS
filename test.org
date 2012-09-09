@@ -1,0 +1,167 @@
+#+TITLE:test 
+#+AUTHOR: Ivan Hanigan
+#+email: ivan.hanigan@anu.edu.au
+#+LaTeX_CLASS: article
+#+LaTeX_CLASS_OPTIONS: [a4paper]
+-----
+* Rbit
+#+name:input
+#+begin_src R :session *R* :tangle go.r :exports none :eval yes
+
+
+/* CODE TO READ AND CREATE DIVISION RESULTS */
+
+/* THIS CODE RUNS IN R */
+/* PARSES THE PERCENTAGE VOTE BY PARTY RESULTS FOR EACH DIVISION (NOT AVAILABLE AS A CSV)
+/* THIS CODE EXTRACTS THE RESULTS FROM THE HTML TABLE AT http://results.aec.gov.au/15508/Website/HouseFirstPrefsTppByDivision-15508-NAT.htm */
+/* THEN SAVE AS A STATA DATA FILE */
+
+library(foreign)
+library(XML)
+
+divresults <- readHTMLTable("http://results.aec.gov.au/15508/Website/HouseFirstPrefsTppByDivision-15508-NAT.htm",
+    header = c("Division","State","ALP_1Prf","LP_1Pref","LNQ_1Pref","GRN_1Pref","NP_1Pref","OTH_1Pref","ALP_2PP","LNP_2PP"),
+    skip.rows=c(1,2), trim=TRUE, as.data.frame=TRUE, which=5)
+
+setwd("/AES_Division_Files")
+
+write.dta(divresults, "divresults_stata.dta", version = 10L,
+          contest
+#+end_src
+* stata bit
+#+begin_src stata :session *stata* :tangle do.do :exports none :eval yes
+
+	  vert.factors = c("labels"))
+
+write.dta(divresults, "divresults_stata_string.dta", version = 10L,
+          convert.factors = c("string"))
+#+name:stata
+
+
+/* NOW SWITCH TO STATA */
+clear
+set memory 1000m
+
+cd "/AES_Division_Files"
+
+/* THE FOLLOWING CODE DOWNLOADS SEVERAL AEC CSV FILES AND CONVERTS THEM TO STATA DATA FILES */
+/* VOTES BY DIVISION */
+insheet using "http://results.aec.gov.au/15508/Website/Downloads/HouseVotesCountedByDivisionDownload-15508.csv", comma clear
+drop if _n == 1
+outsheet using HouseVotesCountedByDivisionDownload-15508_nofirstline.csv, comma replace nonames
+insheet using HouseVotesCountedByDivisionDownload-15508_nofirstline.csv, comma clear names
+label data "Votes Counted By Division CSV"
+rename divisionnm Division
+save HouseVotesCountedByDivisionDownload-15508.dta, replace
+
+insheet using "http://results.aec.gov.au/15508/Website/Downloads/HouseTurnoutByDivisionDownload-15508.csv", comma clear
+drop if _n == 1
+outsheet using HouseTurnoutByDivisionDownload-15508_nofirstline.csv, comma replace nonames
+insheet using HouseTurnoutByDivisionDownload-15508_nofirstline.csv, comma clear names
+label data "House Turnout By Division CSV"
+rename divisionnm Division
+save HouseTurnoutByDivisionDownload-15508.dta, replace
+
+insheet using "http://results.aec.gov.au/15508/Website/Downloads/HouseInformalByDivisionDownload-15508.csv", comma clear
+drop if _n == 1
+outsheet using HouseInformalByDivisionDownload-15508_nofirstline.csv, comma replace nonames
+insheet using HouseInformalByDivisionDownload-15508_nofirstline.csv, comma clear names
+label data "House Informal Votes By Division CSV"
+rename divisionnm Division
+save HouseInformalByDivisionDownload-15508.dta, replace
+
+
+/* Merge the electoral boundaries and election results data - matched 1to1 */
+clear
+use divresults_stata_string
+
+destring ALP_1Prf LP_1Pref LNQ_1Pref GRN_1Pref NP_1Pref OTH_1Pref ALP_2PP LNP_2PP, replace
+
+/* Adjust figures for National Totals - error in conversion from HTML table in R */
+replace LNP_2PP = "49.88" if ( Division == "National Total" )
+replace ALP_2PP = OTH_1Pref if ( Division == "National Total" )
+replace OTH_1Pref = NP_1Pref if ( Division == "National Total" )
+replace NP_1Pref = GRN_1Pref if ( Division == "National Total" )
+replace GRN_1Pref = LNQ_1Pref if ( Division == "National Total" )
+replace LNQ_1Pref = LP_1Pref if ( Division == "National Total" )
+replace LP_1Pref = ALP_1Prf if ( Division == "National Total" )
+replace ALP_1Prf = 37.99 if ( Division == "National Total" )
+replace State = "Nat" if ( Division == "National Total" )
+
+destring LNP_2PP, replace
+
+merge 1:1 Division using HouseTurnoutByDivisionDownload-15508.dta, gen(_merge_turnout)
+merge 1:1 Division using HouseVotesCountedByDivisionDownload-15508.dta, gen(_merge_votes)
+merge 1:1 Division using HouseInformalByDivisionDownload-15508.dta, gen(_merge_informal)
+
+label variable Division "Division"
+label variable State "State"
+label variable ALP_1Prf "ALP First Preference Vote - Percentage"
+label variable LP_1Pref "Liberal First Preference Vote - Percentage"
+label variable LNQ_1Pref "Liberal-National Party (QLD) First Preference Vote - Percentage"
+label variable GRN_1Pref "Greens First Preference Vote - Percentage"
+label variable NP_1Pref "National Party First Preference Vote - Percentage"
+label variable OTH_1Pref "Other Parties First Preference Vote - Percentage"
+label variable ALP_2PP "ALP Two-Party Preferred Vote - 2 party preferred (vs LNP)"
+label variable LNP_2PP "ALP Two-Party Preferred Vote - 2 party preferred (vs ALP)"
+label variable divisionid "Electoral Division ID number - AEC"
+label variable stateab "State"
+label variable enrolment "Enrolment - number of enrolled voters in division"
+label variable turnout "Turnout - number of voters that voted in the election"
+label variable turnoutpercentage "Turnout percentage - turnout as a percentage of enrolled voters"
+label variable turnoutswing "Turnout swing - change in the turnout percentage compared to 2007"
+label variable _merge_turnout "Result of matching turnout with divresults"
+label variable ordinaryvotes "Number of ordinary votes in division"
+label variable absentvotes "Number of absent votes in division"
+label variable provisionalvotes "Number of provisional votes in division"
+label variable prepollvotes "Number of prepoll votes in division"
+label variable postalvotes "Number of postal votes in division"
+label variable totalvotes "Total number of votes in division"
+label variable totalpercentage "Turnout - total votes as a percentage of enrolled voters"
+label variable _merge_votes "Result of matching votes with divresults"
+label variable formalvotes "Number of Formal votes in division"
+label variable informalvotes "Number of Informal votes in division"
+label variable informalpercent "Informal votes as a percentage of total votes in division"
+label variable informalswing "Informal Swing - change in the informal percentage compared to 2007"
+label variable _merge_informal "Result of matching informal with divresults"
+
+save divresults_plus_turnout-votes-informal, replace
+
+use divresults_plus_turnout-votes-informal
+log using divresults_codebook.smcl, replace
+codebook
+log close
+translate divresults_codebook.smcl divresults_codebook.log, replace
+
+
+/* GET TWO-CANDIDATE PREFERRED RESULTS */
+
+insheet using "http://results.aec.gov.au/15508/Website/Downloads/HouseTcpByCandidateByVoteTypeDownload-15508.csv", comma clear
+drop if _n == 1
+outsheet using HouseTcpByCandidateByVoteTypeDownload-15508_nofirstline.csv, comma replace nonames
+insheet using HouseTcpByCandidateByVoteTypeDownload-15508_nofirstline.csv, comma clear names
+label data "House Two-Candidate-Preferred By Division by Vote Type CSV"
+rename divisionnm Division
+save HouseTcpByCandidateByVoteTypeDownload-15508.dta, replace
+
+clear
+use HouseTcpByCandidateByVoteTypeDownload-15508
+drop stateab surname givennm partynm ordinaryvotes absentvotes provisionalvotes prepollvotes postalvotes ballotposition historicelected 
+reshape wide partyab candidateid totalvotes swing, i(divisionid) j(elected) string
+save HouseTcpByCandidateByVoteTypeDownload-15508_WIDE.dta, replace
+
+clear
+use divresults_plus_turnout-votes-informal
+merge 1:1 Division using HouseTcpByCandidateByVoteTypeDownload-15508_WIDE.dta, gen(_merge_2cp)
+label variable DivisionID "AEC 2010 Election Division identifier"
+label variable candidateidN "AEC 2010 Election Candidate identifier - 2CP non-elected candidate"
+label variable partyabN "Party of 2CP non-elected candidate"
+label variable totalvotesN "Number of votes for 2CP elected candidate"
+label variable swingY "Swing in pct vote for 2CP elected candidate"
+label variable candidateidY "AEC 2010 Election Candidate identifier - 2CP elected candidate"
+label variable partyabY "Party of 2CP elected candidate"
+label variable totalvotesY "Number of votes for 2CP elected candidate"
+label variable swingY "Swing in pct vote for 2CP elected candidate"
+label variable _merge_2cp "Result of matching 2cp with divresults"
+save divresults_EXTENDED_AES, replace
+#+end_src
