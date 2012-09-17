@@ -25,14 +25,14 @@ newnode(dsc='R-init', clearpage = F, ttype='report', nosectionheading = T,
   dbx <- 'I:/My Dropbox/data/AWAP_GRIDS'
   source('~/my dropbox/tools/transformations.r')
    rootdir <- getwd()
-   wd <- 'c:/data/AWAP_GRIDS' # I? or maybe actually want to use c drive for large data downloads on work PC?
+   wd <- '~/AWAP_GRIDS' # I? or maybe actually want to use c drive for large data downloads on work PC?
    # source(dir('run',pattern = 'tools', full.names=T))
    # file.remove(dir('run',full.names=T))
    #file.copy(file.path(dbxwd,'overview.r'), file.path(wd,'overview.r'), overwrite=T)
    setwd(wd)
-   dir() 
-   dir.create('run')  
-    
+   dir()
+   dir.create('run')
+  
 #+end_src
 
 #+name:go-newnode
@@ -279,46 +279,46 @@ newnode(dsc='grid2csv', clearpage = F, ttype='report', nosectionheading = T,
 #+end_src
 
 #+name: download
-#+begin_src R :session *R* :tangle run/load.r :exports none :eval no
-   dir.create('data')      
-   setwd('data')
-   # tmax
-   # i <- 2
-   # # vars[i,]
-   # get_data_range(variable=vars[i,1],measure =vars[i,2],timestep=vars[i,3],startdate=as.POSIXct("2010-01-30"), enddate=as.POSIXct("2010-01-31"))
-   # # vp DONT DO TOO MANY DOWNLOADS, PERHAPS A YEAR/MONTH AT A TIME, THEN CONVERTS/DELETES, THEN MORE DOWNLOADS
-
-
- yy <- '2010'
- leapyear<- ifelse( yy %in% c('1988', '1992', '1996', '2000', '2004', '2008', '2012'), T, F)
- # http://en.wikipedia.org/wiki/List_of_leap_years
- dir.create(yy)
- setwd(yy)
- strt=Sys.time()
- for(mm in as.character(1)){
-  print(mm)
+#+begin_src R :session *shell* :tangle run/load.r :exports none :eval no
+    dir.create('data')      
+    setwd('data')
+    # tmax
+    # i <- 2
+    # # vars[i,]
+    # get_data_range(variable=vars[i,1],measure =vars[i,2],timestep=vars[i,3],startdate=as.POSIXct("2010-01-30"), enddate=as.POSIXct("2010-01-31"))
+    # # vp DONT DO TOO MANY DOWNLOADS, PERHAPS A YEAR/MONTH AT A TIME, THEN CONVERTS/DELETES, THEN MORE DOWNLOADS
+  
+  
+  yy <- '2010'
+  leapyear<- ifelse( yy %in% c('1988', '1992', '1996', '2000', '2004', '2008', '2012'), T, F)
+  # http://en.wikipedia.org/wiki/List_of_leap_years
+  dir.create(yy)
+  setwd(yy)
+  strt=Sys.time()
+  for(mm in as.character(1)){
+   print(mm)
   # mm <- as.character(1)
-  dir.create(mm)
-  setwd(mm)
-  for(i in 4:5){
-  # i <- 5
-  variable<-gsub(' ','',vars[i,1])
-  measure<-gsub(' ','',vars[i,2])
-  timestep<-gsub(' ','',vars[i,3])
-  maxdate <- ifelse(mm %in% c(9,4,6,11), 30, 31)
-  if(mm == 2 & leapyear == F){maxdate <- 28}
-  if(mm == 2 & leapyear == T){maxdate <- 29}
-  get_data_range(variable=variable,measure =measure,timestep=timestep,
-   startdate=as.POSIXct(paste(yy,"-",mm,"-01",sep="")),
-   enddate=as.POSIXct(paste(yy,"-",mm,"-",maxdate,sep=""))
-   )
+   dir.create(mm)
+   setwd(mm)
+   for(i in 4:5){
+   # i <- 5
+   variable<-gsub(' ','',vars[i,1])
+   measure<-gsub(' ','',vars[i,2])
+   timestep<-gsub(' ','',vars[i,3])
+   maxdate <- ifelse(mm %in% c(9,4,6,11), 30, 31)
+   if(mm == 2 & leapyear == F){maxdate <- 28}
+   if(mm == 2 & leapyear == T){maxdate <- 29}
+   get_data_range(variable=variable,measure =measure,timestep=timestep,
+    startdate=as.POSIXct(paste(yy,"-",mm,"-01",sep="")),
+    enddate=as.POSIXct(paste(yy,"-",mm,"-",maxdate,sep=""))
+    )
+   }
+   setwd(file.path(wd,"data",yy))
   }
-  setwd(file.path(wd,"data",yy))
- }
- setwd(file.path(wd,"data"))
- end=Sys.time()
- print(end-strt)
-
+  setwd(file.path(wd,"data"))
+  end=Sys.time()
+  print(end-strt)
+  
  #+end_src
 ** uncompress and transform to long csv
 
@@ -332,18 +332,18 @@ newnode(dsc='uncompress-newnode', clearpage = F, ttype='report', nosectionheadin
 #+end_src
 
 #+name: uncompress
-#+begin_src R :session *R* :tangle run/load.r :exports results :eval no
+#+begin_src R :session *shell* :tangle run/load.r :exports results :eval no
   setwd(file.path(wd,'data',yy))
   strt=Sys.time()
   for(mm in c(1)){
-  # mm <- '12'
+  # mm <- '1'
   mm <- as.character(mm)
   print(mm)
   setwd(mm)
   files <- dir(pattern='.grid.Z')
-
+  
   for (f in files) {
-  # f <- files[3]
+  # f <- files[1]
    print(f)
    handle <- file(f, "rb")
    data <- readBin(handle, "raw", 99999999)
@@ -363,6 +363,7 @@ newnode(dsc='uncompress-newnode', clearpage = F, ttype='report', nosectionheadin
   print(endd-strt)
   # 49 sec
   setwd(wd)
+  
 #+end_src
 * CHECK
 #+name:check-newnode
@@ -375,7 +376,7 @@ newnode(dsc='check', clearpage = F, ttype='report', nosectionheading = T,
 #+end_src
 
 #+name:check
-#+begin_src R :session *R* :tangle run/check.r :exports none :eval no
+#+begin_src R :session *shell* :tangle run/check.r :exports none :eval no
   # newnode CHECK 
   # newnode check grid
   files <- dir('data', pattern='.grid')
