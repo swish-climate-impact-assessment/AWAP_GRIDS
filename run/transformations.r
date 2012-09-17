@@ -105,6 +105,39 @@ newnode(dsc='publish function', clearpage = F, ttype='transformations', nosectio
  notes='',echoCode = FALSE,
  code=NA)
 
+newnode(dsc='synchronise local metadata', clearpage = F, ttype='metadata_sync',
+ dontshow_doc = T, notes='',echoCode = FALSE,doc_code = F,
+ code="
+ 
+ s <- dbGetQuery(oracle, paste(\"select * from stdydscr where idno = '\",idno,\"'\", sep = ''))
+ matrix(s)
+ f <- dbGetQuery(oracle, paste(\"select * from filedscr where idno = '\",idno,\"' order by filetype\", sep = ''))
+ f[,1:4]
+
+ d <- dbGetQuery(oracle, paste(\"select * from datadscr where fileid in (\",paste(f$FILEID, collapse = ','),\")\", sep = ''))
+ d
+
+ # now overwrite the local copies
+ dir('metadata')
+ write.csv(s, 'metadata/stdydscr.csv', row.names=F)
+ write.csv(f, 'metadata/filedscr.csv', row.names=F)
+ write.csv(d, 'metadata/datadscr.csv', row.names=F)
+
+
+ doclist <- dir(file.path('I:/My Dropbox/projects/0.3 Catalogue/publishddi',idno), pattern = tolower(idno))
+ doclist
+ 
+ for(doc in doclist){
+ file.copy(file.path('I:/My Dropbox/projects/0.3 Catalogue/publishddi',idno,doc), file.path('metadata',doc), overwrite = T)
+ }
+ 
+ doc <- dir(file.path('I:/My Dropbox/projects/0.3 Catalogue/publishddi',idno,'reports'), pattern = 'pdf')
+ file.copy(file.path('I:/My Dropbox/projects/0.3 Catalogue/publishddi',idno,'reports',doc), file.path('metadata',gsub('_doc','_metadata',doc)), overwrite = T)
+ 
+ ")
+source(dir('run',pattern='metadata_sync', full.names=T) )
+##################################################################
+
 newnode(dsc='Archives', clearpage = F, ttype='transformations', nosectionheading = T,
  i='metadata',o = 'Archives',append = T,end_doc = F,
  notes='',echoCode = FALSE,
