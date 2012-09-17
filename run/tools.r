@@ -1,6 +1,9 @@
 
-if(!require(maptools)) install.packages('maptools',repos='http://cran.csiro.au');require(maptools)
-if(!require(uncompress)) install.packages('uncompress',repos='http://cran.csiro.au');require(uncompress)
+setwd('~/AWAP_GRIDS')
+if(!require(maptools))
+  install.packages('maptools',repos='http://cran.csiro.au'); require(maptools)
+if(!require(uncompress))
+  install.packages('uncompress',repos='http://cran.csiro.au'); require(uncompress)
 source('./run/connect2postgres.r')
 delphe <- connect2postgres(hostip='115.146.94.209',user='gislibrary',db='pgisdb')
 # uncomment in run file so that can be sourced?
