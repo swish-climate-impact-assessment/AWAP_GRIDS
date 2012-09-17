@@ -16,7 +16,7 @@ setwd(yy)
 strt=Sys.time()
 for(mm in as.character(1)){
  print(mm)
- # mm <- as.character(1)
+# mm <- as.character(1)
  dir.create(mm)
  setwd(mm)
  for(i in 4:5){
@@ -41,14 +41,14 @@ print(end-strt)
 setwd(file.path(wd,'data',yy))
 strt=Sys.time()
 for(mm in c(1)){
-# mm <- '12'
+# mm <- '1'
 mm <- as.character(mm)
 print(mm)
 setwd(mm)
 files <- dir(pattern='.grid.Z')
 
 for (f in files) {
-# f <- files[3]
+# f <- files[1]
  print(f)
  handle <- file(f, "rb")
  data <- readBin(handle, "raw", 99999999)
