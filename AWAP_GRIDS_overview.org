@@ -9,44 +9,45 @@
 * Introduction
 NCEPH holds Australian Bureau of Meteorology data for all stations from 1990 to 2010 \cite{NationalClimateCentreoftheBureauofMeteorology:2005}.
 The aim of this project is to download the Australian Water Availability Project (AWAP) gridded datasets \cite{Jones2009}.  In particular we want the vapour pressure data from 2010 so that we don't have to buy it again.  We want to compare it with the station data to see if they are close.
-** code
+** init code
 #+name:R-init-newnode
 #+begin_src R :session *R* :tangle run/transformations.r :exports none :eval no
-
-newnode(dsc='R-init', clearpage = F, ttype='report', nosectionheading = T,
- o = 'R-init',append = F,end_doc = F,
- notes='Initialize the project workspace',echoCode = FALSE,
- code=NA)
-#+end_src
-
-
-#+name: R-init
-#+begin_src R  :session *R* :exports none :eval no :tangle run/overview.r
-  dbx <- 'I:/My Dropbox/data/AWAP_GRIDS'
-  source('~/my dropbox/tools/transformations.r')
-   rootdir <- getwd()
-   wd <- '~/AWAP_GRIDS' # I? or maybe actually want to use c drive for large data downloads on work PC?
-   # source(dir('run',pattern = 'tools', full.names=T))
-   # file.remove(dir('run',full.names=T))
-   #file.copy(file.path(dbxwd,'overview.r'), file.path(wd,'overview.r'), overwrite=T)
-   setwd(wd)
-   dir()
-   dir.create('run')
+  source('~/tools/disentangle/src/newnode.r')
+  nodes <- newnode(name='main.r', newgraph = T,
+   inputs = 'R-init')
   
 #+end_src
 
+#+name: R-init
+#+begin_src R  :session *shell* :exports none :eval no :tangle run/overview.r
+   
+  rootdir <- getwd()
+  wd <- '~/data/AWAP_GRIDS'
+  # source(dir('run',pattern = 'tools', full.names=T))
+  # file.remove(dir('run',full.names=T))
+  setwd(wd)
+  dir()
+  
+  
+#+end_src
+** TODO deprecated init code
+#dbx <- 'I:/My Dropbox/data/AWAP_GRIDS'
+#source('~/my dropbox/tools/transformations.r')
+# I? or maybe actually want to use c drive for large data downloads on work PC?
+#file.copy(file.path(dbxwd,'overview.r'), file.path(wd,'overview.r'), overwrite=T)
+#dir.create('run')
+** go
 #+name:go-newnode
 #+begin_src R :session *R* :tangle run/transformations.r :exports none :eval no
-
-newnode(dsc='go', clearpage = F, ttype='report', nosectionheading = T,
- o = 'go',i='R-init',append = T,end_doc = F,
- notes='',echoCode = FALSE,
- code=NA)
+  
+  nodes <- newnode(name='go',
+   inputs='main.r')
+  
 #+end_src
 
 
 #+name: go
-#+begin_src R  :session *R* :exports none :eval no :tangle run/go.r
+#+begin_src R  :session *shell* :exports none :eval no :tangle run/go.r
   source(dir('run',pattern = 'tools', full.names=T))
   # source(dir('run',pattern = 'load', full.names=T))
   # source(dir('run',pattern = 'check', full.names=T))
@@ -80,7 +81,7 @@ newnode(dsc='tools', clearpage = F, ttype='report', nosectionheading = T,
 
 #+name: R-tools
 #+begin_src R :session *shell* :tangle run/tools.r :exports none :eval no
-  setwd('~/AWAP_GRIDS')
+  setwd('~/data/AWAP_GRIDS')
   if(!require(maptools))
     install.packages('maptools',repos='http://cran.csiro.au'); require(maptools)
   if(!require(uncompress))
@@ -89,7 +90,7 @@ newnode(dsc='tools', clearpage = F, ttype='report', nosectionheading = T,
   delphe <- connect2postgres(hostip='115.146.94.209',user='gislibrary',db='pgisdb')
   # uncomment in run file so that can be sourced?
   source('./run/load2postgres.r')
-  source('./run/df2ddi.r')
+  source('~/tools/disentangle/src/df2ddi.r')
   
 #+end_src
 
@@ -786,20 +787,30 @@ newnode(dsc='publish function', clearpage = F, ttype='transformations', nosectio
    code=NA)
   
    source('~/My Dropbox/tools/transformations.r')
+#+end_src
+
+#+name:metadata-init-src
+#+begin_src R :session *shell* :tangle src/metadata-init-src.r :exports none :eval no
+  ################################################################
+  # name:metadata-init-src
   
-   source('~/My Dropbox/tools/df2ddi/df2ddi.r')
-   delphe <- connectDelphe('130.56.102.41','ivan_hanigan','delphe')  
-   oracle <- connectOracle(hostip='150.203.74.97',user='ivan') 
-   idno <- 'AWAP_GRIDS'
-   if(!exists('s')){
-     s <- dbGetQuery(oracle, paste("select * from stdydscr where idno = '",idno,"'", sep = ''))
-   idno <- s$IDNO
-   }
-   t(s) 
+  #   delphe <- connectDelphe('130.56.102.41','ivan_hanigan','delphe')
+  
+  if(!require(RJDBC)) install.packages('RJDBC'); require(RJDBC)
+  drv <- JDBC("oracle.jdbc.driver.OracleDriver",
+              '/u01/app/oracle/product/11.2.0/xe/jdbc/lib/ojdbc6.jar')
+  ch <- dbConnect(drv,"jdbc:oracle:thin:@130.56.102.54:1521","DDIINDEXDB","trojan9!")
+  
+  idno <- 'AWAP_GRIDS'
+  if(!exists('s')){
+  s <- dbGetQuery(oracle, paste("select * from stdydscr where idno = '",idno,"'", sep = ''))
+  idno <- s$IDNO
+  }
+  t(s)
   # newnode get tools
   # rm(oracle)
   if(!exists('oracle')) {source(dir('run',pattern = 'tools', full.names=T))}
-   
+  
 #+end_src
 
 ** insert study id
