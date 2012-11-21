@@ -127,18 +127,22 @@ grid2csv<-function(filename){
 # tmax
 i <- 2
 vars[i,]
-get_data_range(variable=vars[i,1],measure =vars[i,2],timestep=vars[i,3],startdate=as.POSIXct("2010-12-30"), enddate=as.POSIXct("2010-12-31"))
+get_data_range(variable=vars[i,1],measure =vars[i,2],timestep=vars[i,3],
+               startdate=as.POSIXct("2012-11-01"), 
+               enddate=as.POSIXct("2012-11-20"))
 # vp
 i <- 4
 vars[i,]
-get_data_range(variable=vars[i,1],measure =vars[i,2],timestep=vars[i,3],startdate=as.POSIXct("2010-12-30"), enddate=as.POSIXct("2010-12-31"))
+get_data_range(variable=vars[i,1],measure =vars[i,2],timestep=vars[i,3],
+               startdate=as.POSIXct("2010-12-30"), 
+               enddate=as.POSIXct("2010-12-31"))
 
 # newnode uncompress
 # test with one
 files <- dir(pattern='.grid.Z')
 files
 for (f in files) {
-# f <- files[1]
+# f <- files[21]
  print(f)
 #  handle <- file(f, "rb")
 #  data <- readBin(handle, "raw", 99999999)
@@ -156,7 +160,7 @@ for (f in files) {
 # newnode check grid
 print(f)
 # to select a differnt one
-f <- gsub('.Z','',files[1])
+f <- gsub('.Z','',files[21])
 
 d <- read.asciigrid2(f)
 str(d)
@@ -167,7 +171,12 @@ image(d, col = rainbow(19))
 # newnode check csv
 read.table(sub("grid","csv",f), nrows = 10, sep=',', header=T)
 
-# newnode DO
+# newnode TODO
 # now I want to get a time series for a pixel based on the name of a town or city 
 # I think I'll load the CSV to PostGIS for spatial query
 # also want to check the error between the station observation and the pixel values.
+
+####
+# but first lets look at the station locations on a grid
+source('~/delphe-project/tools/readOGR2.r')
+stations <- readOGR2(hostip='115.146.95.82',user='ning_ding',db='ewedb',layer='weather_bom.combstats')
