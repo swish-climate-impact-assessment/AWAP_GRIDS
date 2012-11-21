@@ -6,7 +6,7 @@
 
 # newnode TOOLS
 if(!require(maptools)) install.packages('maptools');require(maptools)
-if(!require(uncompress)) install.packages('uncompress');require(uncompress)
+#if(!require(uncompress)) install.packages('uncompress');require(uncompress)
 
 # newnode variable names 
 # urls can be like
@@ -138,14 +138,16 @@ get_data_range(variable=vars[i,1],measure =vars[i,2],timestep=vars[i,3],startdat
 files <- dir(pattern='.grid.Z')
 files
 for (f in files) {
+# f <- files[1]
  print(f)
- handle <- file(f, "rb")
- data <- readBin(handle, "raw", 99999999)
- close(handle)
- uncomp_data <- uncompress(data)
- handle <- file(gsub('.Z','',f), "wb")
- writeBin(uncomp_data, handle)
- close(handle)
+#  handle <- file(f, "rb")
+#  data <- readBin(handle, "raw", 99999999)
+#  close(handle)
+# uncomp_data <- uncompress(data)
+  system(sprintf('uncompress %s',f)) 
+#  handle <- file(gsub('.Z','',f), "wb")
+#  writeBin(uncomp_data, handle)
+#  close(handle)
  # newnode convert to long csvfor (f in dir(pattern=".grid$")) {
  grid2csv(gsub('.Z','',f))
  }
@@ -154,7 +156,7 @@ for (f in files) {
 # newnode check grid
 print(f)
 # to select a differnt one
-f <- gsub('.Z','',files[3])
+f <- gsub('.Z','',files[1])
 
 d <- read.asciigrid2(f)
 str(d)
