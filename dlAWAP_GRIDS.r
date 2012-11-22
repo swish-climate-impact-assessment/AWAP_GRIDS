@@ -137,11 +137,32 @@ get_data_range(variable=vars[i,1],measure =vars[i,2],timestep=vars[i,3],
                startdate=as.POSIXct("2010-12-30"), 
                enddate=as.POSIXct("2010-12-31"))
 
+# solar
+i <- 6
+vars[i,]
+get_data_range(variable=vars[i,1],measure =vars[i,2],timestep=vars[i,3],
+               startdate=as.POSIXct("2010-12-30"), 
+               enddate=as.POSIXct("2010-12-31"))
+rootdir <- getwd()
+started <- Sys.time()
+for(i in 1:2){
+# i <- 1
+vname <- vars[i,1]
+print(vname)
+dir.create(vname)
+setwd(vname)
+get_data_range(variable=vars[i,1],measure =vars[i,2],timestep=vars[i,3],
+               startdate=as.POSIXct("2010-01-01"), 
+               enddate=as.POSIXct("2010-12-31"))
+setwd(rootdir)
+}
+finished <- Sys.time()
+
 # newnode uncompress
 # test with one
 files <- dir(pattern='.grid.Z')
 files
-for (f in files) {
+for (f in files[21]) {
 # f <- files[21]
  print(f)
 #  handle <- file(f, "rb")
