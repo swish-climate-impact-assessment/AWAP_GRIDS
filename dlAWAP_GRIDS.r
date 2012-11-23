@@ -123,31 +123,31 @@ grid2csv<-function(filename){
 
 
 # newnode LOAD
-      
-# tmax
-i <- 2
-vars[i,]
-get_data_range(variable=vars[i,1],measure =vars[i,2],timestep=vars[i,3],
-               startdate=as.POSIXct("2012-11-01"), 
-               enddate=as.POSIXct("2012-11-20"))
-# vp
-i <- 4
-vars[i,]
-get_data_range(variable=vars[i,1],measure =vars[i,2],timestep=vars[i,3],
-               startdate=as.POSIXct("2010-12-30"), 
-               enddate=as.POSIXct("2010-12-31"))
-
-# solar
-i <- 6
-vars[i,]
-get_data_range(variable=vars[i,1],measure =vars[i,2],timestep=vars[i,3],
-               startdate=as.POSIXct("2010-12-30"), 
-               enddate=as.POSIXct("2010-12-31"))
+# TESTS       
+# # tmax
+# i <- 2
+# vars[i,]
+# get_data_range(variable=vars[i,1],measure =vars[i,2],timestep=vars[i,3],
+#                startdate=as.POSIXct("2012-11-01"), 
+#                enddate=as.POSIXct("2012-11-20"))
+# # vp
+# i <- 4
+# vars[i,]
+# get_data_range(variable=vars[i,1],measure =vars[i,2],timestep=vars[i,3],
+#                startdate=as.POSIXct("2010-12-30"), 
+#                enddate=as.POSIXct("2010-12-31"))
+# 
+# # solar
+# i <- 6
+# vars[i,]
+# get_data_range(variable=vars[i,1],measure =vars[i,2],timestep=vars[i,3],
+#                startdate=as.POSIXct("2010-12-30"), 
+#                enddate=as.POSIXct("2010-12-31"))
 rootdir <- getwd()
 started <- Sys.time()
-for(i in 1:2){
+for(i in 3:6){
 # i <- 1
-vname <- vars[i,1]
+vname <- as.character(vars[i,1])
 print(vname)
 dir.create(vname)
 setwd(vname)
@@ -157,26 +157,28 @@ get_data_range(variable=vars[i,1],measure =vars[i,2],timestep=vars[i,3],
 setwd(rootdir)
 }
 finished <- Sys.time()
-
+finished - started
 # newnode uncompress
 # test with one
+started <- Sys.time()
+for(i in 2:6){
+# i <- 2
+vname <- as.character(vars[i,1])
+print(vname)
+setwd(vname)
 files <- dir(pattern='.grid.Z')
-files
-for (f in files[21]) {
-# f <- files[21]
- print(f)
-#  handle <- file(f, "rb")
-#  data <- readBin(handle, "raw", 99999999)
-#  close(handle)
-# uncomp_data <- uncompress(data)
-  system(sprintf('uncompress %s',f)) 
-#  handle <- file(gsub('.Z','',f), "wb")
-#  writeBin(uncomp_data, handle)
-#  close(handle)
- # newnode convert to long csvfor (f in dir(pattern=".grid$")) {
- grid2csv(gsub('.Z','',f))
- }
-
+# files
+for (f in files) {
+# f <- files[1]
+print(f)
+system(sprintf('uncompress %s',f))
+# grid2csv(gsub('.Z','',f))
+}
+setwd(rootdir)
+}
+finished <- Sys.time()
+finished - started
+system('df -h')
 # newnode CHECK 
 # newnode check grid
 print(f)
