@@ -201,5 +201,27 @@ read.table(sub("grid","csv",f), nrows = 10, sep=',', header=T)
 
 ####
 # but first lets look at the station locations on a grid
-source('~/delphe-project/tools/readOGR2.r')
-stations <- readOGR2(hostip='115.146.95.82',user='ning_ding',db='ewedb',layer='weather_bom.combstats')
+if(!require(raster)) install.packages('raster'); require(raster)
+source('/home/ivan_hanigan/delphe-project/tools/readOGR2.r')
+setwd('/home/ivan_hanigan/AWAP_GRIDS/temperature')
+dir()[1]
+cfiles <- dir()
+args(readOGR2)
+shp <- readOGR2(h='115.146.95.82', d='ewedb',u='ivan_hanigan',
+                layer = 'weather_bom.combstats')
+
+#for (i in seq_len(length(cfiles))) {
+  i <- 1
+  r <- raster(cfiles[[i]])
+  image(r)
+  plot(shp, add = T)
+  e <- extract(r, shp, df=T)
+  #str(e) ## print for debugging
+
+  e1 <- cbind(shp@data, e[,2])
+  head(e1@data)
+  #  write.table(data.frame(file = i, extract = e),"test.csv",
+  #  col.names = i == 1, append = i>1 , sep = ",", row.names = FALSE)
+#}
+
+
