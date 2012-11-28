@@ -269,7 +269,7 @@ newnode(dsc='grid2csv', clearpage = F, ttype='report', nosectionheading = T,
 
 * Load
 DONE IN dlAWAP_GRIDS.r on ncephMacPro
-** zip as nceph and load to brains /ResearchData/AWAP_GRIDS
+** zip as nceph (used GUI) and load to brains /ResearchData/AWAP_GRIDS
 #+name:load to brains
 #+begin_src sh :session *shell* :tangle no :exports none :eval no
 ################################################################
