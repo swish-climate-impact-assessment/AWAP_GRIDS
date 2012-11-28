@@ -268,9 +268,26 @@ newnode(dsc='grid2csv', clearpage = F, ttype='report', nosectionheading = T,
 #+end_src
 
 * Load
-** TASKS
-*** TODO SET UP TO DO YEAR/MONTH
-** download
+DONE IN dlAWAP_GRIDS.r on ncephMacPro
+** zip as nceph and load to brains /ResearchData/AWAP_GRIDS
+#+name:load to brains
+#+begin_src sh :session *shell* :tangle no :exports none :eval no
+################################################################
+# name:load to brains
+ssh root@115.146.93.225
+cd /home/ResearchData
+mkdir AWAP_GRIDS
+chmod 0777 /home/ResearchData/AWAP_GRIDS
+# from local
+scp temperature.zip root@115.146.93.225:/home/ResearchData/AWAP_GRIDS
+# on remove server
+unzip temperature.zip
+#+end_src
+
+** DEPRECATED
+*** TASKS
+**** TODO SET UP TO DO YEAR/MONTH
+*** download
 #+name:download-newnode
 #+begin_src R :session *R* :tangle run/transformations.r :exports none :eval no
   newnode(dsc='download', clearpage = F, ttype='report', nosectionheading = T,
@@ -321,7 +338,7 @@ newnode(dsc='grid2csv', clearpage = F, ttype='report', nosectionheading = T,
   print(end-strt)
   
  #+end_src
-** uncompress and transform to long csv
+*** uncompress and transform to long csv
 
 #+name:uncompress-newnode
 #+begin_src R :session *R* :tangle run/transformations.r :exports none :eval no
@@ -404,7 +421,7 @@ The grid for a particular day is shown in \ref{fig:fig1.jpg}
 \caption{fig1.jpg}
 \label{fig:fig1.jpg}
 \end{figure}
-* Load csv to delphe
+* deprecated Load csv to delphe
 ** tested Rpostgresql, decide to use COPY instead
 #+name:loadCsv2delphe-newnode
 #+begin_src R :session *R* :tangle run/transformations.r :exports none :eval no
