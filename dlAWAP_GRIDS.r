@@ -206,35 +206,34 @@ image(d, col = rainbow(19))
 #################################
 # but first lets look at the station locations on a grid
 # this is failing
-# readOGR2 <- function(hostip=NA,user=NA,db=NA, layer=NA, p = NA) {
-#   # NOTES
-#   # only works on Linux OS
-#   # returns uninformative error due to either bad connection or lack of record in geometry column table.  can check if connection problem using a test connect?
-#   # TODO add a prompt for each connection arg if isna
-#   if (!require(rgdal)) install.packages('rgdal', repos='http://cran.csiro.au'); require(rgdal)
-#   if(is.na(p)){ 
-#     pwd=readline('enter password (ctrl-L will clear the console after): ')
-#   } else {
-#     pwd <- p
-#   }
-#   shp <- readOGR(sprintf('PG:host=%s
-#                          user=%s
-#                          dbname=%s
-#                          password=%s
-#                          port=5432',hostip,user,db,pwd),
-#                  layer=layer)
-#   
-#   # clean up
-#   rm(pwd)
-#   return(shp)
-# }
-# 
-# 
-# args(readOGR2)
-# shptest <- readOGR2(h='115.146.84.135', d='ewedb',u='ivan_hanigan',
-#                 layer = 'weather_bom.combstats')
-#Error in ogrInfo(dsn = dsn, layer = layer, input_field_name_encoding = input_field_name_encoding) : 
-#  Multiple # dimensions: 
+readOGR2 <- function(hostip=NA,user=NA,db=NA, layer=NA, p = NA) {
+  # NOTES
+  # only works on Linux OS
+  # returns uninformative error due to either bad connection or lack of record in geometry column table.  can check if connection problem using a test connect?
+  # TODO add a prompt for each connection arg if isna
+  if (!require(rgdal)) install.packages('rgdal', repos='http://cran.csiro.au'); require(rgdal)
+  if(is.na(p)){ 
+    pwd=readline('enter password (ctrl-L will clear the console after): ')
+  } else {
+    pwd <- p
+  }
+  shp <- readOGR(sprintf('PG:host=%s
+                         user=%s
+                         dbname=%s
+                         password=%s
+                         port=5432',hostip,user,db,pwd),
+                 layer=layer)
+  
+  # clean up
+  rm(pwd)
+  return(shp)
+}
+
+
+args(readOGR2)
+shptest <- readOGR2(h='115.146.84.135', d='ewedb',u='ivan_hanigan',
+                 layer = 'weather_bom.combstats')
+plot(shptest)
 #################################
 # try just the raw data
 connect2postgres <- function(hostip=NA,db=NA,user=NA, p=NA, os = 'linux', pgutils = c('/home/ivan/tools/jdbc','c:/pgutils')){
@@ -270,7 +269,7 @@ connect2postgres <- function(hostip=NA,db=NA,user=NA, p=NA, os = 'linux', pgutil
   rm(pwd)
   return(con)
 }
-ch <- connect2postgres(h = '115.146.84.135', db = 'ewedb', user= 'ning_ding')
+ch <- connect2postgres(h = '115.146.84.135', db = 'ewedb', user= 'ivan_hanigan')
 # enter password at console
 shp <- dbGetQuery(ch, 'select stnum, name, lat, lon from weather_bom.combstats')
 
