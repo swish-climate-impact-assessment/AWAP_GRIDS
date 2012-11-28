@@ -311,6 +311,7 @@ for (i in seq_len(length(cfiles))[-1]) {
 }
 finished <- Sys.time()
 finished - started
+file.info(paste(variablename, '.csv', sep =''))
 qc <- read.csv(paste(variablename, '.csv', sep =''))
 qc$date <- as.Date(as.character(qc$date))
 str(qc)
