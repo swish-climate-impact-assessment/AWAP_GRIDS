@@ -5,8 +5,9 @@
 # Feb 2012
 
 # newnode TOOLS
+if(!require(raster)) install.packages('raster');require(raster)
 if(!require(maptools)) install.packages('maptools');require(maptools)
-#if(!require(uncompress)) install.packages('uncompress');require(uncompress)
+#if(!require(uncompress)) install.packages('uncompress');require(uncompress) # deprecated
 
 # newnode variable names 
 # urls can be like
@@ -186,7 +187,7 @@ system('df -h')
 print(f)
 # to select a differnt one
 f <- gsub('.Z','',files[21])
-
+setwd('solar')
 d <- read.asciigrid2(f)
 str(d)
 # compare with http://www.bom.gov.au/jsp/awap/vprp/archive.jsp?colour=colour&map=vprph15&year=2010&month=12&day=30&period=daily&area=nat
@@ -194,36 +195,128 @@ str(d)
 image(d, col = rainbow(19))
 
 # newnode check csv
-read.table(sub("grid","csv",f), nrows = 10, sep=',', header=T)
+#read.table(sub("grid","csv",f), nrows = 10, sep=',', header=T)
 
 # newnode TODO
 # now I want to get a time series for a pixel based on the name of a town or city 
 # I think I'll load the CSV to PostGIS for spatial query
 # also want to check the error between the station observation and the pixel values.
 
-####
+#################################
 # but first lets look at the station locations on a grid
-if(!require(raster)) install.packages('raster'); require(raster)
-source('/home/ivan_hanigan/delphe-project/tools/readOGR2.r')
-setwd('/home/ivan_hanigan/AWAP_GRIDS/temperature')
-dir()[1]
-cfiles <- dir()
-args(readOGR2)
-shp <- readOGR2(h='115.146.95.82', d='ewedb',u='ivan_hanigan',
-                layer = 'weather_bom.combstats')
+# this is failing
+# readOGR2 <- function(hostip=NA,user=NA,db=NA, layer=NA, p = NA) {
+#   # NOTES
+#   # only works on Linux OS
+#   # returns uninformative error due to either bad connection or lack of record in geometry column table.  can check if connection problem using a test connect?
+#   # TODO add a prompt for each connection arg if isna
+#   if (!require(rgdal)) install.packages('rgdal', repos='http://cran.csiro.au'); require(rgdal)
+#   if(is.na(p)){ 
+#     pwd=readline('enter password (ctrl-L will clear the console after): ')
+#   } else {
+#     pwd <- p
+#   }
+#   shp <- readOGR(sprintf('PG:host=%s
+#                          user=%s
+#                          dbname=%s
+#                          password=%s
+#                          port=5432',hostip,user,db,pwd),
+#                  layer=layer)
+#   
+#   # clean up
+#   rm(pwd)
+#   return(shp)
+# }
+# 
+# 
+# args(readOGR2)
+# shptest <- readOGR2(h='115.146.84.135', d='ewedb',u='ivan_hanigan',
+#                 layer = 'weather_bom.combstats')
+#Error in ogrInfo(dsn = dsn, layer = layer, input_field_name_encoding = input_field_name_encoding) : 
+#  Multiple # dimensions: 
+#################################
+# try just the raw data
+connect2postgres <- function(hostip=NA,db=NA,user=NA, p=NA, os = 'linux', pgutils = c('/home/ivan/tools/jdbc','c:/pgutils')){
+  if(is.na(hostip)){
+    hostip=readline('enter hostip: ')
+  } 
+  if(is.na(db)){
+    db=readline('enter db: ')
+  }
+  if(is.na(user)){
+    user=readline('enter user: ')
+  }
+  if(is.na(p)){
+    pwd=readline(paste('enter password for user ',user, ': ',sep=''))
+  } else {
+    pwd <- p
+  }
+  if(os == 'linux'){
+    if (!require(RPostgreSQL)) install.packages('RPostgreSQL', repos='http://cran.csiro.au'); require(RPostgreSQL)
+    con <- dbConnect(PostgreSQL(),host=hostip, user= user, password=pwd, dbname=db)
+  } else { 
+    if (!require(RJDBC)) install.packages('RJDBC'); require(RJDBC) 
+    # This downloads the JDBC driver to your selected directory if needed
+    if (!file.exists(file.path(pgutils,'postgresql-8.4-701.jdbc4.jar'))) {
+      dir.create(pgutils,recursive =T)
+      download.file('http://jdbc.postgresql.org/download/postgresql-8.4-701.jdbc4.jar',file.path(pgutils,'postgresql-8.4-701.jdbc4.jar'),mode='wb')
+    }
+    # connect
+    pgsql <- JDBC( 'org.postgresql.Driver', file.path(pgutils,'postgresql-8.4-701.jdbc4.jar'))
+    con <- dbConnect(pgsql, paste('jdbc:postgresql://',hostip,'/',db,sep=''), user = user, password = pwd)
+  }
+  # clean up
+  rm(pwd)
+  return(con)
+}
+ch <- connect2postgres(h = '115.146.84.135', db = 'ewedb', user= 'ning_ding')
+# enter password at console
+shp <- dbGetQuery(ch, 'select stnum, name, lat, lon from weather_bom.combstats')
 
-#for (i in seq_len(length(cfiles))) {
-  i <- 1
-  r <- raster(cfiles[[i]])
-  image(r)
-  plot(shp, add = T)
+if (!require(rgdal)) install.packages('rgdal'); require(rgdal)
+epsg <- make_EPSG()
+
+## Treat data frame as spatial points
+shp <- SpatialPointsDataFrame(cbind(shp$lon,shp$lat),shp,
+                              proj4string=CRS(epsg$prj4[epsg$code %in% '4283']))
+str(shp)
+#writeOGR(shp, 'test.shp', 'test', driver='ESRI Shapefile')
+
+  
+#################################
+dir()[1]
+variablename <- strsplit(dir()[1], '_')[[1]][1]
+
+cfiles <- dir()
+started <- Sys.time()
+for (i in seq_len(length(cfiles))[-1]) {
+#  i <- 1
+  fname <- cfiles[[i]]
+  timevar <- gsub('.grid', '', strsplit(fname, '_')[[1]][2])
+  timevar <- substr(timevar, 1,8)
+  year <- substr(timevar, 1,4)
+  month <- substr(timevar, 5,6)
+  day <- substr(timevar, 7,8)
+  timevar <- as.Date(paste(year, month, day, sep = '-'))
+  r <- raster(fname)
   e <- extract(r, shp, df=T)
   #str(e) ## print for debugging
+  #image(r)
+  #plot(shp, add = T)
+  e1 <- cbind(shp@data, timevar, e[,2])
+  names(e1) <- c('stnum', 'name', 'lat', 'lon', 'date', variablename)
+  head(e1)
+  write.table(e1, paste(variablename, '.csv', sep =''),
+    col.names = i == 1, append = i > 1 , sep = ",", row.names = FALSE)
+}
+finished <- Sys.time()
+finished - started
+qc <- read.csv(paste(variablename, '.csv', sep =''))
+qc$date <- as.Date(as.character(qc$date))
+str(qc)
+head(qc)
 
-  e1 <- cbind(shp@data, e[,2])
-  head(e1@data)
-  #  write.table(data.frame(file = i, extract = e),"test.csv",
-  #  col.names = i == 1, append = i>1 , sep = ",", row.names = FALSE)
-#}
-
-
+# TODO colourramp <- qc[,variablename]
+with(subset(qc, date == as.Date('2010-01-01')),
+            plot(lon, lat, pch = 16, col = qc[,variablename])
+)
