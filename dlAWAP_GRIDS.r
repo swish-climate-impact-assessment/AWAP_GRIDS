@@ -144,27 +144,28 @@ grid2csv<-function(filename){
 # get_data_range(variable=vars[i,1],measure =vars[i,2],timestep=vars[i,3],
 #                startdate=as.POSIXct("2010-12-30"), 
 #                enddate=as.POSIXct("2010-12-31"))
-dir.create('data')
-setwd('data')
+dir.create('data2000-2004')
+setwd('data2000-2004')
 rootdir <- getwd()
 started <- Sys.time()
 for(i in 1:6){
 # i <- 1
 vname <- as.character(vars[i,1])
-print(vname)
+#print(vname)
 dir.create(vname)
 setwd(vname)
 get_data_range(variable=vars[i,1],measure =vars[i,2],timestep=vars[i,3],
-               startdate=as.POSIXct("2010-01-01"), 
-               enddate=as.POSIXct("2012-11-25"))
+               startdate=as.POSIXct("2000-01-01"), 
+               enddate=as.POSIXct("2004-12-31"))
 setwd(rootdir)
 }
 finished <- Sys.time()
 finished - started
+system('df -h')
 # newnode uncompress
 # test with one
 started <- Sys.time()
-for(i in 2:6){
+for(i in 1:6){
 # i <- 1
 vname <- as.character(vars[i,1])
 print(vname)
