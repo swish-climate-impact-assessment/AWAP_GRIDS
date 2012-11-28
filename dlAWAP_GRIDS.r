@@ -312,10 +312,18 @@ for (i in seq_len(length(cfiles))[-1]) {
 finished <- Sys.time()
 finished - started
 file.info(paste(variablename, '.csv', sep =''))
-qc <- read.csv(paste(variablename, '.csv', sep =''))
+# rather than read in this big file just check the last one 
+write.table(e1, paste(variablename, '-qc.csv', sep =''),
+            col.names = T, append = F , sep = ",", row.names = FALSE)
+qc <- read.csv(paste(variablename, '-qc.csv', sep =''))
 qc$date <- as.Date(as.character(qc$date))
 str(qc)
 head(qc)
+## Treat data frame as spatial points
+qc <- SpatialPointsDataFrame(cbind(qc$lon,qc$lat),qc,
+                              proj4string=CRS(epsg$prj4[epsg$code %in% '4283']))
+str(qc)
+writeOGR(qc, paste(variablename, '-qc.shp', sep =''), paste(variablename, '-qc', sep =''), driver='ESRI Shapefile')
 
 # TODO colourramp <- qc[,variablename]
 with(subset(qc, date == as.Date('2010-01-01')),
