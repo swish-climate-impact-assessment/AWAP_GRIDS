@@ -183,6 +183,20 @@ setwd(rootdir)
 finished <- Sys.time()
 finished - started
 system('df -h')
+
+#############################################
+# compress into 5 year chuncks
+setwd('..')
+#rootdir <- getwd()
+started <- Sys.time()
+#dir()
+# manually set to the right directory
+system('zip -r data2005-2012 data2005-2012')
+finished <- Sys.time()
+finished - started
+system('df -h')
+file.info('data2000-2004.zip')
+#############################################
 # newnode CHECK 
 # newnode check grid
 print(f)
