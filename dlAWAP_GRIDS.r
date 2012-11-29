@@ -333,3 +333,27 @@ writeOGR(qc, paste(variablename, '-qc.shp', sep =''), paste(variablename, '-qc',
 with(subset(qc, date == as.Date('2010-01-01')),
             plot(lon, lat, pch = 16, col = qc[,variablename])
 )
+
+
+#############
+# merge all variables to a single file
+started <- Sys.time()
+for(i in 2:3){
+  # i <- 3
+  vname <- as.character(vars[i,2])
+  print(vname)
+  datain <- read.csv(paste(vname, '.csv', sep =''))
+  head(datain)
+  datain <- datain[,c('cd_code', 'date', vname)]
+  if(i != 2){
+    dataout <- merge(dataout, datain)
+  } else {
+    dataout <- datain
+    rm(datain)
+  }
+
+}
+finished <- Sys.time()
+finished - started
+system('df -h')
+write.csv('merged.csv', row.names=F)
