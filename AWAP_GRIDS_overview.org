@@ -308,7 +308,8 @@ cd /home/ResearchData
 mkdir AWAP_GRIDS
 chmod 0777 /home/ResearchData/AWAP_GRIDS
 # from local
-scp temperature.zip root@115.146.93.225:/home/ResearchData/AWAP_GRIDS
+# started at 17% taken
+scp data2000-2004.zip root@115.146.93.225:/home/ResearchData/AWAP_GRIDS
 # on remove server
 unzip temperature.zip
 #+end_src
