@@ -286,7 +286,7 @@ str(shp)
 #################################
 # start getting CCD temperatures
 setwd(rootdir)
-rootdir <- '/home/ResearchData/AWAP_GRIDS/temperature'
+rootdir <- '/home/ResearchData/AWAP_GRIDS/data2000-2004/temperature'
 dir(rootdir)[1]
 
 
