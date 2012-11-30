@@ -152,25 +152,53 @@ newnode(dsc='get data range', clearpage = F, ttype='report', nosectionheading = 
 #+name:get_data_range
 #+begin_src R :session *R* :tangle run/tools.r :exports none :eval no
 # newnode get_data
- get_data<-function(variable,measure,timestep,startdate,enddate){
-  url="http://www.bom.gov.au/web03/ncc/www/awap/{variable}/{measure}/{timestep}/grid/0.05/history/nat/{startdate}{enddate}.grid.Z" 
-  url=gsub("{variable}",variable,url,fixed=TRUE)
-  url=gsub("{measure}",measure,url,fixed=TRUE)
-  url=gsub("{timestep}",timestep,url,fixed=TRUE)
-  url=gsub("{startdate}",startdate,url,fixed=TRUE)
-  url=gsub("{enddate}",enddate,url,fixed=TRUE)
-  download.file(url,sprintf("%s_%s%s.grid.Z",measure,startdate,enddate),mode="wb")
+get_data_range<-function(variable,measure,timestep,startdate,enddate){
+  if (timestep == "day"){
+    thisdate<-startdate
+    while (thisdate<=enddate){
+      get_data(variable,measure,timestep,format(as.POSIXct(thisdate),"%Y%m%d"),format(as.POSIXct(thisdate),"%Y%m%d"))
+      thisdate<-thisdate+as.double(as.difftime(1,units="days"),units="secs")
+    }
+  } else if (timestep == "month"){
+    # Make sure that we go from begin of the month
+    startdate <- as.POSIXlt(startdate)
+    startdate$mday <- 1
+    # Find the first and last day of each month overlapping our range
+    data.period.start <- seq(as.Date(startdate), as.Date(enddate), by = 'month')
+    data.period.end <- as.Date(sapply(data.period.start, FUN=function(x){as.character(seq(x, x + 40, by = 'month')[2] - 1)}))
+    # Download them
+    for (i in 1:length(data.period.start)){
+      get_data(variable,measure,timestep,format(as.POSIXct(data.period.start[i]),"%Y%m%d"),format(as.POSIXct(data.period.end[i]),"%Y%m%d"))
+    }
+   
+} else {
+    stop("Unsupported timestep, only 'day' and 'month' are currently supported")
   }
-
-# newnode get_data_range
- get_data_range<-function(variable,measure,timestep,startdate,enddate){
-  thisdate<-startdate
-  while (thisdate<=enddate){
-   get_data(variable,measure,timestep,format(as.POSIXct(thisdate),"%Y%m%d"),format(as.POSIXct(thisdate),"%Y%m%d"))
-   thisdate<-thisdate+as.double(as.difftime(1,units="days"),units="secs")
-   }
- }
+}
 #+end_src
+
+# #+name:get_data_range
+# #+begin_src R :session *R* :tangle no :exports none :eval no
+# # newnode get_data
+#  get_data<-function(variable,measure,timestep,startdate,enddate){
+#   url="http://www.bom.gov.au/web03/ncc/www/awap/{variable}/{measure}/{timestep}/grid/0.05/history/nat/{startdate}{enddate}.grid.Z" 
+#   url=gsub("{variable}",variable,url,fixed=TRUE)
+#   url=gsub("{measure}",measure,url,fixed=TRUE)
+#   url=gsub("{timestep}",timestep,url,fixed=TRUE)
+#   url=gsub("{startdate}",startdate,url,fixed=TRUE)
+#   url=gsub("{enddate}",enddate,url,fixed=TRUE)
+#   download.file(url,sprintf("%s_%s%s.grid.Z",measure,startdate,enddate),mode="wb")
+#   }
+
+# # newnode get_data_range
+#  get_data_range<-function(variable,measure,timestep,startdate,enddate){
+#   thisdate<-startdate
+#   while (thisdate<=enddate){
+#    get_data(variable,measure,timestep,format(as.POSIXct(thisdate),"%Y%m%d"),format(as.POSIXct(thisdate),"%Y%m%d"))
+#    thisdate<-thisdate+as.double(as.difftime(1,units="days"),units="secs")
+#    }
+#  }
+# #+end_src
 ** read asciigrid2
 A function to get the data from a grid to a long table
 #+begin_src R :session *R* :tangle run/transformations.r :exports none :eval no
@@ -268,6 +296,7 @@ newnode(dsc='grid2csv', clearpage = F, ttype='report', nosectionheading = T,
 #+end_src
 
 * Load
+** dlAWAP_GRIDS.r
 DONE IN dlAWAP_GRIDS.r on ncephMacPro
 ** zip as nceph (used GUI) and load to brains /ResearchData/AWAP_GRIDS
 #+name:load to brains
