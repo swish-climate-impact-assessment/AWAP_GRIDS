@@ -144,8 +144,8 @@ grid2csv<-function(filename){
 # get_data_range(variable=vars[i,1],measure =vars[i,2],timestep=vars[i,3],
 #                startdate=as.POSIXct("2010-12-30"),
 #                enddate=as.POSIXct("2010-12-31"))
-dir.create('data2000-2004')
-setwd('data2000-2004')
+dir.create('data1995-1999')
+setwd('data1995-1999')
 rootdir <- getwd()
 started <- Sys.time()
 for(i in 1:6){
@@ -155,8 +155,8 @@ vname <- as.character(vars[i,1])
 dir.create(vname)
 setwd(vname)
 get_data_range(variable=vars[i,1],measure =vars[i,2],timestep=vars[i,3],
-               startdate=as.POSIXct("2000-01-01"),
-               enddate=as.POSIXct("2004-12-31"))
+               startdate=as.POSIXct("1995-01-01"),
+               enddate=as.POSIXct("1999-12-31"))
 setwd(rootdir)
 }
 finished <- Sys.time()
@@ -183,7 +183,23 @@ setwd(rootdir)
 finished <- Sys.time()
 finished - started
 system('df -h')
-# newnode CHECK
+
+
+#############################################
+# compress into 5 year chuncks
+setwd('..')
+#rootdir <- getwd()
+started <- Sys.time()
+#dir()
+# manually set to the right directory
+system('zip -r data1995-1999 data1995-1999')
+finished <- Sys.time()
+finished - started
+system('df -h')
+file.info('data1995-1999.zip')
+#############################################
+# newnode CHECK 
+
 # newnode check grid
 print(f)
 # to select a differnt one
