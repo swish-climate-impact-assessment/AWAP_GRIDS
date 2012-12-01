@@ -585,16 +585,10 @@ DONE IN dlAWAP_GRIDS.r on ncephMacPro
     e1 <- cbind(shp@data, timevar, e[,2])
     names(e1) <- c(names(shp@data), 'date', variablename)
   #  head(e1)
-    ## write.table(e1, paste(variablename, '.csv', sep =''),
-    ##   col.names = i == 1, append = i > 1 , sep = ",", row.names = FALSE)
-   write.table(e1, paste(variablename, '.csv', sep =''),
-      col.names = T, append = F, sep = ",", row.names = FALSE, na = '')
-    args(load2postgres)
-    load2postgres(inputfilepath=paste(variablename, '.csv', sep =''), schema = 'public', tablename = 'test1', pk = NULL, header = TRUE, 
-    printcopy = TRUE, sheetname = "Sheet1", withoids = FALSE, 
-    pguser = "ivan_hanigan", db = "ewedb", ip = "115.146.84.135", 
-    source_file = "STDIN", datecol = NULL, nrowscsv = 10000, 
-    pgpath = c("psql"))
+    write.table(e1, paste(variablename, '.csv', sep =''),
+      col.names = i == 1, append = i > 1 , sep = ",", row.names = FALSE)
+   ## write.table(e1, paste(variablename, '.csv', sep =''),
+   ##    col.names = T, append = F, sep = ",", row.names = FALSE, na = '')
   
   }
   finished <- Sys.time()
@@ -603,7 +597,7 @@ DONE IN dlAWAP_GRIDS.r on ncephMacPro
   # rather than read in this big file just check the last one
   write.table(e1, paste(variablename, '-qc.csv', sep =''),
               col.names = T, append = F , sep = ",", row.names = FALSE)
-  qc <- read.csv(paste(variablename, '.csv', sep =''))
+  qc <- read.csv(paste(variablename, '-qc.csv', sep =''))
   qc$date <- as.Date(as.character(qc$date))
   str(qc)
   head(qc)
@@ -621,26 +615,35 @@ DONE IN dlAWAP_GRIDS.r on ncephMacPro
   
   #############
   # merge all variables to a single file
-  started <- Sys.time()
-  for(i in 2:3){
-    # i <- 3
-    vname <- as.character(vars[i,2])
-    print(vname)
-    datain <- read.csv(paste(vname, '.csv', sep =''))
-    head(datain)
-    datain <- datain[,c('cd_code', 'date', vname)]
-    if(i != 2){
-      dataout <- merge(dataout, datain)
-    } else {
-      dataout <- datain
-      rm(datain)
-    }
+  ## started <- Sys.time()
+  ## for(i in 2:3){
+  ##   # i <- 3
+  ##   vname <- as.character(vars[i,2])
+  ##   print(vname)
+  ##   datain <- read.csv(paste(vname, '.csv', sep =''))
+  ##   head(datain)
+  ##   datain <- datain[,c('cd_code', 'date', vname)]
+  ##   if(i != 2){
+  ##     dataout <- merge(dataout, datain)
+  ##   } else {
+  ##     dataout <- datain
+  ##     rm(datain)
+  ##   }
   
-  }
-  finished <- Sys.time()
-  finished - started
-  system('df -h')
-  write.csv('merged.csv', row.names=F)
+  ## }
+  ## finished <- Sys.time()
+  ## finished - started
+  ## system('df -h')
+  ## write.csv('merged.csv', row.names=F)
+  
+  
+  ## try on postgres
+    args(load2postgres)
+    load2postgres(inputfilepath=paste(variablename, '.csv', sep =''), schema = 'public', tablename = 'test1', pk = NULL, header = TRUE,
+    printcopy = TRUE, sheetname = "Sheet1", withoids = FALSE,
+    pguser = "ivan_hanigan", db = "ewedb", ip = "115.146.84.135",
+    source_file = "STDIN", datecol = NULL, nrowscsv = 10000,
+    pgpath = c("psql"))
   
 #+end_src
 
