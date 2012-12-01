@@ -588,10 +588,13 @@ DONE IN dlAWAP_GRIDS.r on ncephMacPro
     ## write.table(e1, paste(variablename, '.csv', sep =''),
     ##   col.names = i == 1, append = i > 1 , sep = ",", row.names = FALSE)
    write.table(e1, paste(variablename, '.csv', sep =''),
-      col.names = T, append = F, sep = ",", row.names = FALSE)
+      col.names = T, append = F, sep = ",", row.names = FALSE, na = '')
     args(load2postgres)
-    load2postgres(paste(variablename, '.csv', sep =''), 'test', 'test1',
-                 pgpath = 'psql')
+    load2postgres(inputfilepath=paste(variablename, '.csv', sep =''), schema = 'public', tablename = 'test1', pk = NULL, header = TRUE, 
+    printcopy = TRUE, sheetname = "Sheet1", withoids = FALSE, 
+    pguser = "ivan_hanigan", db = "ewedb", ip = "115.146.84.135", 
+    source_file = "STDIN", datecol = NULL, nrowscsv = 10000, 
+    pgpath = c("psql"))
   
   }
   finished <- Sys.time()
