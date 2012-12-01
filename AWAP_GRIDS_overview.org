@@ -309,6 +309,9 @@ DONE IN dlAWAP_GRIDS.r on ncephMacPro
   # Feb 2012
   
   # newnode TOOLS
+  if(!require(devtools)) install.packages("devtools"); require(devtools)
+  install_github("delphe", "ivanhanigan")
+  require(delphe)
   if(!require(raster)) install.packages('raster');require(raster)
   if(!require(maptools)) install.packages('maptools');require(maptools)
   #if(!require(uncompress)) install.packages('uncompress');require(uncompress) # deprecated
@@ -586,7 +589,9 @@ DONE IN dlAWAP_GRIDS.r on ncephMacPro
     ##   col.names = i == 1, append = i > 1 , sep = ",", row.names = FALSE)
    write.table(e1, paste(variablename, '.csv', sep =''),
       col.names = T, append = F, sep = ",", row.names = FALSE)
-   if(!require(RODBC)) install.packages('RODBC'); require(RODBC)
+    args(load2postgres)
+    load2postgres(paste(variablename, '.csv', sep =''), 'test', 'test1',
+                 pgpath = 'psql')
   
   }
   finished <- Sys.time()
