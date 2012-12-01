@@ -538,24 +538,24 @@ DONE IN dlAWAP_GRIDS.r on ncephMacPro
   # but first lets look at the station locations on a grid
   require(delphe)
   args(readOGR2)
-  shptest <- readOGR2(h='115.146.84.135', d='ewedb',u='ivan_hanigan',
+  shp <- readOGR2(h='115.146.84.135', d='ewedb',u='ivan_hanigan',
                    layer = 'weather_bom.combstats')
-  plot(shptest)
+  plot(shp)
   #################################
   # try just the raw data
-  args(connect2postgres)
-  ch <- connect2postgres(h = '115.146.84.135', db = 'ewedb', user= 'ivan_hanigan')
-  # enter password at console
-  shp <- dbGetQuery(ch, 'select stnum, name, lat, lon from weather_bom.combstats')
+  ## args(connect2postgres)
+  ## ch <- connect2postgres(h = '115.146.84.135', db = 'ewedb', user= 'ivan_hanigan')
+  ## # enter password at console
+  ## shp <- dbGetQuery(ch, 'select stnum, name, lat, lon from weather_bom.combstats')
   
-  if (!require(rgdal)) install.packages('rgdal'); require(rgdal)
-  epsg <- make_EPSG()
+  ## if (!require(rgdal)) install.packages('rgdal'); require(rgdal)
+  ## epsg <- make_EPSG()
   
-  ## Treat data frame as spatial points
-  shp <- SpatialPointsDataFrame(cbind(shp$lon,shp$lat),shp,
-                                proj4string=CRS(epsg$prj4[epsg$code %in% '4283']))
-  str(shp)
-  #writeOGR(shp, 'test.shp', 'test', driver='ESRI Shapefile')
+  ## ## Treat data frame as spatial points
+  ## shp <- SpatialPointsDataFrame(cbind(shp$lon,shp$lat),shp,
+  ##                               proj4string=CRS(epsg$prj4[epsg$code %in% '4283']))
+  ## str(shp)
+  ## #writeOGR(shp, 'test.shp', 'test', driver='ESRI Shapefile')
   
   
   #################################
@@ -565,7 +565,7 @@ DONE IN dlAWAP_GRIDS.r on ncephMacPro
   dir(rootdir)[1]
   
   
-  cfiles <- dir(rootdir)
+  cfiles <- dir(rootdir)[1:365]
   started <- Sys.time()
   for (i in seq_len(length(cfiles))[-1]) {
   #  i <- 1
