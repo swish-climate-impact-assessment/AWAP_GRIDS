@@ -1,13 +1,10 @@
 
-newnode(dsc='R-init', clearpage = F, ttype='report', nosectionheading = T,
- o = 'R-init',append = F,end_doc = F,
- notes='Initialize the project workspace',echoCode = FALSE,
- code=NA)
+source('~/tools/disentangle/src/newnode.r')
+nodes <- newnode(name='main.r', newgraph = T,
+ inputs = 'R-init')
 
-newnode(dsc='go', clearpage = F, ttype='report', nosectionheading = T,
- o = 'go',i='R-init',append = T,end_doc = F,
- notes='',echoCode = FALSE,
- code=NA)
+nodes <- newnode(name='go',
+ inputs='main.r')
 
 newnode(dsc='tools', clearpage = F, ttype='report', nosectionheading = T,
  i=c('go', 'vars', 'get_data_range', 'read.asciigrid2','grid2csv'),

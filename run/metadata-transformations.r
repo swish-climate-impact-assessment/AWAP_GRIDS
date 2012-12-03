@@ -6,19 +6,6 @@ newnode(dsc='metadata-init', clearpage = F, ttype='transformations', nosectionhe
 
  source('~/My Dropbox/tools/transformations.r')
 
- source('~/My Dropbox/tools/df2ddi/df2ddi.r')
- delphe <- connectDelphe('130.56.102.41','ivan_hanigan','delphe')  
- oracle <- connectOracle(hostip='150.203.74.97',user='ivan') 
- idno <- 'AWAP_GRIDS'
- if(!exists('s')){
-   s <- dbGetQuery(oracle, paste("select * from stdydscr where idno = '",idno,"'", sep = ''))
- idno <- s$IDNO
- }
- t(s) 
-# newnode get tools
-# rm(oracle)
-if(!exists('oracle')) {source(dir('run',pattern = 'tools', full.names=T))}
-
 newnode(dsc='insert study id', clearpage = F, ttype='transformations', nosectionheading = T,
  o = 'insert study id',append = T,end_doc = F,
  notes='',echoCode = FALSE,
