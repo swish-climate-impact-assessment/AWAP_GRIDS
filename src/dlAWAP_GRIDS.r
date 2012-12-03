@@ -257,7 +257,7 @@ head(shp@data)
 #################################
 # start getting CCD temperatures
 #setwd(rootdir)
-rootdir <- '/home/ResearchData/AWAP_GRIDS/data2000-2004/temperature'
+rootdir <- '/home/ResearchData/AWAP_GRIDS/data2000-2004/vprp'
 dir(rootdir)[1]
 
 
