@@ -537,24 +537,25 @@ DONE IN dlAWAP_GRIDS.r on ncephMacPro
   #################################
   # but first lets look at the station locations on a grid
   require(delphe)
-  args(readOGR2)
-  shp <- readOGR2(h='115.146.84.135', d='ewedb',u='ivan_hanigan',
-                   layer = 'weather_bom.combstats')
-  plot(shp)
+  # args(readOGR2)
+  # shp <- readOGR2(h='115.146.84.135', d='ewedb',u='ivan_hanigan',
+  #                  layer = 'weather_bom.combstats')
+  # plot(shp)
   #################################
   # try just the raw data
   ## args(connect2postgres)
-  ## ch <- connect2postgres(h = '115.146.84.135', db = 'ewedb', user= 'ivan_hanigan')
-  ## # enter password at console
-  ## shp <- dbGetQuery(ch, 'select stnum, name, lat, lon from weather_bom.combstats')
+  ch <- connect2postgres(h = '115.146.84.135', db = 'ewedb', user= 'ivan_hanigan')
+  # enter password at console
+  shp <- dbGetQuery(ch, 'select stnum, lat, lon from weather_bom.combstats')
   
-  ## if (!require(rgdal)) install.packages('rgdal'); require(rgdal)
-  ## epsg <- make_EPSG()
+  if (!require(rgdal)) install.packages('rgdal'); require(rgdal)
+  epsg <- make_EPSG()
   
-  ## ## Treat data frame as spatial points
-  ## shp <- SpatialPointsDataFrame(cbind(shp$lon,shp$lat),shp,
-  ##                               proj4string=CRS(epsg$prj4[epsg$code %in% '4283']))
-  ## str(shp)
+  ## Treat data frame as spatial points
+  shp <- SpatialPointsDataFrame(cbind(shp$lon,shp$lat),shp,
+                                proj4string=CRS(epsg$prj4[epsg$code %in% '4283']))
+  str(shp)
+  head(shp@data)
   ## #writeOGR(shp, 'test.shp', 'test', driver='ESRI Shapefile')
   
   
@@ -565,10 +566,11 @@ DONE IN dlAWAP_GRIDS.r on ncephMacPro
   dir(rootdir)[1]
   
   
-  cfiles <- dir(rootdir)[1:365]
+  cfiles <- dir(rootdir)
+  cfiles <- cfiles[grep('minave', cfiles)][1:365]
   started <- Sys.time()
-  for (i in seq_len(length(cfiles))[-1]) {
-  #  i <- 1
+  for (i in seq_len(length(cfiles))) {
+  #   i <- 2
     fname <- cfiles[[i]]
     variablename <- strsplit(fname, '_')[[1]][1]
     timevar <- gsub('.grid', '', strsplit(fname, '_')[[1]][2])
@@ -585,8 +587,9 @@ DONE IN dlAWAP_GRIDS.r on ncephMacPro
     e1 <- cbind(shp@data, timevar, e[,2])
     names(e1) <- c(names(shp@data), 'date', variablename)
   #  head(e1)
+    e1 <- e1[,c('stnum', 'date', variablename)]
     write.table(e1, paste(variablename, '.csv', sep =''),
-      col.names = i == 1, append = i > 1 , sep = ",", row.names = FALSE)
+      col.names = i == 1, append = i > 1 , sep = ",", row.names = FALSE, na = '')
    ## write.table(e1, paste(variablename, '.csv', sep =''),
    ##    col.names = T, append = F, sep = ",", row.names = FALSE, na = '')
   
@@ -615,35 +618,80 @@ DONE IN dlAWAP_GRIDS.r on ncephMacPro
   
   #############
   # merge all variables to a single file
-  ## started <- Sys.time()
-  ## for(i in 2:3){
-  ##   # i <- 3
-  ##   vname <- as.character(vars[i,2])
-  ##   print(vname)
-  ##   datain <- read.csv(paste(vname, '.csv', sep =''))
-  ##   head(datain)
-  ##   datain <- datain[,c('cd_code', 'date', vname)]
-  ##   if(i != 2){
-  ##     dataout <- merge(dataout, datain)
-  ##   } else {
-  ##     dataout <- datain
-  ##     rm(datain)
-  ##   }
+  started <- Sys.time()
+  for(i in 2:3){
+     i <- 3
+    vname <- as.character(vars[i,2])
+    print(vname)
+    datain <- read.csv(paste(vname, '.csv', sep =''))
+    head(datain)
+    datain <- datain[,c('stnum', 'date', vname)]
+    if(i != 2){
+      dataout <- merge(dataout, datain)
+      rm(datain)
+    } else {
+      dataout <- datain
+      rm(datain)
+    }
   
-  ## }
-  ## finished <- Sys.time()
-  ## finished - started
-  ## system('df -h')
-  ## write.csv('merged.csv', row.names=F)
+  }
+  finished <- Sys.time()
+  finished - started
+  system('df -h')
+  write.csv(dataout, 'merged.csv', row.names=F)
+  system('df -h')
   
+#+end_src  
+** qc
+#+name:qc-temps
+#+begin_src R :session *shell* :tangle src/qc-temps.r :exports none :eval no
+  ###########################################################################
+  # newnode: qc-temps
+  delphe <-  <- connect2postgres('130.56.102.41', 'delphe', 'ivan_hanigan')
+  qc1 <- dbGetQuery(delphe,
+  "SELECT station_number,
+         maximum_temperature_in_24_hours_after_9am_local_time_in_degrees,
   
+         minimum_temperature_in_24_hours_before_9am_local_time_in_degree,
+  
+         date
+    FROM weather_bom.bom_daily_data_2000
+    where station_number = 70014
+    order by date
+  ")
+  
+  merged <- read.csv("~/AWAP_GRIDS/merged.csv")
+  merged$date <- as.Date(merged$date)
+  qc <- subset(merged, stnum == 70014)
+  head(qc)
+  with(qc, plot(date, maxave, type = 'l'))
+  with(qc1, lines(date,
+                  maximum_temperature_in_24_hours_after_9am_local_time_in_degrees,
+                  col = 'red')
+       )
+  
+#+end_src
+
+** load2postgres
+#+name:load2postgres
+#+begin_src R :session *shell* :tangle src/load2postgres.r :exports none :eval no
+  ###########################################################################
+  # newnode: load2postgres
+  require(delphe)
+  require(RODBC)
   ## try on postgres
-    args(load2postgres)
-    load2postgres(inputfilepath=paste(variablename, '.csv', sep =''), schema = 'public', tablename = 'test1', pk = NULL, header = TRUE,
-    printcopy = TRUE, sheetname = "Sheet1", withoids = FALSE,
-    pguser = "ivan_hanigan", db = "ewedb", ip = "115.146.84.135",
-    source_file = "STDIN", datecol = NULL, nrowscsv = 10000,
-    pgpath = c("psql"))
+  args(load2postgres)
+  variablename <- 'minave'
+  load2postgres(inputfilepath=paste(variablename, '.csv', sep =''),
+                schema = 'public', tablename = variablename, pk = 'stnum, date', header = TRUE,
+  printcopy = TRUE, sheetname = "Sheet1", withoids = FALSE,
+  pguser = "ivan_hanigan", db = "ewedb", ip = "115.146.84.135",
+  source_file = "STDIN", datecol = 'date', nrowscsv = 10000,
+  pgpath = c("psql"))
+  cat(
+    paste('scp ',variablename,'.csv root@115.146.84.135:/home\n
+  cat sqlquery.txt "',variablename,'.csv" | psql -h 115.146.84.135 -U ivan_hanigan -d ewedb',sep='')
+  )
   
 #+end_src
 
