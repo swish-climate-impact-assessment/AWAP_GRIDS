@@ -266,7 +266,7 @@ rootdir <- paste('/home/ResearchData/AWAP_GRIDS/data2000-2004/',vars[v,1],sep=''
 cfiles <- dir(rootdir)
 cfiles <- cfiles[grep(as.character(vars[v,2]), cfiles)]
 
-  for (i in seq_len(length(cfiles))) {
+  for (i in seq_len(length(cfiles))) {# solar failed at this day 494:length(cfiles)){ 
   #   i <- 2
     fname <- cfiles[[i]]
     variablename <- strsplit(fname, '_')[[1]][1]
@@ -316,10 +316,10 @@ with(subset(qc, date == as.Date('2010-01-01')),
 
 
 #############
-# merge all variables to a single file
+# merge all variables to a single file, solar was wrong?
 gc()
 started <- Sys.time()
-for(i in 1:6){
+for(i in 1:5){
   # i <- 3
   vname <- as.character(vars[i,2])
   print(vname)
