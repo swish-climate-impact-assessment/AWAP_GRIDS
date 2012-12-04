@@ -243,7 +243,7 @@ ch <- connect2postgres(h = '115.146.84.135', db = 'ewedb', user= 'ivan_hanigan')
 # enter password at console
 #shp <- dbGetQuery(ch, 'select stnum, lat, lon from weather_bom.combstats')
 shp <- dbGetQuery(ch, 'select sla_code, st_x(st_centroid(the_geom)) as lon, st_y(st_centroid(the_geom)) as lat from abs_sla.aussla01')
-nrow(shp)
+nrow(shp)  
 if (!require(rgdal)) install.packages('rgdal'); require(rgdal)
 epsg <- make_EPSG()
 
@@ -253,12 +253,11 @@ shp <- SpatialPointsDataFrame(cbind(shp$lon,shp$lat),shp,
 str(shp)
 head(shp@data)
 ## #writeOGR(shp, 'test.shp', 'test', driver='ESRI Shapefile')
-plot(shp)
+
 
 #################################
 # start getting CCD temperatures
 #setwd(rootdir)
-
 started <- Sys.time()
 for(v in 4:6){
 #  v = 1
@@ -293,6 +292,7 @@ cfiles <- cfiles[grep(as.character(vars[v,2]), cfiles)]
   
   }
 }
+
 finished <- Sys.time()
 finished - started
 file.info(paste(variablename, '.csv', sep =''))
@@ -341,5 +341,3 @@ write.csv(dataout, 'merged.csv', row.names=F)
 finished <- Sys.time()
 finished - started
 system('df -h')
-
-
