@@ -258,6 +258,7 @@ plot(shp)
 #################################
 # start getting CCD temperatures
 #setwd(rootdir)
+
 started <- Sys.time()
 for(v in 4:6){
 #  v = 1

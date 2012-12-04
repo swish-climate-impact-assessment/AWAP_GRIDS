@@ -642,6 +642,49 @@ DONE IN dlAWAP_GRIDS.r on ncephMacPro
   system('df -h')
   
 #+end_src  
+** do-oneyear
+#+name:do-oneyear
+#+begin_src R :session *shell* :tangle src/do-oneyear.r :exports none :eval no
+###########################################################################
+# newnode: do-oneyear
+started <- Sys.time()
+for(v in c(1,4,5,6)){
+#  v = 1
+rootdir <- paste('/home/ResearchData/AWAP_GRIDS/data2000-2004/',vars[v,1],sep='')
+#dir(rootdir)[1]
+cfiles <- dir(rootdir)
+cfiles <- cfiles[grep(as.character(vars[v,2]), cfiles)][1:365]
+
+  for (i in seq_len(length(cfiles))) {
+  #   i <- 2
+    fname <- cfiles[[i]]
+    variablename <- strsplit(fname, '_')[[1]][1]
+    timevar <- gsub('.grid', '', strsplit(fname, '_')[[1]][2])
+    timevar <- substr(timevar, 1,8)
+    year <- substr(timevar, 1,4)
+    month <- substr(timevar, 5,6)
+    day <- substr(timevar, 7,8)
+    timevar <- as.Date(paste(year, month, day, sep = '-'))
+    r <- raster(file.path(rootdir,fname))
+    e <- extract(r, shp, df=T)
+    #str(e) ## print for debugging
+    #image(r)
+    #plot(shp, add = T)
+    e1 <- cbind(shp@data, timevar, e[,2])
+    names(e1) <- c(names(shp@data), 'date', variablename)
+  #  head(e1)
+    e1 <- e1[,c('stnum', 'date', variablename)]
+    write.table(e1, paste(variablename, '.csv', sep =''),
+      col.names = i == 1, append = i > 1 , sep = ",", row.names = FALSE, na = '')
+   ## write.table(e1, paste(variablename, '.csv', sep =''),
+   ##    col.names = T, append = F, sep = ",", row.names = FALSE, na = '')
+  
+  }
+}
+finished <- Sys.time()
+finished - started
+#+end_src
+
 ** qc
 #+name:qc-temps
 #+begin_src R :session *shell* :tangle src/qc-temps.r :exports none :eval no
