@@ -241,8 +241,9 @@ require(delphe)
 ## args(connect2postgres)
 ch <- connect2postgres(h = '115.146.84.135', db = 'ewedb', user= 'ivan_hanigan')
 # enter password at console
-shp <- dbGetQuery(ch, 'select stnum, lat, lon from weather_bom.combstats')
-
+#shp <- dbGetQuery(ch, 'select stnum, lat, lon from weather_bom.combstats')
+shp <- dbGetQuery(ch, 'select sla_code, st_x(st_centroid(the_geom)) as lon, st_y(st_centroid(the_geom)) as lat from abs_sla.aussla01')
+nrow(shp)
 if (!require(rgdal)) install.packages('rgdal'); require(rgdal)
 epsg <- make_EPSG()
 
@@ -252,42 +253,44 @@ shp <- SpatialPointsDataFrame(cbind(shp$lon,shp$lat),shp,
 str(shp)
 head(shp@data)
 ## #writeOGR(shp, 'test.shp', 'test', driver='ESRI Shapefile')
-
+plot(shp)
 
 #################################
 # start getting CCD temperatures
 #setwd(rootdir)
-rootdir <- '/home/ResearchData/AWAP_GRIDS/data2000-2004/temperature'
-dir(rootdir)[1]
-
-
-cfiles <- dir(rootdir)
-cfiles <- cfiles[grep('minave', cfiles)][1:365]
 started <- Sys.time()
-for (i in seq_len(length(cfiles))) {
-#   i <- 2
-  fname <- cfiles[[i]]
-  variablename <- strsplit(fname, '_')[[1]][1]
-  timevar <- gsub('.grid', '', strsplit(fname, '_')[[1]][2])
-  timevar <- substr(timevar, 1,8)
-  year <- substr(timevar, 1,4)
-  month <- substr(timevar, 5,6)
-  day <- substr(timevar, 7,8)
-  timevar <- as.Date(paste(year, month, day, sep = '-'))
-  r <- raster(file.path(rootdir,fname))
-  e <- extract(r, shp, df=T)
-  #str(e) ## print for debugging
-  #image(r)
-  #plot(shp, add = T)
-  e1 <- cbind(shp@data, timevar, e[,2])
-  names(e1) <- c(names(shp@data), 'date', variablename)
-#  head(e1)
-  e1 <- e1[,c('stnum', 'date', variablename)]
-  write.table(e1, paste(variablename, '.csv', sep =''),
-    col.names = i == 1, append = i > 1 , sep = ",", row.names = FALSE, na = '')
- ## write.table(e1, paste(variablename, '.csv', sep =''),
- ##    col.names = T, append = F, sep = ",", row.names = FALSE, na = '')
+for(v in 4:6){
+#  v = 1
+rootdir <- paste('/home/ResearchData/AWAP_GRIDS/data2000-2004/',vars[v,1],sep='')
+#dir(rootdir)[1]
+cfiles <- dir(rootdir)
+cfiles <- cfiles[grep(as.character(vars[v,2]), cfiles)]
 
+  for (i in seq_len(length(cfiles))) {
+  #   i <- 2
+    fname <- cfiles[[i]]
+    variablename <- strsplit(fname, '_')[[1]][1]
+    timevar <- gsub('.grid', '', strsplit(fname, '_')[[1]][2])
+    timevar <- substr(timevar, 1,8)
+    year <- substr(timevar, 1,4)
+    month <- substr(timevar, 5,6)
+    day <- substr(timevar, 7,8)
+    timevar <- as.Date(paste(year, month, day, sep = '-'))
+    r <- raster(file.path(rootdir,fname))
+    e <- extract(r, shp, df=T)
+    #str(e) ## print for debugging
+    #image(r)
+    #plot(shp, add = T)
+    e1 <- cbind(shp@data, timevar, e[,2])
+    names(e1) <- c(names(shp@data), 'date', variablename)
+  #  head(e1)
+    e1 <- e1[,c('sla_code', 'date', variablename)]
+    write.table(e1, paste(variablename, '.csv', sep =''),
+      col.names = i == 1, append = i > 1 , sep = ",", row.names = FALSE, na = '')
+   ## write.table(e1, paste(variablename, '.csv', sep =''),
+   ##    col.names = T, append = F, sep = ",", row.names = FALSE, na = '')
+  
+  }
 }
 finished <- Sys.time()
 finished - started
@@ -313,15 +316,17 @@ with(subset(qc, date == as.Date('2010-01-01')),
 
 #############
 # merge all variables to a single file
+gc()
 started <- Sys.time()
-for(i in 2:3){
-   i <- 3
+for(i in 1:6){
+  # i <- 3
   vname <- as.character(vars[i,2])
   print(vname)
   datain <- read.csv(paste(vname, '.csv', sep =''))
+  #file.remove(paste(vname, '.csv', sep =''))
   head(datain)
-  datain <- datain[,c('stnum', 'date', vname)]
-  if(i != 2){
+  #datain <- datain[,c('sla_code', 'date', vname)]
+  if(i != 1){
     dataout <- merge(dataout, datain)
     rm(datain)
   } else {
@@ -330,8 +335,10 @@ for(i in 2:3){
   }
 
 }
+system('df -h')
+write.csv(dataout, 'merged.csv', row.names=F)
 finished <- Sys.time()
 finished - started
 system('df -h')
-write.csv(dataout, 'merged.csv', row.names=F)
-system('df -h')
+
+
