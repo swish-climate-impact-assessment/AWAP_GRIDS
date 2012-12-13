@@ -154,6 +154,7 @@ newnode(dsc='get data range', clearpage = F, ttype='report', nosectionheading = 
 #+name:get_data_range
 #+begin_src R :session *R* :tangle run/tools.r :exports none :eval no
 # newnode get_data
+# authors: Joseph Guillaume and Francis Markham
 get_data_range<-function(variable,measure,timestep,startdate,enddate){
   if (timestep == "day"){
     thisdate<-startdate
