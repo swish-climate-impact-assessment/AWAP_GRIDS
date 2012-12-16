@@ -120,16 +120,16 @@ newnode(dsc='variable names', clearpage = F, ttype='report', nosectionheading = 
 #+end_src
 #+name: R-vars
 #+begin_src R :session *R* :tangle run/tools.r :exports results :eval no
- vars<-c('variable,measure,timestep
- rainfall,totals,daily
- temperature,maxave,daily
- temperature,minave,daily
- vprp,vprph09,daily
- vprp,vprph15,daily
- solar,solarave,daily
- ndvi,ndviave,month
- ')
- vars<-read.csv(textConnection(vars))
+  vars<-c('variable,measure,timestep
+  rainfall,totals,daily
+  temperature,maxave,daily
+  temperature,minave,daily
+  vprp,vprph09,daily
+  vprp,vprph15,daily
+  solar,solarave,daily
+  ndvi,ndviave,month
+  ')
+  vars<-read.csv(textConnection(vars))
 #+end_src
 
 #+results: R-vars

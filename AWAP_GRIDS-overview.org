@@ -1,0 +1,280 @@
+#+TITLE:AWAP GRIDS 
+#+AUTHOR: Ivan Hanigan
+#+email: ivan.hanigan@anu.edu.au
+#+LaTeX_CLASS: article
+#+LaTeX_CLASS_OPTIONS: [a4paper]
+#+LATEX: \tableofcontents
+-----
+
+* TODOlist
+** TODO check solar radiation solarave_2001050820010508.grid
+# file.remove('data2000-2004/solar/solarave_2001050820010508.grid')
+* Introduction
+NCEPH holds Australian Bureau of Meteorology data for all stations from 1990 to 2010 \cite{NationalClimateCentreoftheBureauofMeteorology:2005}.
+The aim of this project is to download the Australian Water Availability Project (AWAP) gridded datasets \cite{Jones2009}.  In particular we want the vapour pressure data from 2010 so that we don't have to buy it again.  We want to compare it with the station data to see if they are close.
+** plan
+#+begin_src R :session *R* :tangle no :exports none :eval no
+  if(!require(devtools)) install.packages("devtools", repos = 'http://cran.csiro.au'); require(devtools)
+  if(!require(disentangle)) install_github("disentangle", "ivanhanigan"); require(disentangle)
+  
+  nodes <- newnode(name='main.r', newgraph = T,
+   inputs = 'init')
+  
+  nodes <- newnode(name='zones',
+   inputs='main.r')
+  
+#+end_src
+** init
+
+#+name: R-init
+#+begin_src R  :session *R* :exports none :eval no :tangle no
+  if (!require(ProjectTemplate)) install.packages('ProjectTemplate', repos='http://cran.csiro.au'); require(ProjectTemplate)
+  if (!require(makeProject)) install.packages('makeProject', repos='http://cran.csiro.au'); require(makeProject)
+  setwd('..')
+  dir()
+  create.project('AWAP2')
+  #copy into curr dir
+  ?makeProject
+  makeProject(author='ivanhanigan',email='ivan.hanigan@gmail.com',force=TRUE, name = "AWAP_GRIDS")
+  
+  
+  setwd('AWAP_GRIDS')
+  load.project()
+  
+#+end_src
+** config
+#+name:global.dcf
+#+begin_src R :session *R* :tangle config/global.dcf :exports none :eval no
+data_loading: on
+cache_loading: on
+munging: on
+logging: off
+load_libraries: on
+libraries: reshape, plyr, ggplot2, stringr, lubridate, fgui
+as_factors: on
+data_tables: off
+
+#+end_src
+
+** main
+#+name:main-newnode
+#+begin_src R :session *R* :tangle main.r :exports none :eval no
+  # Project: AWAP_GRIDS
+  # Author: ivanhanigan
+  # Maintainer: Who to complain to <ivan.hanigan@gmail.com>
+  
+  # This is the main file for the project
+  # It should do very little except call the other files
+  
+  ### Set the working directory
+  setwd("/home/ivan/data/AWAP_GRIDS")
+  
+  
+  ### Set any global variables here
+  ####################
+  if (!require(ProjectTemplate)) install.packages('ProjectTemplate', repos='http://cran.csiro.au'); require(ProjectTemplate)
+  load.project()
+  
+  ####################
+  getscope <- function (startdate = '2000-01-01',
+    enddate = '2000-01-02',
+    variablenames) {
+    scope <- list(
+    startdate <- startdate,
+    enddate <- enddate,
+    variablenames <- variablenames
+    )
+    return(scope)
+  }
+  scope <- guiv(getscope, argList = list(variablenames = c('totals','maxave','minave','vprph09','vprph15','solarave')))
+  print(scope)
+  ####################
+  
+  source("src/load.r")
+  source("src/clean.r")
+  source("src/do.r")
+  
+  
+  ### Run the code
+  ## source("code/load.R")
+  ## source("code/clean.R")
+  ## source("code/func.R")
+  ## source("code/do.R")
+  
+#+end_src
+
+** func
+#+begin_src R  :session *R* :exports none :eval no :tangle lib/func.r
+# Project: AWAP_GRIDS
+# Author: ivanhanigan
+# Maintainer: Who to complain to <ivan.hanigan@gmail.com>
+
+# Functions for the project
+if (!require(plyr)) install.packages('plyr', repos='http://cran.csiro.au'); require(plyr)     
+#+end_src
+** load
+#+name:load
+#+begin_src R :session *R* :tangle src/load.r :exports none :eval no
+################################################################
+# name:load
+# Project: AWAP_GRIDS
+# Author: ivanhanigan
+# Maintainer: Who to complain to <ivan.hanigan@gmail.com>
+
+# This file loads all the libraries and data files needed 
+# Don't do any cleanup here
+
+### Load any needed libraries
+#load(LibraryName)
+
+
+### Load in any data files
+#read.csv("data/FileName" as.is=T)
+#+end_src
+
+** clean
+#+name:clean
+#+begin_src R :session *R* :tangle src/clean.r :exports none :eval no
+################################################################
+# name:clean
+# Project: AWAP_GRIDS
+# Author: ivanhanigan
+# Maintainer: Who to complain to <ivan.hanigan@gmail.com>
+
+# All the potentially messy data cleanup
+
+#+end_src
+
+** do
+#+name:do
+#+begin_src R :session *R* :tangle src/do.r :exports none :eval no
+################################################################
+# name:do
+# The actual work
+
+#+end_src
+
+** scope
+#+name:scope
+#+begin_src R :session *R* :tangle src/scope.r :exports none :eval no
+################################################################
+# name:scope
+# This workflow will deliver weather data from the EWEDB to a local directory.
+# Ivan Hanigan 2012-12-14
+
+# README:
+#   Running this workflow will cause a GUI box to appear for your password.
+# Sometimes this GUI box is behind other windows.
+# 
+# Either change the inputs above, or set interactively to TRUE.
+# In interactively mode a GUI box will open where you can change the values, 
+# or leave blank to accept the defaults.
+# 
+# NB dates need quotation marks if using the GUI box.
+# 
+# TODO:
+#   There are missing days in  solarave, vprph09, vprph15.
+# Try downloading again to see if fixed now.
+# Add the population weighted averaging approach.
+
+if(!require(fgui)) install.packages("fgui", repos='http://cran.csiro.au'); require(fgui)
+if(!require(swishdbtools)) print('Please download the swishdbtools package and install it.')
+# for instance 
+# install.packages("~/tools/swishdbtools_1.0_R_x86_64-pc-linux-gnu.tar.gz", repos = NULL, type = "source");
+require(swishdbtools)
+
+
+# # user definitions, or setup interactively
+# username <- 'gislibrary'
+# spatialzones <- 'SD'
+# outdir <- '~/'
+# startdate <- '1995-01-01'
+# enddate <-  '1997-01-01'
+# interactively <- TRUE 
+# 
+if (exists('username')) {
+  u <- username
+} else {
+  u <- 'gislibrary'
+}
+if (exists('spatialzones')) {
+  s <- spatialzones
+} else {
+  s <- 'SD'
+}
+if (exists('outdir')) {
+  o <- outdir
+} else {
+  o <- '~/'
+}
+if (exists('startdate')){
+  startdate <- as.Date(startdate) 
+} else {
+  startdate <- '1995-01-01'
+}
+if (exists('enddate')){    
+  enddate <- as.Date(enddate)
+} else {
+  enddate <-  '1997-01-01'
+}
+if (exists('interactively')){    
+  interactively <- interactively
+} else {
+  interactively <- TRUE
+}
+# if these all exist don't run the scope gui?
+#if(!exists('username') & !exists('spatialzones') & !exists('outdir')){
+# or set 
+
+if(interactively == TRUE){
+  scope <- function(usernameOrBlank=u, 
+                    spatialzonesOrBlank = s, 
+                    outdirOrBlank=o,
+                    startdateOrBlank=startdate,
+                    enddateOrBlank=enddate){
+    L <- list(
+      u <- usernameOrBlank,
+      s <- spatialzonesOrBlank,
+      o <- outdirOrBlank,
+      startdate <- startdateOrBlank,
+      enddate <- enddateOrBlank
+    )
+    return(L)
+  }
+  Listed <- guiv(scope)
+  Listed
+  u <- Listed[1]
+  s <- Listed[2]
+  o <- Listed[[3]][1]
+  startdate <- as.Date(Listed[[4]][1])
+  enddate <- as.Date(Listed[[5]][1])
+}
+# don't let password get hardcoded
+p <- getPassword()
+
+# ch <- connect2postgres(h = '115.146.84.135', 
+#                        d =  'ewedb', 
+#                        u = u, 
+#                        p = p)
+
+
+# dat <- dbGetQuery(ch,
+#                  "SELECT date, year, sla_code, minave, maxave, solarave, vprph09,vprph15
+#                  FROM weather_sla.weather_sla
+#                  where sla_code = 105051100 order by date
+# ")
+# with(dat, plot(date, maxave, type = 'l'))
+
+#+end_src
+
+
+
+
+
+** TODO zones
+#+name:zones
+#+begin_src R :session *R* :tangle src/zones.r :exports none :eval no
+################################################################
+# name:zones
+
+#+end_src
