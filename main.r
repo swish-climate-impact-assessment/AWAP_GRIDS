@@ -1,83 +1,31 @@
 
 ################################################################
-# name:main
+# Project: AWAP_GRIDS
+# Author: ivanhanigan
+# Maintainer: Who to complain to <ivan.hanigan@gmail.com>
 
-if(!require(fgui)) install.packages("fgui", repos='http://cran.csiro.au'); require(fgui)
-if(!require(swishdbtools)) print('Please download the swishdbtools package and install it.')
-# for instance
-# install.packages("~/tools/swishdbtools_1.0_R_x86_64-pc-linux-gnu.tar.gz", repos = NULL, type = "source");
-require(swishdbtools)
+# This is the main file for the project
+# It should do very little except call the other files
 
-
-# # user definitions, or setup interactively
-# startdate <- '1995-01-01'
-# enddate <-  '1997-01-01'
-# interactively <- TRUE
-# variablenames <- 'maxave'
-
-if (exists('startdate')){
-  startdate <- as.Date(startdate)
+####################
+### Set the working directory
+if(exists('workdir')){
+  workdir <- workdir
 } else {
-  startdate <- '1995-01-01'
+  workdir <- "~/data/AWAP_GRIDS"
 }
-if (exists('enddate')){
-  enddate <- as.Date(enddate)
-} else {
-  enddate <-  '1997-01-01'
-}
-if (exists('interactively')){
-  interactively <- interactively
-} else {
-  interactively <- TRUE
-}
-# if (variablenames == 'all'){
-# variablenames <-  c('totals','maxave','minave','vprph09','vprph15','solarave'))
-# }
-if (exists('variablenames')){
-  variablenames <- variablenames
-  variablenames <- strsplit(variablenames, ',')
-} else {
-  variablenames <- 'maxave, minave'
-  variablenames <- strsplit(variablenames, ',')
-}
-# if these all exist don't run the scope gui?
-#if(!exists('username') & !exists('spatialzones') & !exists('outdir')){
-# or set
+setwd(workdir)
 
-if(interactively == TRUE){
-  getscope <- function (
-    sdate = startdate,
-    edate = enddate,
-    variablenames) {
-    scope <- list(
-      startdate <- sdate,
-      enddate <- edate,
-      variablenames <- variablenames
-    )
-    return(scope)
-  }
-  scope <- guiv(getscope, argList = list(variablenames = c('totals','maxave','minave','vprph09','vprph15','solarave')))
+####################
+# Functions for the project
 
-} else {
-    scope <- list(
-      startdate <- startdate,
-      enddate <- enddate,
-      variablenames <- variablenames
-    )
-}
-print(scope)
-# don't let password get hardcoded
-#p <- getPassword()
+if (!require(ProjectTemplate)) install.packages('ProjectTemplate', repos='http://cran.csiro.au'); require(ProjectTemplate)
+load.project()
 
-# ch <- connect2postgres(h = '115.146.84.135',
-#                        d =  'ewedb',
-#                        u = u,
-#                        p = p)
-
-
-# dat <- dbGetQuery(ch,
-#                  "SELECT date, year, sla_code, minave, maxave, solarave, vprph09,vprph15
-#                  FROM weather_sla.weather_sla
-#                  where sla_code = 105051100 order by date
-# ")
-# with(dat, plot(date, maxave, type = 'l'))
+####################
+# run the project (alternately do this from Kepler)
+source(file.path(workdir, "src/scoping.r"))
+source(file.path(workdir, "src/load.r"))
+# source("src/load.r")
+# source("src/clean.r")
+# source("src/do.r")
