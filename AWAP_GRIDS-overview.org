@@ -170,8 +170,9 @@ data_tables: off
 ###########################################################################
 # newnode: scoping
 
-
-  
+  require(fgui)
+  #require(ProjectTemplate)
+  #load.project()
   # # user definitions, or setup interactively
   # startdate <- '1995-01-01'
   # enddate <-  '1997-01-01'
@@ -361,6 +362,8 @@ p <- getPassword()
   # install.packages("~/tools/swishdbtools_1.0_R_x86_64-pc-linux-gnu.tar.gz", repos = NULL, type = "source");
   require(swishdbtools)
   if(!require(raster)) install.packages('raster', repos='http://cran.csiro.au');require(raster)
+  if(!require(fgui)) install.packages('fgui', repos='http://cran.csiro.au');require(fgui)
+
   ####
   # MAKE SURE YOU HAVE THE CORE LIBS
   if (!require(lubridate)) install.packages('lubridate', repos='http://cran.csiro.au'); require(lubridate)
@@ -372,6 +375,7 @@ p <- getPassword()
 #+begin_src R :session *R* :tangle lib/get_data_range.r :exports none :eval no
 # newnode get_data
 # authors: Joseph Guillaume and Francis Markham
+# downloads from http://www.bom.gov.au/jsp/awap/
 get_data<-function(variable,measure,timestep,startdate,enddate){
   url="http://www.bom.gov.au/web03/ncc/www/awap/{variable}/{measure}/{timestep}/grid/0.05/history/nat/{startdate}{enddate}.grid.Z"
   url=gsub("{variable}",variable,url,fixed=TRUE)
@@ -427,7 +431,7 @@ variableslist <- read.csv(textConnection(variableslist))
 
 ** load
 #+name:load
-#+begin_src R :session *R* :tangle src/load.r :exports none :eval no
+#+begin_src R :session *shell* :tangle src/load.r :exports none :eval no
   ################################################################
   # name:load
   # Project: AWAP_GRIDS
@@ -445,31 +449,49 @@ variableslist <- read.csv(textConnection(variableslist))
   print(sdate)
   edate <- scope[[2]][1]
   print(edate)
+  year <- as.numeric(substr(sdate, 1,4))
+  year2 <- year + 4
+  year2
+  if(as.numeric(substr(edate, 1,4)) > year2){
+    print('please only specify dates in 5 year chunks, 00-04 or 05-09')
+    stopTrigger <- TRUE
+  } else {
+    stopTrigger <- FALSE
+  }
   vars <- scope[[3]]
   print(vars)
   
   ### Load in any data files
-    # # solar
-    i <- 1
-    variable <- variableslist[which(variableslist$measure == vars[[1]][i]),]
+    #
+  if(stopTrigger == FALSE){
+    try(dir.create('RawData'))
+    setwd('RawData')
+    rootdir <- getwd()
+  #  started <- Sys.time()
+    for(i in 1:length(vars)){
+  #   i <- 6
+  #  variable <- variableslist[which(variableslist$measure == vars[[1]][i]),]
+    variable <- variableslist[which(variableslist$measure == vars[i]),]
+    vname <- as.character(variable[,1])
+    try(dir.create(vname))
+    setwd(vname)
+  
     get_data_range(variable=as.character(variable[,1]),measure =as.character(variable[,2]),timestep=as.character(variable[,3]),
                     startdate=as.POSIXct(sdate),
                     enddate=as.POSIXct(edate))
-    ## dir.create('data1995-1999')
-    ## setwd('data1995-1999')
-    ## rootdir <- getwd()
-    ## started <- Sys.time()
-    ## for(i in 1:6){
-    ## # i <- 1
-    ## vname <- as.character(vars[i,1])
-    ## #print(vname)
-    ## dir.create(vname)
-    ## setwd(vname)
-    ## get_data_range(variable=vars[i,1],measure =vars[i,2],timestep=vars[i,3],
-    ##                startdate=as.POSIXct("1995-01-01"),
-    ##                enddate=as.POSIXct("1999-12-31"))
-    ## setwd(rootdir)
-    ## }
+  
+    files <- dir(pattern='.grid.Z')
+    for (f in files) {
+      # f <- files[1]
+      print(f)
+      system(sprintf('uncompress %s',f))    
+      }
+    setwd('..')
+    }
+  
+    setwd(rootdir)
+    }
+   
     ## finished <- Sys.time()
     ## finished - started
     ## system('df -h')
@@ -478,13 +500,14 @@ variableslist <- read.csv(textConnection(variableslist))
     ## started <- Sys.time()
     ## for(i in 1:6){
     ## # i <- 1
-    ## vname <- as.character(vars[i,1])
-    ## print(vname)
-    ## setwd(vname)
+    ## variable <- as.character(vars[i,1])
+    ## print(variable)
+    ## setwd(variable)
     ## files <- dir(pattern='.grid.Z')
     ## # files
     ## for (f in files) {
     ## # f <- files[1]
+  
     ## # print(f)
     ## system(sprintf('uncompress %s',f))
     ## # grid2csv(gsub('.Z','',f))
@@ -494,6 +517,11 @@ variableslist <- read.csv(textConnection(variableslist))
     ## finished <- Sys.time()
     ## finished - started
     ## system('df -h')
+  
+  #  files
+  #  alreadyGot <- dir(file.path(workdir,paste('data',year,'-', year2, sep=''), vname), pattern='.grid')
+  #  alreadyGot[1:10]
+  #  gsub('.Z','',files) %in% alreadyGot
   
 #+end_src
 
@@ -520,15 +548,60 @@ variableslist <- read.csv(textConnection(variableslist))
 
 ** clean
 #+name:clean
-#+begin_src R :session *R* :tangle src/clean.r :exports none :eval no
-################################################################
-# name:clean
-# Project: AWAP_GRIDS
-# Author: ivanhanigan
-# Maintainer: Who to complain to <ivan.hanigan@gmail.com>
-
-# All the potentially messy data cleanup
-
+#+begin_src R :session *shell* :tangle src/clean.r :exports none :eval no
+  ################################################################
+  # name:clean
+  # Project: AWAP_GRIDS
+  # Author: ivanhanigan
+  # Maintainer: Who to complain to <ivan.hanigan@gmail.com>
+  require(ProjectTemplate)
+  load.project()
+  
+  # All the potentially messy data cleanup
+    ch <- connect2postgres(h = '115.146.84.135', db = 'ewedb', user= 'ivan_hanigan')
+    # enter password at console
+    shp <- dbGetQuery(ch, 'select stnum, lat, lon from weather_bom.combstats')
+  #  shp <- dbGetQuery(ch, 'select sla_code, st_x(st_centroid(the_geom)) as lon, st_y(st_centroid(the_geom)) as lat from abs_sla.aussla01')
+    nrow(shp)
+    if (!require(rgdal)) install.packages('rgdal'); require(rgdal)
+    epsg <- make_EPSG()
+  
+    ## Treat data frame as spatial points
+    shp <- SpatialPointsDataFrame(cbind(shp$lon,shp$lat),shp,
+                                  proj4string=CRS(epsg$prj4[epsg$code %in% '4283']))
+    str(shp)
+    head(shp@data)
+    ## #writeOGR(shp, 'test.shp', 'test', driver='ESRI Shapefile')
+  
+  
+    #################################
+    # start getting CCD temperatures
+    #setwd(rootdir)
+  #  started <- Sys.time()
+  #  for(v in 4:6){
+     v = 6
+    rootdir <- paste(getwd(),'/RawData/',variableslist[v,1],sep='')
+  #  dir(rootdir)[1]
+    cfiles <- dir(rootdir)
+    cfiles <- cfiles[grep(as.character(variableslist[v,2]), cfiles)]
+  
+  #    for (i in seq_len(length(cfiles))) {# solar failed at this day 494:length(cfiles)){
+      #   i <- 2
+        i <- grep('20000827',cfiles)
+        fname <- cfiles[[i]]
+        variablename <- strsplit(fname, '_')[[1]][1]
+        timevar <- gsub('.grid', '', strsplit(fname, '_')[[1]][2])
+        timevar <- substr(timevar, 1,8)
+        year <- substr(timevar, 1,4)
+        month <- substr(timevar, 5,6)
+        day <- substr(timevar, 7,8)
+        timevar <- as.Date(paste(year, month, day, sep = '-'))
+        r <- raster(file.path(rootdir,fname))
+        e <- extract(r, shp, df=T)
+        str(e) ## print for debugging
+        image(r)
+        plot(shp, add = T)
+  
 #+end_src
 
 ** do

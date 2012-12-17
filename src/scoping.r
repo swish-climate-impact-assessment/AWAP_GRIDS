@@ -2,8 +2,9 @@
 ###########################################################################
 # newnode: scoping
 
-
-  
+  require(fgui)
+  #require(ProjectTemplate)
+  #load.project()
   # # user definitions, or setup interactively
   # startdate <- '1995-01-01'
   # enddate <-  '1997-01-01'

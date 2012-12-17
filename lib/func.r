@@ -10,6 +10,8 @@ if(!require(swishdbtools)) print('Please download the swishdbtools package and i
 # install.packages("~/tools/swishdbtools_1.0_R_x86_64-pc-linux-gnu.tar.gz", repos = NULL, type = "source");
 require(swishdbtools)
 if(!require(raster)) install.packages('raster', repos='http://cran.csiro.au');require(raster)
+if(!require(fgui)) install.packages('fgui', repos='http://cran.csiro.au');require(fgui)
+
 ####
 # MAKE SURE YOU HAVE THE CORE LIBS
 if (!require(lubridate)) install.packages('lubridate', repos='http://cran.csiro.au'); require(lubridate)
