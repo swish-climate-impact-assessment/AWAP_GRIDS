@@ -166,70 +166,71 @@ data_tables: off
 
 ** scoping  
 #+name:scoping
-#+begin_src R :session *shell* :tangle src/scoping.r :exports none :eval no
-###########################################################################
-# newnode: scoping
-
-  require(fgui)
-  #require(ProjectTemplate)
-  #load.project()
-  # # user definitions, or setup interactively
-  # startdate <- '1995-01-01'
-  # enddate <-  '1997-01-01'
-  # interactively <- TRUE
-  # variablenames <- 'maxave'
+#+begin_src R :session *R* :tangle src/scoping.r :exports none :eval no
+  ###########################################################################
+  # newnode: scoping
   
-  if (exists('startdate')){
-    startdate <- as.Date(startdate)
-  } else {
-    startdate <- '1995-01-01'
-  }
-  if (exists('enddate')){
-    enddate <- as.Date(enddate)
-  } else {
-    enddate <-  '1997-01-01'
-  }
-  if (exists('interactively')){
-    interactively <- interactively
-  } else {
-    interactively <- TRUE
-  }
-  # if (variablenames == 'all'){
-  # variablenames <-  c('totals','maxave','minave','vprph09','vprph15','solarave'))
-  # }
-  if (exists('variablenames')){
-    variablenames <- variablenames
-    variablenames <- strsplit(variablenames, ',')
-  } else {
-    variablenames <- 'maxave, minave'
-    variablenames <- strsplit(variablenames, ',')
-  }
-  # if these all exist don't run the scope gui?
-  #if(!exists('username') & !exists('spatialzones') & !exists('outdir')){
-  # or set
+    require(fgui)
+    #require(ProjectTemplate)
+    #load.project()
+    # # user definitions, or setup interactively
+    # startdate <- '1995-01-01'
+    # enddate <-  '1997-01-01'
+    # interactively <- TRUE
+    # variablenames <- 'maxave'
   
-  if(interactively == TRUE){
-    getscope <- function (
-      sdate = startdate,
-      edate = enddate,
-      variablenames) {
-      scope <- list(
-        startdate <- sdate,
-        enddate <- edate,
-        variablenames <- variablenames
-      )
-      return(scope)
+    if (exists('startdate')){
+      startdate <- as.Date(startdate)
+    } else {
+      startdate <- '1995-01-01'
     }
-    scope <- guiv(getscope, argList = list(variablenames = c('totals','maxave','minave','vprph09','vprph15','solarave')))
+    if (exists('enddate')){
+      enddate <- as.Date(enddate)
+    } else {
+      enddate <-  '1995-01-02'
+    }
+    if (exists('interactively')){
+      interactively <- interactively
+    } else {
+      interactively <- TRUE
+    }
+    # if (variablenames == 'all'){
+    # variablenames <-  c('totals','maxave','minave','vprph09','vprph15','solarave'))
+    # }
+    if (exists('variablenames')){
+      variablenames <- variablenames
+      variablenames <- strsplit(variablenames, ',')
+    } else {
+      variablenames <- 'maxave, minave'
+      variablenames <- strsplit(variablenames, ',')
+    }
+    # if these all exist don't run the scope gui?
+    #if(!exists('username') & !exists('spatialzones') & !exists('outdir')){
+    # or set
   
-  } else {
-      scope <- list(
-        startdate <- startdate,
-        enddate <- enddate,
-        variablenames <- variablenames
-      )
-  }
-  print(scope)
+    if(interactively == TRUE){
+      getscope <- function (
+        sdate = startdate,
+        edate = enddate,
+        variablenames) {
+        scope <- list(
+          startdate <- sdate,
+          enddate <- edate,
+          variablenames <- variablenames
+        )
+        return(scope)
+      }
+      scope <- guiv(getscope, argList = list(variablenames = c('totals','maxave','minave','vprph09','vprph15','solarave')))
+  
+    } else {
+        scope <- list(
+          startdate <- startdate,
+          enddate <- enddate,
+          variablenames <- variablenames
+        )
+    }
+    print(scope)
+  
 #+end_src
 *** deprecated scoping
 #+name:scope
@@ -431,7 +432,7 @@ variableslist <- read.csv(textConnection(variableslist))
 
 ** load
 #+name:load
-#+begin_src R :session *shell* :tangle src/load.r :exports none :eval no
+#+begin_src R :session *R* :tangle src/load.r :exports none :eval no
   ################################################################
   # name:load
   # Project: AWAP_GRIDS
@@ -450,28 +451,28 @@ variableslist <- read.csv(textConnection(variableslist))
   edate <- scope[[2]][1]
   print(edate)
   year <- as.numeric(substr(sdate, 1,4))
-  year2 <- year + 4
-  year2
-  if(as.numeric(substr(edate, 1,4)) > year2){
-    print('please only specify dates in 5 year chunks, 00-04 or 05-09')
-    stopTrigger <- TRUE
-  } else {
-    stopTrigger <- FALSE
-  }
+  ## year2 <- year + 4
+  ## year2
+  ## if(as.numeric(substr(edate, 1,4)) > year2){
+  ##   print('please only specify dates in 5 year chunks, 00-04 or 05-09')
+  ##   stopTrigger <- TRUE
+  ## } else {
+  ##   stopTrigger <- FALSE
+  ## }
   vars <- scope[[3]]
   print(vars)
   
   ### Load in any data files
     #
-  if(stopTrigger == FALSE){
+  #if(stopTrigger == FALSE){
     try(dir.create('RawData'))
     setwd('RawData')
     rootdir <- getwd()
   #  started <- Sys.time()
-    for(i in 1:length(vars)){
+    for(i in 1:length(vars[[1]])){
   #   i <- 6
   #  variable <- variableslist[which(variableslist$measure == vars[[1]][i]),]
-    variable <- variableslist[which(variableslist$measure == vars[i]),]
+    variable <- variableslist[which(variableslist$measure == vars[[1]][i]),]
     vname <- as.character(variable[,1])
     try(dir.create(vname))
     setwd(vname)
@@ -484,14 +485,14 @@ variableslist <- read.csv(textConnection(variableslist))
     for (f in files) {
       # f <- files[1]
       print(f)
-      system(sprintf('uncompress %s',f))    
+      system(sprintf('uncompress %s',f))
       }
     setwd('..')
     }
   
     setwd(rootdir)
-    }
-   
+    #}
+  
     ## finished <- Sys.time()
     ## finished - started
     ## system('df -h')
@@ -623,3 +624,11 @@ variableslist <- read.csv(textConnection(variableslist))
 
 #+end_src
 * Conclusions
+* versions
+** fix 5 year chunks to one year Directories
+#+name:file-rename-to-annual
+#+begin_src R :session *shell* :tangle no :exports none :eval no
+################################################################
+# name:file-rename-to-annual
+
+#+end_src
