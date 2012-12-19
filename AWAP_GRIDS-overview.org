@@ -187,7 +187,7 @@ data_tables: off
     if (exists('enddate')){
       enddate <- as.Date(enddate)
     } else {
-      enddate <-  '1995-01-02'
+      enddate <-  '1996-01-30'
     }
     if (exists('interactively')){
       interactively <- interactively
@@ -201,7 +201,7 @@ data_tables: off
       variablenames <- variablenames
       variablenames <- strsplit(variablenames, ',')
     } else {
-      variablenames <- 'maxave, minave'
+      variablenames <- 'maxave,minave,totals'
       variablenames <- strsplit(variablenames, ',')
     }
     # if these all exist don't run the scope gui?
@@ -348,7 +348,6 @@ p <- getPassword()
 
 
 
-
 ** func
 *** core libs
 #+begin_src R  :session *R* :exports none :eval no :tangle lib/func.r
@@ -415,19 +414,19 @@ get_data_range<-function(variable,measure,timestep,startdate,enddate){
 *** variableslist
 #+name:variableslist
 #+begin_src R :session *R* :tangle lib/variableslist.r :exports none :eval no
-###########################################################################
-# newnode: variableslist
-variableslist<-"variable,measure,timestep
-rainfall,totals,daily
-temperature,maxave,daily
-temperature,minave,daily
-vprp,vprph09,daily
-vprp,vprph15,daily
-solar,solarave,daily
-ndvi,ndviave,month
-"
-variableslist <- read.csv(textConnection(variableslist))
-  
+  ###########################################################################
+  # newnode: variableslist
+  variableslist<-"variable,measure,timestep
+  rainfall,totals,daily
+  temperature,maxave,daily
+  temperature,minave,daily
+  vprp,vprph09,daily
+  vprp,vprph15,daily
+  solar,solarave,daily
+  ndvi,ndviave,month
+  "
+  variableslist <- read.csv(textConnection(variableslist))
+    
 #+end_src
 
 ** load
@@ -490,7 +489,7 @@ variableslist <- read.csv(textConnection(variableslist))
     setwd('..')
     }
   
-    setwd(rootdir)
+    setwd('..')
     #}
   
     ## finished <- Sys.time()
@@ -545,7 +544,29 @@ variableslist <- read.csv(textConnection(variableslist))
 # with(dat, plot(date, maxave, type = 'l'))
   
 
-
+** move from rawdata (or 5 year chunks) to one year Directories
+#+name:file-rename-to-annual
+#+begin_src R :session *R* :tangle no :exports none :eval no
+  ################################################################
+  # name:file-rename-to-annual
+  
+  files <- dir('RawData', full.names = T, recursive = TRUE)
+  files[1:20]
+  for(v in vars[[1]]){
+  #  v <- vars[[1]][2]
+  vfiles <- files[grep(v, files)]
+  for(fname in vfiles){
+  #  fname <- vfiles[1]
+    year <- substr(strsplit(fname,'_')[[1]][2],1,4)
+    variablename <- strsplit(strsplit(fname,'_')[[1]][1],'/')[[1]][2]
+    try(dir.create(file.path('data',variablename, year), recursive =
+                   TRUE))
+    outfile <- file.path('data',variablename, year, strsplit(fname,'/')[[1]][3])
+    file.rename(fname, outfile)
+  }
+  }
+  
+#+end_src
 
 ** clean
 #+name:clean
@@ -625,10 +646,3 @@ variableslist <- read.csv(textConnection(variableslist))
 #+end_src
 * Conclusions
 * versions
-** fix 5 year chunks to one year Directories
-#+name:file-rename-to-annual
-#+begin_src R :session *shell* :tangle no :exports none :eval no
-################################################################
-# name:file-rename-to-annual
-
-#+end_src
