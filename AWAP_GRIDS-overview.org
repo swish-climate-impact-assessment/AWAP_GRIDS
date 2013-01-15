@@ -543,6 +543,18 @@ get_data_range<-function(variable,measure,timestep,startdate,enddate){
 # ")
 # with(dat, plot(date, maxave, type = 'l'))
   
+** test upload to postgres
+*** create schema
+#+name:create_schema
+#+begin_src R :session *R* :tangle src/create_schema.r :exports none :eval no
+################################################################
+# name:create_schema
+CREATE SCHEMA awap_grids
+grant ALL on schema awap_grids to ian_szarka;
+GRANT ALL ON ALL TABLES IN SCHEMA awap_grids TO ian_szarka;
+grant ALL on all functions in schema awap_grids to ian_szarka;
+grant ALL on all sequences in schema awap_grids to ian_szarka; 
+#+end_src
 
 ** move from rawdata (or 5 year chunks) to one year Directories
 #+name:file-rename-to-annual
