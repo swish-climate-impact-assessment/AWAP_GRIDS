@@ -40,13 +40,13 @@ load.project()
       #i <- grep('20000827',cfiles)
       fname <- cfiles[[i]]
       variablename <- strsplit(fname, '_')[[1]][1]
-      timevar <- gsub('.grid', '', strsplit(fname, '_')[[1]][2])
+      timevar <- gsub('.TIF', '', strsplit(fname, '_')[[1]][2])
       timevar <- substr(timevar, 1,8)
       year <- substr(timevar, 1,4)
       month <- substr(timevar, 5,6)
       day <- substr(timevar, 7,8)
       timevar <- as.Date(paste(year, month, day, sep = '-'))
-      r <- raster(file.path(rootdir,fname))
+      r <- readGDAL(file.path(rootdir,fname))
       e <- extract(r, shp, df=T)
       str(e) ## print for debugging
       image(r)
