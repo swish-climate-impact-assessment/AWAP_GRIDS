@@ -29,15 +29,15 @@ load.project()
   #setwd(rootdir)
 #  started <- Sys.time()
 #  for(v in 4:6){
-   v = 6
-  rootdir <- paste(getwd(),'/RawData/',variableslist[v,1],sep='')
+   v = 1
+  rootdir <- paste(getwd(),'/',variableslist[v,1],sep='')
 #  dir(rootdir)[1]
   cfiles <- dir(rootdir)
   cfiles <- cfiles[grep(as.character(variableslist[v,2]), cfiles)]
 
 #    for (i in seq_len(length(cfiles))) {# solar failed at this day 494:length(cfiles)){
-    #   i <- 2
-      i <- grep('20000827',cfiles)
+    #   i <- 1
+      #i <- grep('20000827',cfiles)
       fname <- cfiles[[i]]
       variablename <- strsplit(fname, '_')[[1]][1]
       timevar <- gsub('.grid', '', strsplit(fname, '_')[[1]][2])

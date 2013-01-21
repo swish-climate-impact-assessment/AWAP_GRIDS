@@ -176,7 +176,7 @@ data_tables: off
     # # user definitions, or setup interactively
     # startdate <- '1995-01-01'
     # enddate <-  '1997-01-01'
-    # interactively <- TRUE
+    # interactively <- FALSE
     # variablenames <- 'maxave'
   
     if (exists('startdate')){
@@ -544,6 +544,23 @@ get_data_range<-function(variable,measure,timestep,startdate,enddate){
 # with(dat, plot(date, maxave, type = 'l'))
   
 ** test upload to postgres
+
+** test geotiff
+#+name:load
+#+begin_src R :session *R* :tangle src/load.r :exports none :eval no
+  ################################################################
+  # name:test geotiff
+  
+    rootdir <- paste(getwd(),'/',variableslist[v,1],sep='')
+    #  dir(rootdir)[1]
+    cfiles <- dir(rootdir)
+    cfiles <- cfiles[grep(as.character(variableslist[v,2]), cfiles)]
+    fname <- cfiles[[i]]
+    r <- raster(file.path(rootdir,fname))
+    writeGDAL(r, )
+  
+#+end_src
+
 *** create schema
 #+name:create_schema
 #+begin_src R :session *R* :tangle src/create_schema.r :exports none :eval no
@@ -613,15 +630,15 @@ grant ALL on all sequences in schema awap_grids to ian_szarka;
     #setwd(rootdir)
   #  started <- Sys.time()
   #  for(v in 4:6){
-     v = 6
-    rootdir <- paste(getwd(),'/RawData/',variableslist[v,1],sep='')
+     v = 1
+    rootdir <- paste(getwd(),'/',variableslist[v,1],sep='')
   #  dir(rootdir)[1]
     cfiles <- dir(rootdir)
     cfiles <- cfiles[grep(as.character(variableslist[v,2]), cfiles)]
   
   #    for (i in seq_len(length(cfiles))) {# solar failed at this day 494:length(cfiles)){
-      #   i <- 2
-        i <- grep('20000827',cfiles)
+      #   i <- 1
+        #i <- grep('20000827',cfiles)
         fname <- cfiles[[i]]
         variablename <- strsplit(fname, '_')[[1]][1]
         timevar <- gsub('.grid', '', strsplit(fname, '_')[[1]][2])
