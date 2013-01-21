@@ -192,7 +192,7 @@ data_tables: off
     if (exists('interactively')){
       interactively <- interactively
     } else {
-      interactively <- TRUE
+      interactively <- FALSE
     }
     # if (variablenames == 'all'){
     # variablenames <-  c('totals','maxave','minave','vprph09','vprph15','solarave'))
@@ -544,6 +544,122 @@ get_data_range<-function(variable,measure,timestep,startdate,enddate){
 # with(dat, plot(date, maxave, type = 'l'))
   
 ** test upload to postgres
+*** create schema
+#+name:create_schema
+#+begin_src R :session *R* :tangle src/create_schema.r :exports none :eval no
+################################################################
+# name:create_schema
+CREATE SCHEMA awap_grids
+grant ALL on schema awap_grids to ian_szarka;
+GRANT ALL ON ALL TABLES IN SCHEMA awap_grids TO ian_szarka;
+grant ALL on all functions in schema awap_grids to ian_szarka;
+grant ALL on all sequences in schema awap_grids to ian_szarka; 
+#+end_src
+*** raster2pgsql
+http://postgis.refractions.net/docs/using_raster.xml.html#RT_Raster_Loader
+ie
+raster2pgsql -s 4236 -I -C -M *.tif -F -t 100x100 public.demelevation > elev.sql
+psql -d gisdb -f elev.sql
+*** SQL extraction
+#+name:sql-test
+#+begin_src sql :tangle no :exports none :eval no
+
+-- TODO look at diff with ascii grid and geotiff
+-- http://blogs.esri.com/esri/arcgis/2010/12/21/rasters-get-speed-save-space/
+
+-- start with poa
+select poa_code, st_x(the_geom), st_y(the_geom)
+from abs_poa.actpoa01;
+
+select * from awap_grids.tmax2013010820130108 limit 1;
+-- try from postgis tute
+-- http://gis.stackexchange.com/questions/19856/intersecting-a-raster-with-a-polygon-using-postgis-artefact-error/19858#19858
+-- and http://www.mentby.com/Group/postgis-users/extract-a-set-of-wkt-raster-values-from-a-point-geometry-table.html
+CREATE TABLE caribou_srtm_inter AS
+ SELECT poa_code, 
+        (gv).geom AS the_geom, 
+        (gv).val
+ FROM (SELECT poa_code, 
+              ST_Intersection(rast, the_geom) AS gv
+       FROM awap_grids.tmax2013010820130108,
+            abs_poa.actpoa01
+       WHERE ST_Intersects(rast, the_geom)
+      ) foo;
+
+ CREATE TABLE result01 AS
+ SELECT poa_code, 
+        avg(val) AS tmax
+ FROM caribou_srtm_inter
+ GROUP BY poa_code
+ ORDER BY poa_code;
+
+ select t1.*,t2.tmax 
+ into result02
+ from abs_poa.actpoa01 t1
+ join
+ result01 t2
+ on t1.poa_code = t2.poa_code
+
+ alter table result02 add column gid2 serial primary key;
+
+-- worked but slow
+ -- try NSW
+ 
+CREATE TABLE caribou_srtm_inter2 AS
+ SELECT stnum, 
+        (gv).geom AS the_geom, 
+        (gv).val
+ FROM (SELECT stnum, 
+              ST_Intersection(rast, the_geom) AS gv
+       FROM awap_grids.tmax2013010820130108,
+            weather_bom.combstats
+       WHERE ST_Intersects(rast, the_geom)
+      ) foo;
+
+select * from caribou_srtm_inter2 limit 1;
+
+ select t1.*,t2.tmax 
+ into caribou_srtm_inter3
+ from weather_bom.combstats t1
+ join
+ caribou_srtm_inter2 t2
+ on t1.stnum = t2.stnum
+
+ alter table caribou_srtm_inter3 add column gid2 serial primary key;
+
+ -- try2 stations
+
+SELECT stnum,  (gv).val
+into try2
+FROM (
+SELECT pt.stnum, ST_Intersection(rt.rast, pt.the_geom) as gv
+FROM awap_grids.tmax2013010820130108 rt,
+            weather_bom.combstats pt
+WHERE ST_Intersects(rast, the_geom)            
+) foo
+ 
+--try3
+-- based on http://gis.stackexchange.com/questions/14960/postgis-raster-value-of-a-lat-lon-point
+--drop table try3;
+SELECT pt.stnum, ST_Value(rt.rast, pt.the_geom) as gv
+into try3
+FROM awap_grids.tmax2013010820130108 rt,
+            (select * from weather_bom.combstats) pt
+WHERE ST_Intersects(rast, the_geom); 
+select * from try3;
+
+--drop table try3_1;
+ select t1.*,t2.gv as tmax 
+ into try3_1
+ from weather_bom.combstats t1
+ join
+ try3 t2
+ on t1.stnum = t2.stnum;
+
+ alter table try3_1 add column gid2 serial primary key;
+
+
+#+end_src
 
 ** test geotiff
 #+name:load
@@ -564,23 +680,14 @@ get_data_range<-function(variable,measure,timestep,startdate,enddate){
   
 #+end_src
 
-*** create schema
-#+name:create_schema
-#+begin_src R :session *R* :tangle src/create_schema.r :exports none :eval no
-################################################################
-# name:create_schema
-CREATE SCHEMA awap_grids
-grant ALL on schema awap_grids to ian_szarka;
-GRANT ALL ON ALL TABLES IN SCHEMA awap_grids TO ian_szarka;
-grant ALL on all functions in schema awap_grids to ian_szarka;
-grant ALL on all sequences in schema awap_grids to ian_szarka; 
-#+end_src
 
 ** move from rawdata (or 5 year chunks) to one year Directories
 #+name:file-rename-to-annual
-#+begin_src R :session *R* :tangle no :exports none :eval no
+#+begin_src R :session *shell* :tangle no :exports none :eval no
   ################################################################
   # name:file-rename-to-annual
+  require(ProjectTemplate)
+  load.project()
   
   files <- dir('RawData', full.names = T, recursive = TRUE)
   files[1:20]

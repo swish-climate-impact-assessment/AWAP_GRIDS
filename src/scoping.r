@@ -24,7 +24,7 @@
   if (exists('interactively')){
     interactively <- interactively
   } else {
-    interactively <- TRUE
+    interactively <- FALSE
   }
   # if (variablenames == 'all'){
   # variablenames <-  c('totals','maxave','minave','vprph09','vprph15','solarave'))
