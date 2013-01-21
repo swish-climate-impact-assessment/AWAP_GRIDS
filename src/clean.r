@@ -46,7 +46,7 @@ load.project()
       month <- substr(timevar, 5,6)
       day <- substr(timevar, 7,8)
       timevar <- as.Date(paste(year, month, day, sep = '-'))
-      r <- readGDAL(file.path(rootdir,fname))
+      r <- raster(file.path(rootdir,fname))
       e <- extract(r, shp, df=T)
       str(e) ## print for debugging
       image(r)
