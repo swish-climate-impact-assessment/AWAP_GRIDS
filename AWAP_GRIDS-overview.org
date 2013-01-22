@@ -718,7 +718,7 @@ save storage space as geotiff
   writeRaster(r3, 'data/test2.TIF',format="GTiff")
   
                                           #writeGDAL(r3, "PG:host=115.146.84.135 port=5432 dbname='ewedb' user='ivan_hanigan' password='kazoowazoo' schema='awap_grids' table=tmax20130108201301082")
-  
+# gdalinfo  "PG:host=115.146.84.135 port=5432 dbname='ewedb' user='ivan_hanigan' password='kazoowazoo' schema='awap_grids' table=tmax2013010820130108"   
 #+end_src
 
 
