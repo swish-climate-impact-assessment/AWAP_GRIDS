@@ -10,7 +10,8 @@
   # enddate <-  '1997-01-01'
   # interactively <- FALSE
   # variablenames <- 'maxave'
-
+  aggregation_factor <- 3
+  # this will aggregate the 5 km pixels into 15 km averages, for storage
   if (exists('startdate')){
     startdate <- as.Date(startdate)
   } else {
