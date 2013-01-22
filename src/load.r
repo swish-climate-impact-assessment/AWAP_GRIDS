@@ -31,12 +31,12 @@ print(vars)
 ### Load in any data files
   #
 #if(stopTrigger == FALSE){
-  try(dir.create('RawData'))
-  setwd('RawData')
+# deprecated  try(dir.create('RawData'))
+  setwd('data')
   rootdir <- getwd()
 #  started <- Sys.time()
   for(i in 1:length(vars[[1]])){
-#   i <- 6
+#   i <- 1
 #  variable <- variableslist[which(variableslist$measure == vars[[1]][i]),]
   variable <- variableslist[which(variableslist$measure == vars[[1]][i]),]
   vname <- as.character(variable[,1])
@@ -52,7 +52,19 @@ print(vars)
     # f <- files[1]
     print(f)
     system(sprintf('uncompress %s',f))
-    }
+  }
+  files <- dir(pattern=".grid")
+  for(fname in files){
+    # fname <- files[1]
+    r <- readGDAL(fname)
+#    writeGDAL(r, gsub('.grid','test1.TIF',fname), drivername="GTiff")
+    r <- raster(r)
+    r <- aggregate(r, fact=2, fun = mean)
+    writeRaster(r, gsub('.grid','.TIF',fname), format="GTiff")
+    file.remove(fname)
+  }
+  system(paste("raster2pgsql -s 4283 -I -C -M ",gsub('.grid','.tif',fname)," -F awap_grids.",gsub('.grid','',fname)," > ",gsub('.grid','.sql',fname), sep = ""))
+  system(paste("psql -h 115.146.84.135 -U gislibrary -d ewedb -f ",gsub('.grid','.sql',fname),sep=""))
   setwd('..')
   }
 

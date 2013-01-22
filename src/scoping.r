@@ -14,12 +14,12 @@
   if (exists('startdate')){
     startdate <- as.Date(startdate)
   } else {
-    startdate <- '1995-01-01'
+    startdate <- '2013-01-08'
   }
   if (exists('enddate')){
     enddate <- as.Date(enddate)
   } else {
-    enddate <-  '1996-01-30'
+    enddate <-  '2013-01-20'
   }
   if (exists('interactively')){
     interactively <- interactively
