@@ -64,7 +64,7 @@ data_tables: off
 ** main
 *** main
 #+name:main
-#+begin_src R :session *R* :tangle main.r :exports none :eval no
+#+begin_src R :session *shell* :tangle main.r :exports none :eval no
   ################################################################
   # Project: AWAP_GRIDS
   # Author: ivanhanigan
@@ -166,7 +166,7 @@ data_tables: off
 
 ** scoping  
 #+name:scoping
-#+begin_src R :session *R* :tangle src/scoping.r :exports none :eval no
+#+begin_src R :session *shell* :tangle src/scoping.r :exports none :eval no
   ###########################################################################
   # newnode: scoping
   
@@ -182,12 +182,12 @@ data_tables: off
     if (exists('startdate')){
       startdate <- as.Date(startdate)
     } else {
-      startdate <- '1995-01-01'
+      startdate <- '2013-01-08'
     }
     if (exists('enddate')){
       enddate <- as.Date(enddate)
     } else {
-      enddate <-  '1996-01-30'
+      enddate <-  '2013-01-20'
     }
     if (exists('interactively')){
       interactively <- interactively
@@ -431,7 +431,7 @@ get_data_range<-function(variable,measure,timestep,startdate,enddate){
 
 ** load
 #+name:load
-#+begin_src R :session *R* :tangle src/load.r :exports none :eval no
+#+begin_src R :session *shell* :tangle src/load.r :exports none :eval no
   ################################################################
   # name:load
   # Project: AWAP_GRIDS
@@ -662,6 +662,7 @@ select * from try3;
 #+end_src
 
 ** test geotiff
+save storage space as geotiff
 #+name:load
 #+begin_src R :session *R* :tangle src/load.r :exports none :eval no
   ################################################################
@@ -677,6 +678,46 @@ select * from try3;
     outfile <- gsub('.grid', '.TIF', fname)
     writeGDAL(r, file.path(rootdir, outfile), drivername="GTiff")
     r <- readGDAL(file.path(rootdir,outfile))
+  
+#+end_src
+** test readGDAL
+#+name:test-readGDAL
+#+begin_src R :session *shell* :tangle no :exports none :eval no
+  ################################################################
+  # name:test-readGDAL
+  require(raster)
+  readGDAL2 <- function(hostip=NA,user=NA,db=NA, schema= NA, table=NA, p = NA) {
+   if (!require(rgdal)) install.packages('rgdal', repos='http://cran.csiro.au'); require(rgdal)
+   if(is.na(p)){
+   pwd=readline('enter password (ctrl-L will clear the console after): ')
+   } else {
+   pwd <- p
+   }
+   r <- readGDAL(sprintf('PG:host=%s
+                           user=%s
+                           dbname=%s
+                           password=%s
+                           table=%s
+                           schema=%s
+                           port=5432',hostip,user,db,pwd, table, schema)
+                          # layer=layer
+                 )
+   return(r)
+  }
+  
+  r <- readGDAL2('115.146.84.135', 'ivan_hanigan', 'ewedb',
+                 schema = 'awap_grids', table = 'tmax2013010820130108',
+                 p = 'kazoowazoo')
+  # bah
+  r <-
+                 readGDAL("PG:host=115.146.84.135 port=5432 dbname='ewedb' user='ivan_hanigan' password='kazoowazoo' schema='awap_grids' table=tmax2013010820130108")
+  
+  r2 <- raster(r)
+  r3 <- aggregate(r2, fact=2, fun = mean)
+  writeGDAL(r2, 'data/test1.TIF',drivername="GTiff")
+  writeRaster(r3, 'data/test2.TIF',format="GTiff")
+  
+                                          #writeGDAL(r3, "PG:host=115.146.84.135 port=5432 dbname='ewedb' user='ivan_hanigan' password='kazoowazoo' schema='awap_grids' table=tmax20130108201301082")
   
 #+end_src
 
