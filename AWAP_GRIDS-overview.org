@@ -628,7 +628,7 @@ get_data_range<-function(variable,measure,timestep,startdate,enddate){
 ** test upload to postgres
 *** create schema
 #+name:create_schema
-#+begin_src R :session *R* :tangle src/create_schema.r :exports none :eval no
+#+begin_src R :session *R* :tangle no :exports none :eval no
 ################################################################
 # name:create_schema
 CREATE SCHEMA awap_grids

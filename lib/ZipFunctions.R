@@ -48,7 +48,7 @@ Decompress7Zip = function(zipFileName, outputDirectory, delete)
 }
 
 #test 
- Decompress7Zip("D:\\Development\\Awap Work\\2013010820130108.grid.Z", "D:\\Development\\Awap Work\\", TRUE)
+# Decompress7Zip("D:\\Development\\Awap Work\\2013010820130108.grid.Z", "D:\\Development\\Awap Work\\", TRUE)
 
 
 
