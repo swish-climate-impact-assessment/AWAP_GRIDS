@@ -55,22 +55,21 @@
       system(sprintf('uncompress %s',f))
     }
     } else {
-    for (f in files) {
-      if(!require(uncompress)) "find the old uncompress package off cran";
-      require(uncompress)
-      #f <- files[1]
-      print(f)
-      handle <- file(f, "rb")
-      data <- readBin(handle, "raw", 99999999)
-      close(handle)
-      uncomp_data <- uncompress(data)
-      handle <- file(gsub('.Z','',f), "wb")
-      writeBin(uncomp_data, handle)
-      close(handle)
-      
-      # clean up
-      #file.remove(f)
-    }
+     for (f in files) {
+     if(!require(uncompress)) "find the old uncompress package off cran";
+     require(uncompress)
+     #f <- files[1]
+     print(f)
+     handle <- file(f, "rb")
+     data <- readBin(handle, "raw", 99999999)
+     close(handle)
+     uncomp_data <- uncompress(data)
+     handle <- file(gsub('.Z','',f), "wb")
+     writeBin(uncomp_data, handle)
+     close(handle)
+     # clean up
+     #file.remove(f)
+     }
     }
     files <- dir(pattern=".grid")
     for(fname in files){
@@ -91,25 +90,24 @@
 #    cat(paste("psql -h 115.146.84.135 -U gislibrary -d ewedb -f ",gsub('.tif','.sql',fname),sep=""))
 #    }
 # OR
-    if(os == 'linux'){
-      system(paste("raster2pgsql -s 4283 -I -C -M *.tif -F awap_grids.",vars[[1]][i],"_aggby",aggregation_factor," > ",vars[[1]][i],"_aggby",aggregation_factor,".sql",
-      sep=""))
-      system(
-      #cat(
-      paste("psql -h 115.146.84.135 -U gislibrary -d ewedb -f ",vars[[1]][i],"_aggby",aggregation_factor,".sql",
-      sep = ""))
-    } else {
-      sink('raster2sql.bat')
-      cat(paste(pgisutils,"raster2pgsql\" -s 4283 -I -C -M *.tif -F awap_grids.",vars[[1]][i],"_aggby",aggregation_factor," > ",vars[[1]][i],"_aggby",aggregation_factor,".sql\n",
-                   sep=""))
-      
-      #system(
-#       cat(
-#         paste(pgutils,"psql\" -h 115.146.84.135 -U gislibrary -d ewedb -f ",vars[[1]][i],"_aggby",aggregation_factor,".sql",
-#               sep = ""))
-      sink()
-      system('raster2sql.bat')
-    }
+if(os == 'linux'){
+  system(paste("raster2pgsql -s 4283 -I -C -M *.tif -F awap_grids.",vars[[1]][i],"_aggby",aggregation_factor," > ",vars[[1]][i],"_aggby",aggregation_factor,".sql",
+               sep=""))
+  system(
+    #cat(
+    paste("psql -h 115.146.84.135 -U gislibrary -d ewedb -f ",vars[[1]][i],"_aggby",aggregation_factor,".sql",
+          sep = ""))
+} else {
+  sink('raster2sql.bat')
+  cat(paste(pgisutils,"raster2pgsql\" -s 4283 -I -C -M *.tif -F awap_grids.",vars[[1]][i],"_aggby",aggregation_factor," > ",vars[[1]][i],"_aggby",aggregation_factor,".sql\n",
+            sep=""))
+  #system(
+  # cat(
+  # paste(pgutils,"psql\" -h 115.146.84.135 -U gislibrary -d ewedb -f ",vars[[1]][i],"_aggby",aggregation_factor,".sql",
+  # sep = ""))
+  sink()
+  system('raster2sql.bat')  
+}
 
     setwd('..')
     }
