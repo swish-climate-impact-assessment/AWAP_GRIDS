@@ -85,7 +85,8 @@
     files <- dir(pattern=".tif")
     for(fname in files){
 #    fname <- files[1]
-      outname <- gsub('.tif',paste("_aggby",aggregation_factor, sep=""), fname)
+      outname <- gsub('.tif',"", fname)
+      outname <- substr(outname, 1, nchar(outname) - 8)
       if(os == 'linux'){
 
        system(
