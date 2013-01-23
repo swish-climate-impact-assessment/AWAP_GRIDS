@@ -27,11 +27,12 @@ load.project()
 startdate <- '2013-01-20'
 enddate <-  Sys.Date()-2
 interactively <- FALSE
-variablenames <- 'maxave,minave,solarave'
+variablenames <- 'maxave,minave,solarave,totals,vprph09,vprph15'
 aggregation_factor <- 3
-os <- 'windoze' # only linux and windoze supported
+os <- 'linux' # only linux and windoze supported
 pgisutils <- "\"C:\\pgutils\\postgis-pg92-binaries-2.0.2w64\\bin\\"
 pgutils <- "\"C:\\pgutils\\pgsql\\bin\\"
+
 ####################
 # run the project (alternately do this from Kepler)
 source(file.path(workdir, "src/scoping.r"))
