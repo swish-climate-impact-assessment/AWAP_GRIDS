@@ -23,6 +23,15 @@ if (!require(ProjectTemplate)) install.packages('ProjectTemplate', repos='http:/
 load.project()
 
 ####################
+# user definitions, or setup interactively
+startdate <- '2013-01-20'
+enddate <-  Sys.Date()
+interactively <- FALSE
+variablenames <- 'maxave,minave'
+aggregation_factor <- 3
+
+
+####################
 # run the project (alternately do this from Kepler)
 source(file.path(workdir, "src/scoping.r"))
 source(file.path(workdir, "src/load.r"))

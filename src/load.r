@@ -42,7 +42,7 @@
     vname <- as.character(variable[,1])
     try(dir.create(vname))
     setwd(vname)
-
+    # TODO recognise if day not available to download
     get_data_range(variable=as.character(variable[,1]),measure =as.character(variable[,2]),timestep=as.character(variable[,3]),
                     startdate=as.POSIXct(sdate),
                     enddate=as.POSIXct(edate))

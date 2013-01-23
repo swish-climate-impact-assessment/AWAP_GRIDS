@@ -89,6 +89,15 @@ data_tables: off
   load.project()
   
   ####################
+  # user definitions, or setup interactively
+  startdate <- '2013-01-20'
+  enddate <-  Sys.Date()
+  interactively <- FALSE
+  variablenames <- 'maxave,minave'
+  aggregation_factor <- 3
+  
+  
+  ####################
   # run the project (alternately do this from Kepler)
   source(file.path(workdir, "src/scoping.r"))
   source(file.path(workdir, "src/load.r"))
@@ -431,6 +440,7 @@ get_data_range<-function(variable,measure,timestep,startdate,enddate){
 #+end_src
 
 ** load
+*** TODO recognise if day not available
 #+name:load
 #+begin_src R :session *shell* :tangle src/load.r :exports none :eval no
     ################################################################
@@ -476,7 +486,7 @@ get_data_range<-function(variable,measure,timestep,startdate,enddate){
       vname <- as.character(variable[,1])
       try(dir.create(vname))
       setwd(vname)
-  
+      # TODO recognise if day not available to download
       get_data_range(variable=as.character(variable[,1]),measure =as.character(variable[,2]),timestep=as.character(variable[,3]),
                       startdate=as.POSIXct(sdate),
                       enddate=as.POSIXct(edate))
