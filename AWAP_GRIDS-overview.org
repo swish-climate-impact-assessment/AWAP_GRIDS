@@ -692,8 +692,8 @@ get_data_range<-function(variable,measure,timestep,startdate,enddate){
       }
       #setwd('..')
       }
-  
-      setwd('..')
+     }
+     setwd('..')
   
 #+end_src
 *** deprecated code
