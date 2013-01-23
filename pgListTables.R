@@ -12,4 +12,4 @@ pgListTables <- function(conn, schema, pattern = NA)
 }
 require(swishdbtools)
 ch <- connect2postgres(h = '115.146.84.135', db = 'ewedb', user= 'ivan_hanigan')
-pgListTables(conn=ch, schema='awap_grids', pattern='20120101')
+pgListTables(conn=ch, schema='awap_grids', pattern='20130120')
