@@ -36,7 +36,7 @@
     rootdir <- getwd()
   #  started <- Sys.time()
     for(i in 1:length(vars[[1]])){
-  #   i <- 1
+#     i <- 1
   #  variable <- variableslist[which(variableslist$measure == vars[[1]][i]),]
     variable <- variableslist[which(variableslist$measure == vars[[1]][i]),]
     vname <- as.character(variable[,1])
@@ -72,9 +72,12 @@
 #    cat(paste("psql -h 115.146.84.135 -U gislibrary -d ewedb -f ",gsub('.tif','.sql',fname),sep=""))
 #    }
 # OR
-    system("raster2pgsql -s 4283 -I -C -M *.tif -F awap_grids.maxave > maxave.sql")
-#    system
-    cat("psql -h 115.146.84.135 -U gislibrary -d ewedb -f maxave.sql")
+    system(paste("raster2pgsql -s 4283 -I -C -M *.tif -F awap_grids.maxave_aggby",aggregation_factor," > maxave_aggby",aggregation_factor,".sql",
+    sep=""))
+    system(
+    #cat(
+    paste("psql -h 115.146.84.135 -U gislibrary -d ewedb -f maxave_aggby",aggregation_factor,".sql",
+    sep = ""))
 
     setwd('..')
     }

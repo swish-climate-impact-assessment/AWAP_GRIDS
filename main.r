@@ -25,7 +25,7 @@ load.project()
 ####################
 # user definitions, or setup interactively
 startdate <- '2013-01-20'
-enddate <-  Sys.Date()
+enddate <-  Sys.Date()-2
 interactively <- FALSE
 variablenames <- 'maxave,minave'
 aggregation_factor <- 3
