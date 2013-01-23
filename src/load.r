@@ -68,7 +68,7 @@
      writeBin(uncomp_data, handle)
      close(handle)
      # clean up
-     #file.remove(f)
+     file.remove(f)
      }
     }
     files <- dir(pattern=".grid")
@@ -83,7 +83,7 @@
       file.remove(fname)
     }
     files <- dir(pattern=".tif")
-    for(fname in files[-1]){
+    for(fname in files){
 #    fname <- files[1]
       outname <- gsub('.tif',paste("_aggby",aggregation_factor, sep=""), fname)
       if(os == 'linux'){
@@ -106,6 +106,11 @@
        system('raster2sql.bat')
        file.remove('raster2sql.bat')
      }
+    }
+    files <- dir()
+    # cleanup
+    for(fname in files){        
+      file.remove(fname)
     }
     #setwd('..')
     }
