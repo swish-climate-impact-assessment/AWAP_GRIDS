@@ -527,6 +527,14 @@ get_data_range<-function(variable,measure,timestep,startdate,enddate){
       }
   
       setwd('..')
+#+end_src
+*** deprecated code
+#+name:deprecated code
+#+begin_src R :session *shell* :tangle no :exports none :eval no
+###########################################################################
+# newnode: deprecated code
+
+
       #}
   
       ## finished <- Sys.time()
@@ -701,7 +709,7 @@ select * from try3;
 ** test geotiff
 save storage space as geotiff
 #+name:load
-#+begin_src R :session *R* :tangle src/load.r :exports none :eval no
+#+begin_src R :session *R* :tangle src/qc-geotiff.r :exports none :eval no
   ################################################################
   # name:test geotiff
   
