@@ -1,8 +1,8 @@
 
 
-source("D:\\Development\\Awap Work\\StringFunctions.R")
-source("D:\\Development\\Awap Work\\FileFunctions.R")
-source("D:\\Development\\Awap Work\\ProcessFunctions.R")
+# source("D:\\Development\\Awap Work\\StringFunctions.R")
+# source("D:\\Development\\Awap Work\\FileFunctions.R")
+# source("D:\\Development\\Awap Work\\ProcessFunctions.R")
 
 GridToSql<-function(inputFileName, outputFileName)
 {
@@ -25,5 +25,5 @@ GridToSql<-function(inputFileName, outputFileName)
 
 
 #test 
-GridToSql("C:\\Users\\u5265691\\Desktop\\2013010820130108.grid", "C:\\Users\\u5265691\\Desktop\\Output.sql")
+#GridToSql("C:\\Users\\u5265691\\Desktop\\2013010820130108.grid", "C:\\Users\\u5265691\\Desktop\\Output.sql")
 
