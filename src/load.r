@@ -36,12 +36,12 @@
     rootdir <- getwd()
   #  started <- Sys.time()
     for(i in 1:length(vars[[1]])){
-#     i <- 3
+#     i <- 1
   #  variable <- variableslist[which(variableslist$measure == vars[[1]][i]),]
     variable <- variableslist[which(variableslist$measure == vars[[1]][i]),]
     vname <- as.character(variable[,1])
-    try(dir.create(vname))
-    setwd(vname)
+    #try(dir.create(vname))
+    #setwd(vname)
     # TODO recognise if day not available to download
     get_data_range(variable=as.character(variable[,1]),measure =as.character(variable[,2]),timestep=as.character(variable[,3]),
                     startdate=as.POSIXct(sdate),
@@ -80,36 +80,34 @@
       r <- aggregate(r, fact = aggregation_factor, fun = mean)
       writeRaster(r, gsub('.grid','.TIF',fname), format="GTiff",
     overwrite = TRUE)
-  #    file.remove(fname)
+      file.remove(fname)
     }
-#    files <- dir(pattern=".tif")
-#    for(fname in files){
+    files <- dir(pattern=".tif")
+    for(fname in files[-1]){
 #    fname <- files[1]
-#    system(paste("raster2pgsql -s 4283 -I -C -M ",fname," -F awap_grids.",gsub('.tif','',fname)," > ",gsub('.tif','.sql',fname), sep = ""))
-  #  system
-#    cat(paste("psql -h 115.146.84.135 -U gislibrary -d ewedb -f ",gsub('.tif','.sql',fname),sep=""))
-#    }
-# OR
-if(os == 'linux'){
-  system(paste("raster2pgsql -s 4283 -I -C -M *.tif -F awap_grids.",vars[[1]][i],"_aggby",aggregation_factor," > ",vars[[1]][i],"_aggby",aggregation_factor,".sql",
-               sep=""))
-  system(
-    #cat(
-    paste("psql -h 115.146.84.135 -U gislibrary -d ewedb -f ",vars[[1]][i],"_aggby",aggregation_factor,".sql",
-          sep = ""))
-} else {
-  sink('raster2sql.bat')
-  cat(paste(pgisutils,"raster2pgsql\" -s 4283 -I -C -M *.tif -F awap_grids.",vars[[1]][i],"_aggby",aggregation_factor," > ",vars[[1]][i],"_aggby",aggregation_factor,".sql\n",
-            sep=""))
-  #system(
-  # cat(
-  # paste(pgutils,"psql\" -h 115.146.84.135 -U gislibrary -d ewedb -f ",vars[[1]][i],"_aggby",aggregation_factor,".sql",
-  # sep = ""))
-  sink()
-  system('raster2sql.bat')  
-}
+      outname <- gsub('.tif',paste("_aggby",aggregation_factor, sep=""), fname)
+      if(os == 'linux'){
 
-    setwd('..')
+       system(
+#         cat(
+           paste("raster2pgsql -s 4283 -I -C -M ",fname," -F awap_grids.",outname," > ",outname,".sql", sep="")
+           )
+       system(
+         #cat(
+         paste("psql -h 115.146.84.135 -U gislibrary -d ewedb -f ",outname,".sql",
+               sep = ""))
+     } else {
+       sink('raster2sql.bat')
+       cat(paste(pgisutils,"raster2pgsql\" -s 4283 -I -C -M ",fname," -F awap_grids.",outname," > ",outname,".sql\n",sep=""))
+
+       cat(
+       paste(pgutils,"psql\" -h 115.146.84.135 -U gislibrary -d ewedb -f ",outname,".sql", sep = ""))
+       sink()
+       system('raster2sql.bat')
+       file.remove('raster2sql.bat')
+     }
+    }
+    #setwd('..')
     }
 
     setwd('..')
