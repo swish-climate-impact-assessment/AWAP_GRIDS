@@ -43,7 +43,7 @@
                     startdate=as.POSIXct(sdate),
                     enddate=as.POSIXct(edate))
 
-    files <- dir(pattern='.grid.Z')
+    files <- dir(pattern='.grid.Z$')
     if(os == 'linux'){
     for (f in files) {
       # f <- files[1]
@@ -67,7 +67,7 @@
      file.remove(f)
      }
     }
-    files <- dir(pattern=".grid")
+    files <- dir(pattern=".grid$")
     for(fname in files){
       # fname <- files[1]
       r <- raster(fname)
@@ -78,7 +78,7 @@
     overwrite = TRUE)
       file.remove(fname)
     }
-    files <- dir(pattern=".tif")
+    files <- dir(pattern=".tif$")
     for(fname in files){
 #    fname <- files[1]
       outname <- gsub('.tif',"", fname)

@@ -50,7 +50,7 @@ The aim of this project is to download the Australian Water Availability Project
 ** config
 #+name:global.dcf
 #+begin_src R :session *R* :tangle config/global.dcf :exports none :eval no
-data_loading: on
+data_loading: off
 cache_loading: on
 munging: on
 logging: off
@@ -90,13 +90,13 @@ data_tables: off
   
   ####################
   # user definitions, or setup interactively
-  startdate <- '2011-01-01'
-  enddate <-  '2011-01-03' #Sys.Date()-2
+  startdate <- '2009-08-06'
+  enddate <-  '2009-12-31' #Sys.Date()-2
   interactively <- FALSE
   variablenames <- 'maxave,minave,solarave,totals,vprph09,vprph15'
   aggregation_factor <- 3
   os <- 'linux' # only linux and windoze supported
-  pgisutils <- "/usr/pgsql-9.1/bin/"
+  pgisutils <- "" #"/usr/pgsql-9.1/bin/"
   #"\"C:\\pgutils\\postgis-pg92-binaries-2.0.2w64\\bin\\"
   pgutils <- "\"C:\\pgutils\\pgsql\\bin\\"
   
@@ -613,7 +613,7 @@ get_data_range<-function(variable,measure,timestep,startdate,enddate){
                       startdate=as.POSIXct(sdate),
                       enddate=as.POSIXct(edate))
   
-      files <- dir(pattern='.grid.Z')
+      files <- dir(pattern='.grid.Z$')
       if(os == 'linux'){
       for (f in files) {
         # f <- files[1]
@@ -637,7 +637,7 @@ get_data_range<-function(variable,measure,timestep,startdate,enddate){
        file.remove(f)
        }
       }
-      files <- dir(pattern=".grid")
+      files <- dir(pattern=".grid$")
       for(fname in files){
         # fname <- files[1]
         r <- raster(fname)
@@ -648,7 +648,7 @@ get_data_range<-function(variable,measure,timestep,startdate,enddate){
       overwrite = TRUE)
         file.remove(fname)
       }
-      files <- dir(pattern=".tif")
+      files <- dir(pattern=".tif$")
       for(fname in files){
   #    fname <- files[1]
         outname <- gsub('.tif',"", fname)

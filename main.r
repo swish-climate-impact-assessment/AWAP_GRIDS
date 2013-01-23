@@ -24,13 +24,13 @@ load.project()
 
 ####################
 # user definitions, or setup interactively
-startdate <- '2011-01-01'
-enddate <-  '2011-01-03' #Sys.Date()-2
+startdate <- '2009-08-06'
+enddate <-  '2009-12-31' #Sys.Date()-2
 interactively <- FALSE
 variablenames <- 'maxave,minave,solarave,totals,vprph09,vprph15'
 aggregation_factor <- 3
 os <- 'linux' # only linux and windoze supported
-pgisutils <- "/usr/pgsql-9.1/bin/"
+pgisutils <- "" #"/usr/pgsql-9.1/bin/"
 #"\"C:\\pgutils\\postgis-pg92-binaries-2.0.2w64\\bin\\"
 pgutils <- "\"C:\\pgutils\\pgsql\\bin\\"
 
