@@ -27,7 +27,7 @@ load.project()
 startdate <- '2013-01-20'
 enddate <-  Sys.Date()-2
 interactively <- FALSE
-variablenames <- 'maxave,minave'
+variablenames <- 'maxave,minave,solarave'
 aggregation_factor <- 3
 
 
