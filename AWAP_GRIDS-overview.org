@@ -64,7 +64,7 @@ data_tables: off
 ** main
 *** main
 #+name:main
-#+begin_src R :session *shell* :tangle main.r :exports none :eval no
+#+begin_src R :session *R* :tangle main.r :exports none :eval no
   ################################################################
   # Project: AWAP_GRIDS
   # Author: ivanhanigan
@@ -90,8 +90,8 @@ data_tables: off
   
   ####################
   # user definitions, or setup interactively
-  startdate <- '2013-01-20'
-  enddate <-  Sys.Date()-2
+  startdate <- '2011-01-01'
+  enddate <-  '2011-01-03' #Sys.Date()-2
   interactively <- FALSE
   variablenames <- 'maxave,minave,solarave,totals,vprph09,vprph15'
   aggregation_factor <- 3
@@ -567,7 +567,7 @@ get_data_range<-function(variable,measure,timestep,startdate,enddate){
 ** load
 *** TODO recognise if day not available
 #+name:load
-#+begin_src R :session *shell* :tangle src/load.r :exports none :eval no
+#+begin_src R :session *R* :tangle src/load.r :exports none :eval no
     ################################################################
     # name:load
     # Project: AWAP_GRIDS
@@ -581,11 +581,19 @@ get_data_range<-function(variable,measure,timestep,startdate,enddate){
     #load(LibraryName)
     require(ProjectTemplate)
     load.project()
-    sdate <- scope[[1]][1]
-    print(sdate)
-    edate <- scope[[2]][1]
-    print(edate)
-    year <- as.numeric(substr(sdate, 1,4))
+    start_at <- scope[[1]][1]
+    print(start_at)
+    end_at <- scope[[2]][1]
+    print(end_at)
+    for(date_i in seq(as.Date(start_at), as.Date(end_at), 1))
+    {
+      date_i <- as.Date(date_i, origin = '1970-01-01')
+      date_i <- as.character(date_i)
+      print(date_i)
+    
+      sdate <- date_i
+      edate <- date_i
+    #year <- as.numeric(substr(sdate, 1,4))
     ## year2 <- year + 4
     ## year2
     ## if(as.numeric(substr(edate, 1,4)) > year2){
@@ -679,7 +687,7 @@ get_data_range<-function(variable,measure,timestep,startdate,enddate){
       }
       files <- dir()
       # cleanup
-      for(fname in files){        
+      for(fname in files){
         file.remove(fname)
       }
       #setwd('..')

@@ -12,11 +12,19 @@
   #load(LibraryName)
   require(ProjectTemplate)
   load.project()
-  sdate <- scope[[1]][1]
-  print(sdate)
-  edate <- scope[[2]][1]
-  print(edate)
-  year <- as.numeric(substr(sdate, 1,4))
+  start_at <- scope[[1]][1]
+  print(start_at)
+  end_at <- scope[[2]][1]
+  print(end_at)
+  for(date_i in seq(as.Date(start_at), as.Date(end_at), 1))
+  {
+    date_i <- as.Date(date_i, origin = '1970-01-01')
+    date_i <- as.character(date_i)
+    print(date_i)
+  
+    sdate <- date_i
+    edate <- date_i
+  #year <- as.numeric(substr(sdate, 1,4))
   ## year2 <- year + 4
   ## year2
   ## if(as.numeric(substr(edate, 1,4)) > year2){
@@ -110,7 +118,7 @@
     }
     files <- dir()
     # cleanup
-    for(fname in files){        
+    for(fname in files){
       file.remove(fname)
     }
     #setwd('..')
