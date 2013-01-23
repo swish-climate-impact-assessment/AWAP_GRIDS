@@ -581,6 +581,9 @@ get_data_range<-function(variable,measure,timestep,startdate,enddate){
     #load(LibraryName)
     require(ProjectTemplate)
     load.project()
+
+    setwd('data')
+    rootdir <- getwd()
     start_at <- scope[[1]][1]
     print(start_at)
     end_at <- scope[[2]][1]
@@ -593,24 +596,9 @@ get_data_range<-function(variable,measure,timestep,startdate,enddate){
     
       sdate <- date_i
       edate <- date_i
-    #year <- as.numeric(substr(sdate, 1,4))
-    ## year2 <- year + 4
-    ## year2
-    ## if(as.numeric(substr(edate, 1,4)) > year2){
-    ##   print('please only specify dates in 5 year chunks, 00-04 or 05-09')
-    ##   stopTrigger <- TRUE
-    ## } else {
-    ##   stopTrigger <- FALSE
-    ## }
-    vars <- scope[[3]]
-    print(vars)
-  
-    ### Load in any data files
-      #
-    #if(stopTrigger == FALSE){
-    # deprecated  try(dir.create('RawData'))
-      setwd('data')
-      rootdir <- getwd()
+      vars <- scope[[3]]
+      print(vars)
+     
     #  started <- Sys.time()
       for(i in 1:length(vars[[1]])){
   #     i <- 1
