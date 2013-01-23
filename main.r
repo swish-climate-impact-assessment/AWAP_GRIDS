@@ -30,7 +30,8 @@ interactively <- FALSE
 variablenames <- 'maxave,minave,solarave,totals,vprph09,vprph15'
 aggregation_factor <- 3
 os <- 'linux' # only linux and windoze supported
-pgisutils <- "\"C:\\pgutils\\postgis-pg92-binaries-2.0.2w64\\bin\\"
+pgisutils <- "/usr/pgsql-9.1/bin/raster2pgsql"
+#"\"C:\\pgutils\\postgis-pg92-binaries-2.0.2w64\\bin\\"
 pgutils <- "\"C:\\pgutils\\pgsql\\bin\\"
 
 ####################

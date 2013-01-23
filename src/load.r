@@ -87,7 +87,7 @@
 
        system(
 #         cat(
-           paste("raster2pgsql -s 4283 -I -C -M ",fname," -F awap_grids.",outname," > ",outname,".sql", sep="")
+           paste(pgisutils,"raster2pgsql -s 4283 -I -C -M ",fname," -F awap_grids.",outname," > ",outname,".sql", sep="")
            )
        system(
          #cat(
