@@ -449,24 +449,25 @@ get_data_range<-function(variable,measure,timestep,startdate,enddate){
 *** pgListTables
 #+name:pgListTables
 #+begin_src R :session *R* :tangle lib/pgListTables.r :exports none :eval no
-################################################################
-# name:pgListTables
-pgListTables <- function(conn, schema, pattern = NA)
-{
-  tables <- dbGetQuery(conn, 'select   c.relname, nspname
-                       FROM pg_catalog.pg_class c
-                       LEFT JOIN pg_catalog.pg_namespace n 
-                       ON n.oid = c.relnamespace
-                       where c.relkind IN (\'r\',\'\') ')
-  tables <- tables[grep(schema,tables$nspname),]
-  if(!is.na(pattern)) tables <- tables[grep(pattern, tables$relname),]
-  tables <- tables[order(tables$relname),]
-  return(tables)
-}
-require(swishdbtools)
-ch <- connect2postgres(h = '115.146.84.135', db = 'ewedb', user= 'ivan_hanigan')
-tbls <- pgListTables(conn=ch, schema='awap_grids', pattern='maxave_2009')
-tbls
+  ################################################################
+  # name:pgListTables
+  pgListTables <- function(conn, schema, pattern = NA)
+  {
+    tables <- dbGetQuery(conn, 'select   c.relname, nspname
+                         FROM pg_catalog.pg_class c
+                         LEFT JOIN pg_catalog.pg_namespace n
+                         ON n.oid = c.relnamespace
+                         where c.relkind IN (\'r\',\'\') ')
+    tables <- tables[grep(schema,tables$nspname),]
+    if(!is.na(pattern)) tables <- tables[grep(pattern, tables$relname),]
+    tables <- tables[order(tables$relname),]
+    return(tables)
+  }
+  ## require(swishdbtools)
+  ## ch <- connect2postgres(h = '115.146.84.135', db = 'ewedb', user= 'ivan_hanigan')
+  ## tbls <- pgListTables(conn=ch, schema='awap_grids', pattern='maxave_2009')
+  ## tbls
+  
 #+end_src
 
 *** sqlquery
@@ -977,6 +978,42 @@ save storage space as geotiff
 # gdalinfo  "PG:host=115.146.84.135 port=5432 dbname='ewedb' user='ivan_hanigan' password='kazoowazoo' schema='awap_grids' table=tmax2013010820130108"   
 #+end_src
 
+** test uncompress
+#+name:test-uncompress
+#+begin_src R :session *R* :tangle src/test-uncompress.r :exports none :eval no
+################################################################
+# name:test-uncompress
+#http://cran.r-project.org/src/contrib/Archive/uncompress/uncompress_1.34.tar.gz
+install.packages("C:/Users/Ivan/Downloads/uncompress_1.34.tar.gz", repos = NULL, type = "source")
+require(uncompress)
+?uncompress
+
+
+files <- dir(pattern='.grid.Z')
+strt=Sys.time()
+for (f in files) {
+   f <- files[1]
+  print(f)
+  handle <- file(f, "rb")
+  data <- readBin(handle, "raw", 99999999)
+  close(handle)
+  uncomp_data <- uncompress(data)
+  handle <- file(gsub('.Z','',f), "wb")
+  writeBin(uncomp_data, handle)
+  close(handle)
+  
+  # clean up
+  #file.remove(f)
+}
+
+endd=Sys.time()
+print(endd-strt)
+
+sink('test.bat')
+cat("\"C:\\pgutils\\postgis-pg92-binaries-2.0.2w64\\bin\\raster2pgsql\" -s 4283 -I -C -M *.grid -F awap_grids.maxave_aggby3 > maxave_aggby3.sql")
+sink()
+system('test.bat')
+#+end_src
 
 ** move from rawdata (or 5 year chunks) to one year Directories
 #+name:file-rename-to-annual
