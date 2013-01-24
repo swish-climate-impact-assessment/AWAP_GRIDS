@@ -4,10 +4,13 @@
 # Maintainer: Who to complain to <ivan.hanigan@gmail.com>
 
 # Functions for the project
-if (!require(plyr)) install.packages('plyr', repos='http://cran.csiro.au'); require(plyr)     
-if(!require(swishdbtools)) print('Please download the swishdbtools package and install it.')
-# for instance 
-# install.packages("~/tools/swishdbtools_1.0_R_x86_64-pc-linux-gnu.tar.gz", repos = NULL, type = "source");
+if (!require(plyr)) install.packages('plyr', repos='http://cran.csiro.au'); require(plyr)
+if(!require(swishdbtools)){
+print('Downloading the swishdbtools package and install it.')
+download.file('http://swish-climate-impact-assessment.github.com/tools/swishdbtools/swishdbtools_1.1_R_x86_64-pc-linux-gnu.tar.gz', '~/tools/swishdbtools_1.1_R_x86_64-pc-linux-gnu.tar.gz', mode = 'wb')
+# for instance
+install.packages("~/tools/swishdbtools_1.1_R_x86_64-pc-linux-gnu.tar.gz", repos = NULL, type = "source");
+}
 require(swishdbtools)
 if(!require(raster)) install.packages('raster', repos='http://cran.csiro.au');require(raster)
 if(!require(fgui)) install.packages('fgui', repos='http://cran.csiro.au');require(fgui)
