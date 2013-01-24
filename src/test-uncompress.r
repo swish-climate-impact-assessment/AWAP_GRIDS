@@ -1,3 +1,6 @@
+
+################################################################
+# name:test-uncompress
 #http://cran.r-project.org/src/contrib/Archive/uncompress/uncompress_1.34.tar.gz
 install.packages("C:/Users/Ivan/Downloads/uncompress_1.34.tar.gz", repos = NULL, type = "source")
 require(uncompress)
