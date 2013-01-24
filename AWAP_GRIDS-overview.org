@@ -463,10 +463,18 @@ get_data_range<-function(variable,measure,timestep,startdate,enddate){
     tables <- tables[order(tables$relname),]
     return(tables)
   }
-  ## require(swishdbtools)
-  ## ch <- connect2postgres(h = '115.146.84.135', db = 'ewedb', user= 'ivan_hanigan')
-  ## tbls <- pgListTables(conn=ch, schema='awap_grids', pattern='maxave_2009')
-  ## tbls
+#+end_src
+*** pgListTables-test
+#+name:pgListTables-test
+#+begin_src R :session *R* :tangle tests/pgListTables-test.r :exports none :eval no
+  ################################################################
+  # name:pgListTables-test
+  require(ProjectTemplate)
+  load.project()
+  require(swishdbtools)
+  ch <- connect2postgres(h = '115.146.84.135', db = 'ewedb', user= 'ivan_hanigan')
+  tbls <- pgListTables(conn=ch, schema='awap_grids', pattern='maxave')
+  tbls$date <-
   
 #+end_src
 

@@ -13,7 +13,3 @@ pgListTables <- function(conn, schema, pattern = NA)
   tables <- tables[order(tables$relname),]
   return(tables)
 }
-## require(swishdbtools)
-## ch <- connect2postgres(h = '115.146.84.135', db = 'ewedb', user= 'ivan_hanigan')
-## tbls <- pgListTables(conn=ch, schema='awap_grids', pattern='maxave_2009')
-## tbls
