@@ -556,7 +556,6 @@ get_data_range<-function(variable,measure,timestep,startdate,enddate){
   
 #+end_src
 
-
 *** raster_aggregate
 #+name:raster_aggregate
 #+begin_src R :session *R* :tangle lib/raster_aggregate.r :exports none :eval no
@@ -575,7 +574,6 @@ get_data_range<-function(variable,measure,timestep,startdate,enddate){
   }
   
 #+end_src
-
 
 *** load2postgres_raster
 #+name:load2postgres_raster
@@ -637,6 +635,25 @@ get_data_range<-function(variable,measure,timestep,startdate,enddate){
     return(tables)
   }
 #+end_src
+*** pgListTables
+#+name:pgListTables
+#+begin_src R :session *R* :tangle lib/pgListTables.r :exports none :eval no
+################################################################
+# name:pgListTables
+pgListTables <- function(conn, schema, pattern = NA)
+{
+  tables <- dbGetQuery(conn, "select   c.relname, nspname
+                       FROM pg_catalog.pg_class c
+                       LEFT JOIN pg_catalog.pg_namespace n
+                       ON n.oid = c.relnamespace
+                       where c.relkind IN ('r','','v') ")
+  tables <- tables[grep(schema,tables$nspname),]
+  if(!is.na(pattern)) tables <- tables[grep(pattern, tables$relname),]
+  tables <- tables[order(tables$relname),]
+  return(tables)
+}
+#+end_src
+
 *** pgListTables-test dates
 #+name:pgListTables-test
 #+begin_src R :session *R* :tangle tests/test-pgListTables.r :exports none :eval no
