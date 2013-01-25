@@ -28,7 +28,7 @@
 
   vars <- scope[[3]]
   #  print(vars)
-  #}
+  
   #  started <- Sys.time()
   datelist_full <- as.data.frame(seq(as.Date(start_at),
     as.Date(end_at), 1))
@@ -49,7 +49,7 @@
    datelist <-  which(datelist_full$date %in% tbls$date)
    datelist <- datelist_full[-datelist,]
 
-    for(date_i in datelist){
+    for(date_i in datelist)
     {
       date_i <- as.Date(date_i, origin = '1970-01-01')
       date_i <- as.character(date_i)
@@ -57,7 +57,7 @@
 
       sdate <- date_i
       edate <- date_i
-
+    #}
       get_data_range(variable=as.character(variable[,1]),
                      measure=as.character(variable[,2]),
                      timestep=as.character(variable[,3]),
