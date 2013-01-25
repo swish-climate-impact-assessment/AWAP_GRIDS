@@ -49,7 +49,14 @@
                   sep="-")
    tbls$date <- as.Date(tbls$date)
    datelist <-  which(datelist_full$date %in% tbls$date)
-   datelist <- datelist_full[-datelist,]
+
+    if(length(datelist) == 0)
+      {
+        datelist <- datelist_full[,]
+      } else {
+        datelist <- datelist_full[-datelist,]
+      }
+
 
     for(date_i in datelist)
     {
