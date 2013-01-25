@@ -10,10 +10,5 @@ get_data<-function(variable,measure,timestep,startdate,enddate){
   url=gsub("{startdate}",startdate,url,fixed=TRUE)
   url=gsub("{enddate}",enddate,url,fixed=TRUE)
 
-  exitCode <-   download.file(url,sprintf("%s_%s%s.grid.Z",measure,startdate,enddate),mode="wb")
-  if(exitCode != 0)
-  {
-    stop("Process returned error");
-  }
-  return (exitCode)
+  try(download.file(url,sprintf("%s_%s%s.grid.Z",measure,startdate,enddate),mode="wb"))
   }

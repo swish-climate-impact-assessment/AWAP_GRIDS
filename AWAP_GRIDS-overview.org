@@ -401,12 +401,7 @@ get_data<-function(variable,measure,timestep,startdate,enddate){
   url=gsub("{startdate}",startdate,url,fixed=TRUE)
   url=gsub("{enddate}",enddate,url,fixed=TRUE)
 
-  exitCode <-   download.file(url,sprintf("%s_%s%s.grid.Z",measure,startdate,enddate),mode="wb")
-  if(exitCode != 0)
-  {
-    stop("Process returned error");
-  }
-  return (exitCode)
+  try(download.file(url,sprintf("%s_%s%s.grid.Z",measure,startdate,enddate),mode="wb"))
   }
 #+end_src
 *** Get Data Range
@@ -1007,6 +1002,12 @@ get_data_range<-function(variable,measure,timestep,startdate,enddate){
                      enddate=as.POSIXct(edate))
   
       fname <- sprintf("%s_%s%s.grid.Z",measure_i,gsub("-","",sdate),gsub("-","",edate))
+      fname <- sprintf("%s_%s%s.grid.Z",measure_i,gsub("-","",sdate),gsub("-","",edate))
+      if(file.info(fname)$size == 0)
+        {
+          file.remove(fname)
+          next
+        }
   
       if(os == 'linux')
         {
