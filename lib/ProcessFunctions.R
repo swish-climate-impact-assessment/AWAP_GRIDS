@@ -1,4 +1,7 @@
 
+################################################################
+# name:ProcessFunctions.R
+
 RunProcess = function(executable, arguments)
 {
   command = paste(sep="", "\"", executable,  "\" ", arguments);
@@ -32,4 +35,3 @@ RunViaBat = function(executableFileName, arguments)
   }
   return (exitCode)
 }
-

@@ -388,10 +388,10 @@ p <- getPassword()
   if (!require(ggplot2)) install.packages('ggplot2', repos='http://cran.csiro.au'); require(ggplot2)
   
 #+end_src
-*** Get Data Range
-#+begin_src R :session *R* :tangle lib/get_data_range.r :exports none :eval no
+*** Get Data 
+#+begin_src R :session *R* :tangle lib/get_data.r :exports none :eval no
 # newnode get_data
-# authors: Joseph Guillaume and Francis Markham
+# authors: Joseph Guillaume
 # downloads from http://www.bom.gov.au/jsp/awap/
 get_data<-function(variable,measure,timestep,startdate,enddate){
   url="http://www.bom.gov.au/web03/ncc/www/awap/{variable}/{measure}/{timestep}/grid/0.05/history/nat/{startdate}{enddate}.grid.Z"
@@ -400,8 +400,20 @@ get_data<-function(variable,measure,timestep,startdate,enddate){
   url=gsub("{timestep}",timestep,url,fixed=TRUE)
   url=gsub("{startdate}",startdate,url,fixed=TRUE)
   url=gsub("{enddate}",enddate,url,fixed=TRUE)
-  download.file(url,sprintf("%s_%s%s.grid.Z",measure,startdate,enddate),mode="wb")
+
+  exitCode <-   download.file(url,sprintf("%s_%s%s.grid.Z",measure,startdate,enddate),mode="wb")
+  if(exitCode != 0)
+  {
+    stop("Process returned error");
   }
+  return (exitCode)
+  }
+#+end_src
+*** Get Data Range
+#+begin_src R :session *R* :tangle lib/get_data_range.r :exports none :eval no
+# newnode get_data_range
+# authors: Joseph Guillaume and Francis Markham
+# downloads from http://www.bom.gov.au/jsp/awap/
   
 get_data_range<-function(variable,measure,timestep,startdate,enddate){
   if (timestep == "daily"){
@@ -446,6 +458,47 @@ get_data_range<-function(variable,measure,timestep,startdate,enddate){
     
 #+end_src
 
+*** ProcessFunctions
+#+name:ProcessFunctions.R
+#+begin_src R :session *R* :tangle lib/ProcessFunctions.R :exports none :eval no
+  ################################################################
+  # name:ProcessFunctions.R
+  
+  RunProcess = function(executable, arguments)
+  {
+    command = paste(sep="", "\"", executable,  "\" ", arguments);
+    
+    print (command)
+    
+    exitCode = system(command, intern = FALSE, ignore.stdout = FALSE, ignore.stderr = FALSE, wait = TRUE, input = NULL
+                      , show.output.on.console = TRUE
+                      #, minimized = FALSE
+                      , invisible = FALSE
+    );
+    if(exitCode != 0)
+    {
+      stop("Process returned error");
+    }
+    return (exitCode)
+  }
+  
+  
+  RunViaBat = function(executableFileName, arguments)
+  {
+    command = paste(sep="", "\"", executableFileName,  "\" ", arguments);
+    sink("C:\\Users\\u5265691\\Desktop\\ThingToRun.bat")
+    cat(command)
+    sink()
+    
+    exitCode = system("C:\\Users\\u5265691\\Desktop\\ThingToRun.bat")
+    if(exitCode != 0)
+    {
+      stop("Process returned error");
+    }
+    return (exitCode)
+  }
+  
+#+end_src
 
 *** ZipFunctions
 #+name:ZipFunctions.R
