@@ -5,7 +5,8 @@
 sqlquery_postgres <- function(channel, dimensions, operation,
                      variable, variablename=NA, into_schema = 'public',
                      into_table, append = FALSE,
-                     from_schema = 'public', from_table, where, group_by_dimensions=NA,
+                     from_schema = 'public', from_table, where=NA,
+                     group_by_dimensions=NA,
                      having=NA,
                      grant = NA, force = FALSE,
                      print = FALSE)

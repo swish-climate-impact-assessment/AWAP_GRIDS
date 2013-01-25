@@ -446,9 +446,134 @@ get_data_range<-function(variable,measure,timestep,startdate,enddate){
     
 #+end_src
 
-*** pgListTables
+
+*** ZipFunctions
+#+name:ZipFunctions.R
+#+begin_src R :session *R* :tangle lib/ZipFunctions.R :exports none :eval no
+  ################################################################
+  # name:ZipFunctions.R
+  uncompress_linux <- function(filename)
+    {
+      print(filename)
+      system(sprintf('uncompress %s',filename))
+    }
+  
+  # tries to find 7 zip exe
+  ExecutableFileName7Zip <- function()
+  {
+    executableName <- "C:\\Program Files\\7-Zip\\7z.exe"
+  
+    if(file.exists(executableName))
+    {
+      return (executableName)
+    }
+  
+    #other executable file names and ideas go here ...
+    stop("failed to find 7zip")
+  }
+  
+  # simple function to extract 7zip file
+  # need to have 7zip installed
+  Decompress7Zip <- function(zipFileName, outputDirectory, delete)
+  {
+    executableName <- ExecutableFileName7Zip()
+  
+  #   fileName = GetFileName(zipFileName)
+  #   fileName = PathCombine(outputDirectory, fileName)
+  
+  
+  #   if(file.exists(fileName))
+  #   {
+  #     unlink(zipFileName);
+  #   }
+  
+    arguments <- paste(sep="",
+                      "e ",
+                      "\"", zipFileName, "\" ",
+                      "\"-o", outputDirectory, "\" ",
+      "")
+  
+    print( arguments)
+  
+    RunProcess(executableName, arguments)
+  
+    if(delete)
+    {
+      unlink(zipFileName);
+    }
+  }
+  
+  #test
+  # Decompress7Zip("D:\\Development\\Awap Work\\2013010820130108.grid.Z", "D:\\Development\\Awap Work\\", TRUE)
+  
+#+end_src
+
+
+*** raster_aggregate
+#+name:raster_aggregate
+#+begin_src R :session *R* :tangle lib/raster_aggregate.r :exports none :eval no
+  ################################################################
+  # name:raster_aggregate
+  raster_aggregate <- function(filename, aggregationfactor, delete = TRUE)
+  {
+    r <- raster(filename)
+    r <- aggregate(r, fact = aggregationfactor, fun = mean)
+    writeRaster(r, gsub('.grid','',fname), format="GTiff",
+  overwrite = TRUE)
+    if(delete)
+      {
+        file.remove(filename)
+      }
+  }
+  
+#+end_src
+
+
+*** load2postgres_raster
+#+name:load2postgres_raster
+#+begin_src R :session *R* :tangle lib/load2postgres_raster.r :exports none :eval no
+  ################################################################
+  # name:load2postgres_raster
+  load2postgres_raster <- function(filename, remove = TRUE)
+  {
+    outname <- gsub('.tif',"", filename)
+    outname <- substr(outname, 1, nchar(outname) - 8)
+    if(os == 'linux')
+    {
+     system(
+    #        cat(
+            paste(pgisutils,"raster2pgsql -s 4283 -I -C -M ",filename," -F awap_grids.",outname," > ",outname,".sql", sep="")
+            )
+  
+     system(
+    #        cat(
+            paste("psql -h 115.146.84.135 -U gislibrary -d ewedb -f ",outname,".sql",
+              sep = ""))
+    } else {
+      sink('raster2sql.bat')
+      cat(paste(pgisutils,"raster2pgsql\" -s 4283 -I -C -M ",filename," -F awap_grids.",outname," > ",outname,".sql\n",sep=""))
+  
+      cat(
+      paste(pgutils,"psql\" -h 115.146.84.135 -U gislibrary -d ewedb -f ",outname,".sql",
+      sep = "")
+        )
+      sink()
+      system('raster2sql.bat')
+      file.remove('raster2sql.bat')
+    }
+  
+    if(remove)
+      {
+        file.remove(filename)
+        file.remove(paste(outname, '.sql', sep =""))
+      }
+  }
+  
+#+end_src
+
+*** COMMENT deprecated pgListTables, moved to swishdbtools
 #+name:pgListTables
-#+begin_src R :session *R* :tangle lib/pgListTables.r :exports none :eval no
+#+begin_src R :session *R* :tangle no :exports none :eval no
   ################################################################
   # name:pgListTables
   pgListTables <- function(conn, schema, pattern = NA)
@@ -464,22 +589,28 @@ get_data_range<-function(variable,measure,timestep,startdate,enddate){
     return(tables)
   }
 #+end_src
-*** pgListTables-test
+*** pgListTables-test dates
 #+name:pgListTables-test
-#+begin_src R :session *R* :tangle tests/pgListTables-test.r :exports none :eval no
+#+begin_src R :session *R* :tangle tests/test-pgListTables.r :exports none :eval no
   ################################################################
   # name:pgListTables-test
   require(ProjectTemplate)
   load.project()
   
   require(swishdbtools)
-  ch <- connect2postgres(h = '115.146.84.135', db = 'ewedb', user= 'ivan_hanigan')
+  ch <- connect2postgres(h = '115.146.84.135', db = 'ewedb', user=
+                         'gislibrary', p = 'gislibrary')
   tbls <- pgListTables(conn=ch, schema='awap_grids', pattern='maxave')
   tbls$date <- paste(substr(gsub("maxave_","",tbls[,1]),1,4),
           substr(gsub("maxave_","",tbls[,1]),5,6),
           substr(gsub("maxave_","",tbls[,1]),7,8),
           sep="-")
+  tbls$date <- as.Date(tbls$date)
   head(tbls)
+  plot(tbls$date, rep(1,nrow(tbls)), type = 'h')
+  tbls[tbls$date < as.Date('1999-01-01'),]
+  tbls[tbls$date >= as.Date('2006-07-01') & tbls$date < as.Date('2007-01-01'),]
+  tbls[tbls$date >= as.Date('2000-01-01') & tbls$date < as.Date('2004-01-01'),]
   
 #+end_src
 *** sqlquery_oracle
@@ -557,7 +688,8 @@ get_data_range<-function(variable,measure,timestep,startdate,enddate){
   sqlquery_postgres <- function(channel, dimensions, operation,
                        variable, variablename=NA, into_schema = 'public',
                        into_table, append = FALSE,
-                       from_schema = 'public', from_table, where, group_by_dimensions=NA,
+                       from_schema = 'public', from_table, where=NA,
+                       group_by_dimensions=NA,
                        having=NA,
                        grant = NA, force = FALSE,
                        print = FALSE)
@@ -658,7 +790,7 @@ get_data_range<-function(variable,measure,timestep,startdate,enddate){
 #+end_src
 *** sqlquery-test
 #+name:sqlquery-test
-#+begin_src R :session *R* :tangle tests/sqlquery-test.r :exports none :eval no
+#+begin_src R :session *R* :tangle tests/test-sqlquery.r :exports none :eval no
   ################################################################
   # name:sqlquery-test
   require(ProjectTemplate)
@@ -708,7 +840,7 @@ get_data_range<-function(variable,measure,timestep,startdate,enddate){
 #+end_src
 *** test2
 #+name:sqlquery_postgres-test2
-#+begin_src R :session *R* :tangle tests/sqlquery_postgres-test2.r :exports none :eval no
+#+begin_src R :session *R* :tangle tests/test-sqlquery_postgres2.r :exports none :eval no
 ################################################################
 # name:sqlquery_postgres-test2
 
@@ -767,8 +899,85 @@ get_data_range<-function(variable,measure,timestep,startdate,enddate){
 
 ** load
 *** TODO recognise if day not available
+*** TODO load as function
 #+name:load
 #+begin_src R :session *R* :tangle src/load.r :exports none :eval no
+  ################################################################
+  # name:load
+  ################################################################
+  # name:load
+  # Project: AWAP_GRIDS
+  # Author: ivanhanigan
+  # Maintainer: Who to complain to <ivan.hanigan@gmail.com>
+  
+  # This file loads all the libraries and data files needed
+  # Don't do any cleanup here
+  
+  ### Load any needed libraries
+  #load(LibraryName)
+  setwd(workdir)
+  require(ProjectTemplate)
+  load.project()
+  
+  print(paste('root directory:', workdir))
+  setwd('data')
+  
+  start_at <- scope[[1]][1]
+  print(start_at)
+  end_at <- scope[[2]][1]
+  print(end_at)
+  
+  for(date_i in seq(as.Date(start_at), as.Date(end_at), 1))
+  {
+    date_i <- as.Date(date_i, origin = '1970-01-01')
+    date_i <- as.character(date_i)
+    print(date_i)
+  
+    sdate <- date_i
+    edate <- date_i
+    vars <- scope[[3]]
+    print(vars)
+  #}
+  # TODO check if dates exist in database
+  #  tbls <- pgListTables()
+  #  started <- Sys.time()
+    for(i in 1:length(vars[[1]])){
+  #    i = 1
+      measure_i <- vars[[1]][i]
+      variable <- variableslist[which(variableslist$measure == measure_i),]
+      vname <- as.character(variable[,1])
+  
+      get_data_range(variable=as.character(variable[,1]),
+                     measure=as.character(variable[,2]),
+                     timestep=as.character(variable[,3]),
+                     startdate=as.POSIXct(sdate),
+                     enddate=as.POSIXct(edate))
+  
+      fname <- sprintf("%s_%s%s.grid.Z",measure_i,gsub("-","",sdate),gsub("-","",edate))
+  
+      if(os == 'linux')
+        {
+          uncompress_linux(filename = fname)
+        } else {
+          Decompress7Zip(zipFileName= fname, outputDirectory=getwd(), TRUE)
+        }
+  
+      raster_aggregate(filename = gsub('.Z$','',fname),
+        aggregationfactor = aggregation_factor, delete = TRUE)
+  
+      load2postgres_raster(filename = gsub(".grid.Z", ".tif", fname))
+  
+    }
+  
+  }
+  
+  setwd(workdir)
+  
+#+end_src
+
+*** COMMENT deprecated load loop
+#+name:load
+#+begin_src R :session *R* :tangle no :exports none :eval no
     ################################################################
     # name:load
     # Project: AWAP_GRIDS
@@ -782,7 +991,7 @@ get_data_range<-function(variable,measure,timestep,startdate,enddate){
     #load(LibraryName)
     require(ProjectTemplate)
     load.project()
-
+  
     setwd('data')
     rootdir <- getwd()
     start_at <- scope[[1]][1]
@@ -1186,6 +1395,26 @@ sink('test.bat')
 cat("\"C:\\pgutils\\postgis-pg92-binaries-2.0.2w64\\bin\\raster2pgsql\" -s 4283 -I -C -M *.grid -F awap_grids.maxave_aggby3 > maxave_aggby3.sql")
 sink()
 system('test.bat')
+#+end_src
+
+
+** unresponsive psql on some raster2pgsql.sql files
+#+name:restarts
+#+begin_src sh :session *shell* :tangle no :exports none :eval no
+  ################################################################
+  # name:restarts
+  ssh ivan_hanigan@130.56.102.53
+  
+  cd data/AWAP_GRIDS/data
+  ls
+  rm *
+  
+  R
+  setwd('~/data/AWAP_GRIDS/')
+  startdate <- '2000-01-01'
+  enddate <- '2000-03-17'
+  source('main.r')
+  
 #+end_src
 
 ** move from rawdata (or 5 year chunks) to one year Directories
