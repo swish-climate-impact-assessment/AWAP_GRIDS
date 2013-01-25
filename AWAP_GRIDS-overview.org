@@ -1002,7 +1002,7 @@ get_data_range<-function(variable,measure,timestep,startdate,enddate){
                      enddate=as.POSIXct(edate))
   
       fname <- sprintf("%s_%s%s.grid.Z",measure_i,gsub("-","",sdate),gsub("-","",edate))
-      fname <- sprintf("%s_%s%s.grid.Z",measure_i,gsub("-","",sdate),gsub("-","",edate))
+
       if(file.info(fname)$size == 0)
         {
           file.remove(fname)

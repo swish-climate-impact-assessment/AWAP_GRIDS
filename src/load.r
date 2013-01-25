@@ -51,7 +51,7 @@ for(date_i in seq(as.Date(start_at), as.Date(end_at), 1))
                    enddate=as.POSIXct(edate))
 
     fname <- sprintf("%s_%s%s.grid.Z",measure_i,gsub("-","",sdate),gsub("-","",edate))
-    fname <- sprintf("%s_%s%s.grid.Z",measure_i,gsub("-","",sdate),gsub("-","",edate))
+
     if(file.info(fname)$size == 0)
       {
         file.remove(fname)
