@@ -35,14 +35,17 @@ for(date_i in seq(as.Date(start_at), as.Date(end_at), 1))
   vars <- scope[[3]]
   print(vars)
 #}
-# TODO check if dates exist in database
-#  tbls <- pgListTables()
 #  started <- Sys.time()
   for(i in 1:length(vars[[1]])){
 #    i = 1
     measure_i <- vars[[1]][i]
     variable <- variableslist[which(variableslist$measure == measure_i),]
     vname <- as.character(variable[,1])
+
+    tbls <- pgListTables(conn=ch, schema='awap_grids',
+      pattern=paste(measure_i,"_", gsub("-","",sdate), sep=""))
+
+    if(nrow(tbls)>0) next
 
     get_data_range(variable=as.character(variable[,1]),
                    measure=as.character(variable[,2]),
