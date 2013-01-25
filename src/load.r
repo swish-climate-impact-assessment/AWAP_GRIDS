@@ -41,9 +41,9 @@
 
    tbls <- pgListTables(conn=ch, schema='awap_grids', pattern = measure_i)
 #     pattern=paste(measure_i,"_", gsub("-","",sdate), sep=""))
-   tbls$date <- paste(substr(gsub("maxave_","",tbls[,1]),1,4),
-           substr(gsub("maxave_","",tbls[,1]),5,6),
-           substr(gsub("maxave_","",tbls[,1]),7,8),
+   tbls$date <- paste(substr(gsub(measure_i,"_",tbls[,1]),1,4),
+           substr(gsub(measure_i,"_",tbls[,1]),5,6),
+           substr(gsub(measure_i,"_",tbls[,1]),7,8),
            sep="-")
    tbls$date <- as.Date(tbls$date)
    datelist <-  which(datelist_full$date %in% tbls$date)
