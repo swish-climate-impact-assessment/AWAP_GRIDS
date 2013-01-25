@@ -1063,6 +1063,18 @@ pgListTables <- function(conn, schema, pattern = NA)
   
 #+end_src
 
+*** TODO run multiple sessions
+#+name:setupCLsession
+#+begin_src sh :session *shell* :tangle src/setupCLsession.txt :exports none :eval no
+################################################################
+# name:setupCLsession
+  R
+  setwd('~/data/AWAP_GRIDS/')
+  startdate <- '1993-01-18'
+  enddate <- '1993-03-18'
+  source('main.r')
+#+end_src
+
 *** check database size
 #+name:check_dbsize
 #+begin_src R :session *R* :tangle src/check_dbsize.r :exports none :eval no

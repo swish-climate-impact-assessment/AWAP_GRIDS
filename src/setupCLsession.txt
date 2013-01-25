@@ -1,0 +1,8 @@
+
+################################################################
+# name:setupCLsession
+  R
+  setwd('~/data/AWAP_GRIDS/')
+  startdate <- '1993-01-18'
+  enddate <- '1993-03-18'
+  source('main.r')
