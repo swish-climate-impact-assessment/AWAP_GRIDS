@@ -4,6 +4,6 @@ cache_loading: on
 munging: on
 logging: off
 load_libraries: on
-libraries: reshape, plyr, ggplot2, stringr, lubridate, fgui, raster, rgdal
+libraries: reshape, plyr, ggplot2, stringr, lubridate, fgui, raster, rgdal, swishdbtools, RJDBC
 as_factors: on
 data_tables: off

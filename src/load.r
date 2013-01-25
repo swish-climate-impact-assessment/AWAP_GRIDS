@@ -15,7 +15,9 @@
 setwd(workdir)
 require(ProjectTemplate)
 load.project()
-
+ch <- connect2postgres(h = '115.146.84.135', db = 'ewedb',
+                       user = 'gislibrary',
+                       p='gislibrary')
 print(paste('root directory:', workdir))
 setwd('data')
 
@@ -28,12 +30,12 @@ for(date_i in seq(as.Date(start_at), as.Date(end_at), 1))
 {
   date_i <- as.Date(date_i, origin = '1970-01-01')
   date_i <- as.character(date_i)
-  print(date_i)
+#  print(date_i)
 
   sdate <- date_i
   edate <- date_i
   vars <- scope[[3]]
-  print(vars)
+#  print(vars)
 #}
 #  started <- Sys.time()
   for(i in 1:length(vars[[1]])){
