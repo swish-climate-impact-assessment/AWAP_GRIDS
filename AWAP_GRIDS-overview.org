@@ -655,6 +655,7 @@ get_data_range<-function(variable,measure,timestep,startdate,enddate){
           sep="-")
   tbls$date <- as.Date(tbls$date)
   head(tbls)
+  tbls <- tbls[tbls$date > as.Date('1912-01-01'),]
   plot(tbls$date, rep(1,nrow(tbls)), type = 'h')
   tbls[tbls$date < as.Date('1999-01-01'),]
   tbls[tbls$date >= as.Date('2006-07-01') & tbls$date < as.Date('2007-01-01'),]
@@ -1026,6 +1027,21 @@ get_data_range<-function(variable,measure,timestep,startdate,enddate){
   }
   
   setwd(workdir)
+  
+#+end_src
+
+*** check database size
+#+name:check_dbsize
+#+begin_src R :session *R* :tangle src/check_dbsize.r :exports none :eval no
+  ################################################################
+  # name:check_dbsize
+   require(ProjectTemplate)
+    load.project()
+  
+    require(swishdbtools)
+    ch <- connect2postgres(h = '115.146.84.135', db = 'ewedb', user=
+                           'gislibrary', p = 'gislibrary')
+    sqlquery_select(ch, from_table = 'dbsize', limit = -1, eval = TRUE)
   
 #+end_src
 
@@ -1465,8 +1481,8 @@ system('test.bat')
   
   R
   setwd('~/data/AWAP_GRIDS/')
-  startdate <- '2000-01-01'
-  enddate <- '2000-03-17'
+  startdate <- '1993-01-18'
+  enddate <- '1993-03-18'
   source('main.r')
   
 #+end_src

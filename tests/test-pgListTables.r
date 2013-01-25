@@ -14,6 +14,7 @@ tbls$date <- paste(substr(gsub("maxave_","",tbls[,1]),1,4),
         sep="-")
 tbls$date <- as.Date(tbls$date)
 head(tbls)
+tbls <- tbls[tbls$date > as.Date('1912-01-01'),]
 plot(tbls$date, rep(1,nrow(tbls)), type = 'h')
 tbls[tbls$date < as.Date('1999-01-01'),]
 tbls[tbls$date >= as.Date('2006-07-01') & tbls$date < as.Date('2007-01-01'),]
