@@ -7,47 +7,85 @@
 require(ProjectTemplate)
 load.project()
 
-# All the potentially messy data cleanup
-  ch <- connect2postgres(h = '115.146.84.135', db = 'ewedb', user= 'ivan_hanigan')
-  # enter password at console
-  shp <- dbGetQuery(ch, 'select stnum, lat, lon from weather_bom.combstats')
-#  shp <- dbGetQuery(ch, 'select sla_code, st_x(st_centroid(the_geom)) as lon, st_y(st_centroid(the_geom)) as lat from abs_sla.aussla01')
-  nrow(shp)
-  if (!require(rgdal)) install.packages('rgdal'); require(rgdal)
-  epsg <- make_EPSG()
+ch <- connect2postgres(h = '115.146.84.135', db = 'ewedb', user= 'gislibrary')
+start_at <- '2012-01-01'
+end_at <- '2012-01-02'
+datelist_full <- as.data.frame(seq(as.Date(start_at),
+  as.Date(end_at), 1))
+names(datelist_full) <- 'date'
 
-  ## Treat data frame as spatial points
-  shp <- SpatialPointsDataFrame(cbind(shp$lon,shp$lat),shp,
-                                proj4string=CRS(epsg$prj4[epsg$code %in% '4283']))
-  str(shp)
-  head(shp@data)
-  ## #writeOGR(shp, 'test.shp', 'test', driver='ESRI Shapefile')
+measure_i <- 'maxave'
+tbls <- pgListTables(conn=ch, schema='awap_grids', pattern = measure_i)
 
+pattern_x <- paste(measure_i,"_",sep="")
+tbls$date <- paste(
+               substr(gsub(pattern_x,"",tbls[,1]),1,4),
+               substr(gsub(pattern_x,"",tbls[,1]),5,6),
+               substr(gsub(pattern_x,"",tbls[,1]),7,8),
+               sep="-")
+tbls$date <- as.Date(tbls$date)
+datelist <- which(datelist_full$date %in% tbls$date)
 
-  #################################
-  # start getting CCD temperatures
-  #setwd(rootdir)
-#  started <- Sys.time()
-#  for(v in 4:6){
-   v = 1
-  rootdir <- paste(getwd(),'/',variableslist[v,1],sep='')
-#  dir(rootdir)[1]
-  cfiles <- dir(rootdir)
-  cfiles <- cfiles[grep(as.character(variableslist[v,2]), cfiles)]
+if(length(datelist) == 0)
+{
+  datelist <- datelist_full[,]
+} else {
+  datelist <- datelist_full[datelist,]
+}
 
-#    for (i in seq_len(length(cfiles))) {# solar failed at this day 494:length(cfiles)){
-    #   i <- 1
-      #i <- grep('20000827',cfiles)
-      fname <- cfiles[[i]]
-      variablename <- strsplit(fname, '_')[[1]][1]
-      timevar <- gsub('.TIF', '', strsplit(fname, '_')[[1]][2])
-      timevar <- substr(timevar, 1,8)
-      year <- substr(timevar, 1,4)
-      month <- substr(timevar, 5,6)
-      day <- substr(timevar, 7,8)
-      timevar <- as.Date(paste(year, month, day, sep = '-'))
-      r <- raster(file.path(rootdir,fname))
-      e <- extract(r, shp, df=T)
-      str(e) ## print for debugging
-      image(r)
-      plot(shp, add = T)
+tbl_exists <- pgListTables(conn=ch, schema='awap_grids', pattern =
+                           paste(measure_i,"_join_stations",
+                                 sep = "")
+                           )
+tbl_exists
+for(date_i in datelist)
+{
+#  date_i <- datelist[2]
+  date_i <- as.Date(date_i, origin = '1970-01-01')
+  date_i <- as.character(date_i)
+  print(date_i)
+
+  date_name <- gsub('-','',date_i)
+
+  if(which(date_i == datelist) == 1 & nrow(tbl_exists))
+  {
+  dbSendQuery(ch,
+  #  cat(
+    paste("drop table awap_grids.",measure_i,"_join_stations",
+          sep = "")
+    )
+  }
+
+  if(which(date_i == datelist) == 1)
+  {
+  dbSendQuery(ch,
+  #  cat(
+    paste("SELECT pt.stnum, cast('",date_i,"' as date) as date,
+      ST_Value(rt.rast, pt.the_geom) as ",measure_i,"
+    into awap_grids.",measure_i,"_join_stations
+    FROM awap_grids.",measure_i,"_",date_name," rt,
+         weather_bom.combstats pt
+    WHERE ST_Intersects(rast, the_geom)
+    ", sep ="")
+    )
+  } else {
+  dbSendQuery(ch,
+  #  cat(
+    paste("insert into awap_grids.",measure_i,"_join_stations
+    SELECT pt.stnum, cast('",date_i,"' as date) as date,
+      ST_Value(rt.rast, pt.the_geom) as ",measure_i,"
+    FROM awap_grids.",measure_i,"_",date_name," rt,
+         weather_bom.combstats pt
+    WHERE ST_Intersects(rast, the_geom)
+    ", sep ="")
+    )
+  }
+}
+
+qc <- dbGetQuery(ch,
+                 "select *
+                 from awap_grids.maxave_join_stations
+                 where stnum = 70351
+                 order by date
+                 ")
+qc
