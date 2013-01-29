@@ -9,7 +9,7 @@ load.project()
 
 ch <- connect2postgres(h = '115.146.84.135', db = 'ewedb', user= 'gislibrary')
 start_at <- '2012-01-01'
-end_at <- '2012-01-02'
+end_at <- '2013-01-20'
 datelist_full <- as.data.frame(seq(as.Date(start_at),
   as.Date(end_at), 1))
 names(datelist_full) <- 'date'
@@ -43,7 +43,7 @@ for(date_i in datelist)
 #  date_i <- datelist[2]
   date_i <- as.Date(date_i, origin = '1970-01-01')
   date_i <- as.character(date_i)
-  print(date_i)
+#  print(date_i)
 
   date_name <- gsub('-','',date_i)
 
@@ -88,4 +88,5 @@ qc <- dbGetQuery(ch,
                  where stnum = 70351
                  order by date
                  ")
-qc
+str(qc)
+with(qc, plot(date, maxave, type = 'l'))
