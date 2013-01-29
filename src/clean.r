@@ -88,5 +88,9 @@ qc <- dbGetQuery(ch,
                  where stnum = 70351
                  order by date
                  ")
+sql_subset(ch, x='maxave_join_stations', subset="stnum = 70351",
+              schema="awap_grids", limit=10, eval=F)
+sql_subset_into(ch, x='maxave_join_stations', subset="stnum = 70351",
+  schema="awap_grids", into_schema = 'awap_grids', into_table = 'maxave_join_stations2', limit=10, eval=F)
 str(qc)
 with(qc, plot(date, maxave, type = 'l'))

@@ -55,7 +55,7 @@ cache_loading: on
 munging: on
 logging: off
 load_libraries: on
-libraries: reshape, plyr, ggplot2, stringr, lubridate, fgui, raster, rgdal, swishdbtools, RJDBC
+libraries: reshape, plyr, ggplot2, stringr, lubridate, fgui, raster, rgdal, swishdbtools
 as_factors: on
 data_tables: off
 
@@ -379,6 +379,7 @@ p <- getPassword()
   require(swishdbtools)
   if(!require(raster)) install.packages('raster', repos='http://cran.csiro.au');require(raster)
   if(!require(fgui)) install.packages('fgui', repos='http://cran.csiro.au');require(fgui)
+if(!require(rgdal)) install.packages('rgdal', repos='http://cran.csiro.au');require(rgdal)
   
   ####
   # MAKE SURE YOU HAVE THE CORE LIBS
@@ -664,11 +665,12 @@ pgListTables <- function(conn, schema, pattern = NA)
   
   require(swishdbtools)
   ch <- connect2postgres(h = '115.146.84.135', db = 'ewedb', user=
-                         'gislibrary', p = 'gislibrary')
-  tbls <- pgListTables(conn=ch, schema='awap_grids', pattern='maxave')
-  tbls$date <- paste(substr(gsub("maxave_","",tbls[,1]),1,4),
-          substr(gsub("maxave_","",tbls[,1]),5,6),
-          substr(gsub("maxave_","",tbls[,1]),7,8),
+                         'gislibrary')
+  measure_i <- 'totals'
+  tbls <- pgListTables(conn=ch, schema='awap_grids', pattern=measure_i)
+  tbls$date <- paste(substr(gsub(paste(measure_i,"_",sep=""),"",tbls[,1]),1,4),
+          substr(gsub(paste(measure_i,"_",sep=""),"",tbls[,1]),5,6),
+          substr(gsub(paste(measure_i,"_",sep=""),"",tbls[,1]),7,8),
           sep="-")
   tbls$date <- as.Date(tbls$date)
   head(tbls)
@@ -1658,6 +1660,10 @@ system('test.bat')
                    where stnum = 70351
                    order by date
                    ")
+  sql_subset(ch, x='maxave_join_stations', subset="stnum = 70351",
+                schema="awap_grids", limit=10, eval=F)
+  sql_subset_into(ch, x='maxave_join_stations', subset="stnum = 70351",
+    schema="awap_grids", into_schema = 'awap_grids', into_table = 'maxave_join_stations2', limit=10, eval=F)
   str(qc)
   with(qc, plot(date, maxave, type = 'l'))
   
