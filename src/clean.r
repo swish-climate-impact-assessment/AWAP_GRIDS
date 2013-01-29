@@ -93,4 +93,20 @@ sql_subset(ch, x='maxave_join_stations', subset="stnum = 70351",
 qc <- sql_subset_into(ch, x='maxave_join_stations', subset="stnum = 70351",
   schema="awap_grids", into_schema = 'awap_grids', into_table = 'maxave_join_stations2', limit=-1, eval=T)
 str(qc)
+qc <- dbGetQuery(ch, "select * from awap_grids.maxave_join_stations2")
+qc <- arrange(qc,by=qc$date)
 with(qc, plot(date, maxave, type = 'l'))
+tail(qc)
+
+qc2 <- EHIs(analyte = qc,
+                 exposurename = 'maxave',
+                 datename = 'date',
+                 referencePeriodStart = as.Date('1980-1-1'),
+                 referencePeriodEnd = as.Date('2000-12-31'),
+                 nlags = 32)
+head(qc2)
+hist(subset(qc2, EHF >= 1)[,'EHF'])
+threshold <- quantile(subset(qc2, EHF >= 1)[,'EHF'], probs=0.9)
+
+with(qc, plot(date, maxave, type = 'l'))
+with(subset(qc2, EHF > threshold), points(date, maxave, col = 'red', pch = 16))
