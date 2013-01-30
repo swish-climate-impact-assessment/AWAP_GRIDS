@@ -168,7 +168,7 @@ for(date_i in datelist)
   }
   }
 
-qc <- sql_subset(ch, x=paste(measure_i,"_join_", pwcName,sep=""), 
+qc <- sql_subset(ewedb, x=paste(measure_i,"_join_", pwcName,sep=""), 
            schema="awap_grids", eval=T)
 qc <- arrange(qc,qc$sla_code,qc$date)
 #cat(qc)
