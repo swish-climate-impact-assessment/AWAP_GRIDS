@@ -1,8 +1,30 @@
 
 ################################################################
 # name:setupCLsession
+#ssh ivan_hanigan@130.56.102.53
+
   R
   setwd('~/data/AWAP_GRIDS/')
-  startdate <- '1993-01-18'
-  enddate <- '1993-03-18'
+  startdate <- '1980-01-01'
+  enddate <- '1989-12-31'
   source('main.r')
+
+  R
+  setwd('~/data/AWAP_GRIDS/')
+  startdate <- '1990-01-01'
+  enddate <- '1999-12-31'
+  source('main.r')
+
+  R
+  setwd('~/data/AWAP_GRIDS/')
+  startdate <- '2000-01-01'
+  enddate <- '2009-12-31'
+  source('main.r')
+
+  R
+  setwd('~/data/AWAP_GRIDS/')
+  startdate <- '2010-01-01'
+  enddate <- '2013-01-23'
+  source('main.r')
+
+

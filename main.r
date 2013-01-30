@@ -24,8 +24,8 @@ load.project()
 
 ####################
 # user definitions, or setup interactively
-#startdate <- '2009-08-06'
-#enddate <-  '2009-12-31' #Sys.Date()-2
+startdate <- '1980-01-01'
+enddate <-  '2013-01-20' #Sys.Date()-2
 interactively <- FALSE
 variablenames <- 'maxave,minave,solarave,totals,vprph09,vprph15'
 aggregation_factor <- 3
