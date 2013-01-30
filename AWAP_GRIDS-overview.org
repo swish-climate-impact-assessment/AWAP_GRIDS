@@ -55,7 +55,7 @@ cache_loading: on
 munging: on
 logging: off
 load_libraries: on
-libraries: reshape, plyr, ggplot2, stringr, lubridate, fgui, raster, rgdal, swishdbtools, RJDBC
+libraries: reshape, plyr, ggplot2, stringr, lubridate, fgui, raster, rgdal, swishdbtools
 as_factors: on
 data_tables: off
 
@@ -379,6 +379,7 @@ p <- getPassword()
   require(swishdbtools)
   if(!require(raster)) install.packages('raster', repos='http://cran.csiro.au');require(raster)
   if(!require(fgui)) install.packages('fgui', repos='http://cran.csiro.au');require(fgui)
+if(!require(rgdal)) install.packages('rgdal', repos='http://cran.csiro.au');require(rgdal)
   
   ####
   # MAKE SURE YOU HAVE THE CORE LIBS
@@ -664,11 +665,12 @@ pgListTables <- function(conn, schema, pattern = NA)
   
   require(swishdbtools)
   ch <- connect2postgres(h = '115.146.84.135', db = 'ewedb', user=
-                         'gislibrary', p = 'gislibrary')
-  tbls <- pgListTables(conn=ch, schema='awap_grids', pattern='maxave')
-  tbls$date <- paste(substr(gsub("maxave_","",tbls[,1]),1,4),
-          substr(gsub("maxave_","",tbls[,1]),5,6),
-          substr(gsub("maxave_","",tbls[,1]),7,8),
+                         'gislibrary')
+  measure_i <- 'totals'
+  tbls <- pgListTables(conn=ch, schema='awap_grids', pattern=measure_i)
+  tbls$date <- paste(substr(gsub(paste(measure_i,"_",sep=""),"",tbls[,1]),1,4),
+          substr(gsub(paste(measure_i,"_",sep=""),"",tbls[,1]),5,6),
+          substr(gsub(paste(measure_i,"_",sep=""),"",tbls[,1]),7,8),
           sep="-")
   tbls$date <- as.Date(tbls$date)
   head(tbls)
@@ -1443,7 +1445,7 @@ save storage space as geotiff
 #+end_src
 ** test readGDAL
 #+name:test-readGDAL
-#+begin_src R :session *shell* :tangle no :exports none :eval no
+#+begin_src R :session *shell* :tangle tests/test-readGDAL2.r :exports none :eval no
   ################################################################
   # name:test-readGDAL
   require(raster)
@@ -1466,20 +1468,20 @@ save storage space as geotiff
    return(r)
   }
   
-  r <- readGDAL2('115.146.84.135', 'ivan_hanigan', 'ewedb',
-                 schema = 'awap_grids', table = 'tmax2013010820130108',
-                 p = 'kazoowazoo')
+  r <- readGDAL2('115.146.84.135', 'gislibrary', 'ewedb',
+                 schema = 'awap_grids', table = 'tmax2013010820130108'
+                 )
   # bah
   r <-
-                 readGDAL("PG:host=115.146.84.135 port=5432 dbname='ewedb' user='ivan_hanigan' password='kazoowazoo' schema='awap_grids' table=tmax2013010820130108")
+                 readGDAL("PG:host=115.146.84.135 port=5432 dbname='ewedb' user='gislibrary' password='gislibrary' schema='awap_grids' table=maxave_20130108")
   
   r2 <- raster(r)
   r3 <- aggregate(r2, fact=2, fun = mean)
   writeGDAL(r2, 'data/test1.TIF',drivername="GTiff")
   writeRaster(r3, 'data/test2.TIF',format="GTiff")
   
-                                          #writeGDAL(r3, "PG:host=115.146.84.135 port=5432 dbname='ewedb' user='ivan_hanigan' password='kazoowazoo' schema='awap_grids' table=tmax20130108201301082")
-# gdalinfo  "PG:host=115.146.84.135 port=5432 dbname='ewedb' user='ivan_hanigan' password='kazoowazoo' schema='awap_grids' table=tmax2013010820130108"   
+                                          #writeGDAL(r3, "PG:host=115.146.84.135 port=5432 dbname='ewedb' user='gislibrary' password='gislibrary' schema='awap_grids' table=tmax20130108201301082")
+# gdalinfo  "PG:host=115.146.84.135 port=5432 dbname='ewedb' user='gislibrary' password='gislibrary' schema='awap_grids' table=tmax2013010820130108"   
 #+end_src
 
 ** test uncompress
@@ -1658,9 +1660,28 @@ system('test.bat')
                    where stnum = 70351
                    order by date
                    ")
+  sql_subset(ch, x='maxave_join_stations', subset="stnum = 70351",
+                schema="awap_grids", limit=10, eval=F)
+  qc <- sql_subset_into(ch, x='maxave_join_stations', subset="stnum = 70351",
+    schema="awap_grids", into_schema = 'awap_grids', into_table = 'maxave_join_stations2', limit=-1, eval=T)
   str(qc)
+  qc <- dbGetQuery(ch, "select * from awap_grids.maxave_join_stations2")
+  qc <- arrange(qc,by=qc$date)
   with(qc, plot(date, maxave, type = 'l'))
+  tail(qc)
   
+  qc2 <- EHIs(analyte = qc,
+                   exposurename = 'maxave',
+                   datename = 'date',
+                   referencePeriodStart = as.Date('1980-1-1'),
+                   referencePeriodEnd = as.Date('2000-12-31'),
+                   nlags = 32)
+  head(qc2)
+  hist(subset(qc2, EHF >= 1)[,'EHF'])
+  threshold <- quantile(subset(qc2, EHF >= 1)[,'EHF'], probs=0.9)
+  
+  with(qc, plot(date, maxave, type = 'l'))
+  with(subset(qc2, EHF > threshold), points(date, maxave, col = 'red', pch = 16))
 #+end_src
 
 *** COMMENT deprecated-clean
