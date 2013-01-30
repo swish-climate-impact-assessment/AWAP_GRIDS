@@ -30,33 +30,14 @@
   #  print(vars)
 
   #  started <- Sys.time()
-  datelist_full <- as.data.frame(seq(as.Date(start_at),
-    as.Date(end_at), 1))
-  names(datelist_full) <- 'date'
+
   for(i in 1:length(vars[[1]])){
   #    i = 1
     measure_i <- vars[[1]][i]
     variable <- variableslist[which(variableslist$measure == measure_i),]
     vname <- as.character(variable[,1])
 
-   tbls <- pgListTables(conn=ch, schema='awap_grids', pattern = measure_i)
-#     pattern=paste(measure_i,"_", gsub("-","",sdate), sep=""))
-   pattern_x <- paste(measure_i,"_",sep="")
-   tbls$date <- paste(
-                  substr(gsub(pattern_x,"",tbls[,1]),1,4),
-                  substr(gsub(pattern_x,"",tbls[,1]),5,6),
-                  substr(gsub(pattern_x,"",tbls[,1]),7,8),
-                  sep="-")
-   tbls$date <- as.Date(tbls$date)
-   datelist <-  which(datelist_full$date %in% tbls$date)
-
-    if(length(datelist) == 0)
-      {
-        datelist <- datelist_full[,]
-      } else {
-        datelist <- datelist_full[-datelist,]
-      }
-
+    datelist <- DatesUnavaliable(ch, measure_i, start_at, end_at)
 
     for(date_i in datelist)
     {
