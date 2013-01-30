@@ -13,7 +13,9 @@ dbGetQuery(delphe, 'select * from ABS_CD.auscd06_master limit 1')
 varID <- 'sla_code'
 pwcName <- 'sla_pwc'
 ste <- 'act'
+measure_i <- 'maxave'
 
+  
 dbGetQuery(delphe,
            # cat(
            paste('drop table public.',pwcName,';
@@ -92,7 +94,7 @@ require(ProjectTemplate)
 load.project()
 
 ch <- connect2postgres(h = '115.146.84.135', db = 'ewedb', user= 'gislibrary')
-start_at <- '2012-01-01'
+start_at <- '1980-01-01'
 end_at <- '2013-01-20'
 datelist_full <- as.data.frame(seq(as.Date(start_at),
                                    as.Date(end_at), 1))
@@ -127,7 +129,7 @@ for(date_i in datelist)
   #  date_i <- datelist[1]
   date_i <- as.Date(date_i, origin = '1970-01-01')
   date_i <- as.character(date_i)
-  #  print(date_i)
+    print(date_i)
   
   date_name <- gsub('-','',date_i)
   
@@ -144,24 +146,50 @@ for(date_i in datelist)
   {
     dbSendQuery(ch,
                 #  cat(
-                paste("SELECT pt.stnum, cast('",date_i,"' as date) as date,
+                paste("SELECT pt.",varID,", cast('",date_i,"' as date) as date,
                       ST_Value(rt.rast, pt.the_geom) as ",measure_i,"
                       into awap_grids.",measure_i,"_join_", pwcName,
                       " FROM awap_grids.",measure_i,"_",date_name," rt,
-                      weather_bom.combstats pt
+                      ",pwcName," pt
                       WHERE ST_Intersects(rast, the_geom)
                       ", sep ="")
                 )
   } else {
     dbSendQuery(ch,
                 #  cat(
-                paste("insert into awap_grids.",measure_i,"_join_", pwcName,
-                      " SELECT pt.stnum, cast('",date_i,"' as date) as date,
+                paste("insert into awap_grids.",measure_i,"_join_", pwcName," (",varID,", date, ",measure_i,")",
+                      " SELECT pt.",varID,", cast('",date_i,"' as date) as date,
                       ST_Value(rt.rast, pt.the_geom) as ",measure_i,"
                       FROM awap_grids.",measure_i,"_",date_name," rt,
-                      weather_bom.combstats pt
+                      ",pwcName," pt
                       WHERE ST_Intersects(rast, the_geom)
                       ", sep ="")
                 )
   }
   }
+
+qc <- sql_subset(ch, x=paste(measure_i,"_join_", pwcName,sep=""), 
+           schema="awap_grids", eval=T)
+qc <- arrange(qc,qc$sla_code,qc$date)
+#cat(qc)
+head(qc)
+# qc <- sql_subset_into(ch, x='maxave_join_stations', subset="stnum = 70351",
+#                       schema="awap_grids", into_schema = 'awap_grids', into_table = 'maxave_join_stations2', limit=-1, eval=T)
+# str(qc)
+# qc <- dbGetQuery(ch, "select * from awap_grids.maxave_join_stations2")
+# qc <- arrange(qc,by=qc$date)
+qc <- subset(qc, sla_code == 805050089)
+with(qc, plot(date, maxave, type = 'l'))
+source('~/ExcessHeatIndices/src/EHIs_tools.r', echo=TRUE)
+qc2 <- EHIs(analyte = qc,
+            exposurename = 'maxave',
+            datename = 'date',
+            referencePeriodStart = as.Date('1980-1-1'),
+            referencePeriodEnd = as.Date('2000-12-31'),
+            nlags = 32)
+head(qc2)
+hist(subset(qc2, EHF >= 1)[,'EHF'])
+threshold <- quantile(subset(qc2, EHF >= 1)[,'EHF'], probs=0.9)
+
+with(qc, plot(date, maxave, type = 'l'))
+with(subset(qc2, EHF > threshold), points(date, maxave, col = 'red', pch = 16))
