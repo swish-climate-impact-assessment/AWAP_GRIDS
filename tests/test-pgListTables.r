@@ -5,8 +5,9 @@ require(ProjectTemplate)
 load.project()
 
 require(swishdbtools)
+p <- getPassword(remote=T)
 ch <- connect2postgres(h = '115.146.84.135', db = 'ewedb', user=
-                       'gislibrary')
+                       'gislibrary', p=p)
 measure_i <- 'vprph15'
 tbls <- pgListTables(conn=ch, schema='awap_grids', pattern=measure_i)
 tbls$date <- paste(substr(gsub(paste(measure_i,"_",sep=""),"",tbls[,1]),1,4),
