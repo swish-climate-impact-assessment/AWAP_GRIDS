@@ -640,9 +640,9 @@ get_data_range<-function(variable,measure,timestep,startdate,enddate){
   
 #+end_src
 
-*** load2postgres_raster
+*** COMMENT load2postgres_raster
 #+name:load2postgres_raster
-#+begin_src R :session *R* :tangle lib/load2postgres_raster.r :exports none :eval no
+#+begin_src R :session *R* :tangle no :exports none :eval no
   ################################################################
   # name:load2postgres_raster
   load2postgres_raster <- function(filename, remove = TRUE)
@@ -700,9 +700,9 @@ get_data_range<-function(variable,measure,timestep,startdate,enddate){
     return(tables)
   }
 #+end_src
-*** pgListTables
+*** COMMENT pgListTables
 #+name:pgListTables
-#+begin_src R :session *R* :tangle lib/pgListTables.r :exports none :eval no
+#+begin_src R :session *R* :tangle no :exports none :eval no
 ################################################################
 # name:pgListTables
 pgListTables <- function(conn, schema, pattern = NA)
