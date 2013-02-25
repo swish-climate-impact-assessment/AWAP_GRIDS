@@ -5,7 +5,7 @@ The aim of this script is to download the spatial grids of the Australian Water 
 Working with raw grids was assessed first but was considered less desirable than loading these to a PostGIS database server, which is what the code does now.
 
 WARNING
-I checked with the BoM contact office and they said they did not mind if we ping their server like this, but beware that the grids are sizable and you may get a lot of data downloaded in a short amount of time!
+Beware that the daily gridded dataset is sizable and you may get a lot of data downloaded in a short amount of time!
 
 Ivan Hanigan
-2012-02-08
+2013-02-25
