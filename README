@@ -1,4 +1,8 @@
-The aim of the script is to download the spatial grids of the Australian Water Availability Project http://www.bom.gov.au/jsp/awap/, and I want to get a time-series for arbitrary pixels based on place-name or BoM station number (and compare the pixels to the stations).  
+AWAP GRIDS
+
+The aim of this script is to download the spatial grids of the Australian Water Availability Project http://www.bom.gov.au/jsp/awap/, and experiment with extracting time-series for arbitrary pixels based on place-name or BoM station number (and compare the pixels to the stations).  
+
+Working with raw grids was assessed first but was considered less desirable than loading these to a PostGIS database server, which is what the code does now.
 
 WARNING
 I checked with the BoM contact office and they said they did not mind if we ping their server like this, but beware that the grids are sizable and you may get a lot of data downloaded in a short amount of time!
