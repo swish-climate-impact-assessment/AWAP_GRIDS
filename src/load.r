@@ -71,8 +71,11 @@ for(i in 1:length(vars[[1]])){
 
     raster_aggregate(filename = gsub('.Z$','',fname),
       aggregationfactor = aggregation_factor, delete = TRUE)
-
-    load2postgres_raster(filename = gsub(".grid.Z", ".tif", fname))
+    outname <- gsub('.tif',"", fname)
+    outname <- substr(outname, 1, nchar(outname) - 8)
+    load2postgres_raster(filename = gsub(".grid.Z", ".tif", fname),
+      out_schema="awap_grids",
+      out_table=outname)
 
   }
 
