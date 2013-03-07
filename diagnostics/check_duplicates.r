@@ -10,9 +10,11 @@ pwd <- get_passwordTable()
 pwd <- pwd[which(pwd$V3 == 'ewedb'),5]
 datesList <- seq(as.Date("2007-10-01"), as.Date("2007-10-31"), 1)
 date_j <- datesList[1]
-print(date_i)
+print(date_j)
 
-
+r <- readGDAL2("115.146.84.135", "gislibrary", "ewedb", "awap_grids",
+               "maxave_20130305", pwd)
+image(r)
 system.time(
 sus_dates <- check_duplicates(ch, dates = datesList)
   )
