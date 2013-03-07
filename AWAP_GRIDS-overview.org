@@ -1796,6 +1796,7 @@ check_duplicates <- function(conn, measures = c("vprph09","vprph15"), dates)
   system.time(
   sus_dates <- check_duplicates(ch, dates = datesList)
     )
+  sus_dates
   
 #+end_src
 

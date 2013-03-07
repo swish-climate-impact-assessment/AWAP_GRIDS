@@ -16,3 +16,4 @@ print(date_i)
 system.time(
 sus_dates <- check_duplicates(ch, dates = datesList)
   )
+sus_dates
