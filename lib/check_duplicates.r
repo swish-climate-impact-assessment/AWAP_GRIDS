@@ -5,7 +5,7 @@ check_duplicates <- function(conn, measures = c("vprph09","vprph15"), dates)
     {
   suspicious_dates <- list()
   #measures <- c("maxave","minave", "solarave","totals",
-  
+
   for(j in 1:length(dates))
     {
       #date_j <- dates[2]
@@ -13,20 +13,26 @@ check_duplicates <- function(conn, measures = c("vprph09","vprph15"), dates)
       date_i <- gsub("-","",date_j)
       print(date_i)
       rasters <- list()
+
+  #      print(measure)
+        rastername <- paste(measures[1], "_", date_i, sep ="")
+        rastername2 <- paste(measures[2], "_", date_i, sep ="")
+        tableExists <- pgListTables(ch, schema="awap_grids",
+    pattern=rastername)
+        tableExists2 <- pgListTables(ch, schema="awap_grids", pattern=rastername2)
+        if(nrow(tableExists) == 0 | nrow(tableExists2) == 0)
+        {
+          next
+        }
       for(i in 1:length(measures))
       {
   #      i = 2
         measure <- measures[i]
-  #      print(measure)
-        rastername <- paste(measure, "_", date_i, sep ="")
-        tableExists <- pgListTables(ch, schema="awap_grids", pattern=rastername)
-        if(nrow(tableExists) > 0)
-        {
           r1 <- readGDAL2("115.146.84.135", "gislibrary", "ewedb",
                           "awap_grids", rastername, p = pwd)
   #        image(r1)
           rasters[[i]] <- r1
-        }
+
       }
         ## str(rasters)
       ##   par(mfrow = c(1,2))
@@ -40,8 +46,8 @@ check_duplicates <- function(conn, measures = c("vprph09","vprph15"), dates)
           suspicious_dates[[counter + 1]] <- rastername
         }
       rm(suspect)
-  
+
     }
-  
+
   return(suspicious_dates)
   }
