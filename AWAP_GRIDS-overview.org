@@ -1880,7 +1880,8 @@ system('test.bat')
   sus_dates2
   dir()
   
-  
+#+end_src  
+*** deprecated sql stuff
   ## sql <- sql_subset(ch, paste("awap_grids.",rastername,sep=""), limit = 1, eval = F, check = F)
   ## cat(sql)
   ## compare <- dbGetQuery(ch,
