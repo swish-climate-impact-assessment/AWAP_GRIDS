@@ -1,3 +1,6 @@
+
+################################################################
+# name:check-duplicates-report
 sus_dates <- read.table("~/data/AWAP_GRIDS/sus_dates.csv", quote="\"")
 sus_dates$date <- paste(substr(gsub(paste(measure_i,"_",sep=""),"",sus_dates[,1]),1,4),
   substr(gsub(paste(measure_i,"_",sep=""),"",sus_dates[,1]),5,6),
