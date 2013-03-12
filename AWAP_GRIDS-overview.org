@@ -1731,7 +1731,7 @@ system('test.bat')
   # name:check_duplicates
   check_duplicates <- function(conn, measures = c("vprph09","vprph15"), dates)
       {
-    suspicious_dates <- list()
+    #suspicious_dates <- list()
     #measures <- c("maxave","minave", "solarave","totals",
   
     for(j in 1:length(dates))
@@ -1743,10 +1743,10 @@ system('test.bat')
         rasters <- list()
   
     #      print(measure)
-          rastername <- paste(measures[1], "_", date_i, sep ="")
+          rastername1 <- paste(measures[1], "_", date_i, sep ="")
           rastername2 <- paste(measures[2], "_", date_i, sep ="")
           tableExists <- pgListTables(ch, schema="awap_grids",
-      pattern=rastername)
+      pattern=rastername1)
           tableExists2 <- pgListTables(ch, schema="awap_grids", pattern=rastername2)
           if(nrow(tableExists) == 0 | nrow(tableExists2) == 0)
           {
@@ -1756,6 +1756,7 @@ system('test.bat')
         {
     #      i = 2
           measure <- measures[i]
+          rastername <- paste(measures[i], "_", date_i, sep ="")
             r1 <- readGDAL2("115.146.84.135", "gislibrary", "ewedb",
                             "awap_grids", rastername, p = pwd)
     #        image(r1)
@@ -1770,14 +1771,18 @@ system('test.bat')
         #all.equal(head(rasters[[1]]@data), head(rasters[[2]]@data))
         if(suspect)
           {
-            counter <- length(suspicious_dates)
-            suspicious_dates[[counter + 1]] <- rastername
+            #counter <- length(suspicious_dates)
+            #suspicious_dates[[counter + 1]] <- rastername
+            sink('sus_dates.csv', append = T)
+            cat(rastername)
+            cat('\n')
+            sink()
           }
         rm(suspect)
   
       }
   
-    return(suspicious_dates)
+    #return(suspicious_dates)
     }
   
 #+end_src
@@ -1806,7 +1811,16 @@ system('test.bat')
   sus_dates <- check_duplicates(ch, dates = datesList)
     )
   unlist(sus_dates)
-  
+#+end_src
+*** COMMENT deprecated-check-duplicates-sql-code
+#+name:deprecated-check-duplicates-sql
+#+begin_src R :session *R* :tangle no :exports none :eval no
+################################################################
+# name:deprecated-check-duplicates-sql
+
+
+
+    
   # or on db
   measures = c("vprph09","vprph15")
   #measures <- c("maxave","minave", "solarave","totals",
@@ -1917,7 +1931,7 @@ system('test.bat')
   ##           ", sep = "")
   ##           )
   
-
+#+end_src
 
 *** clean-check against stations
 #+name:clean
