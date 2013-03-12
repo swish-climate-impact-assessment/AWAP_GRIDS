@@ -11,6 +11,16 @@
 'http://www.bom.gov.au/web03/ncc/www/awap/solar/solarave/daily/grid/0.05/history/nat/1993080619930806.grid.Z'
 'http://www.bom.gov.au/web03/ncc/www/awap/solar/solarave/daily/grid/0.05/history/nat/2001050820010508.grid.Z'
 # file.remove('data2000-2004/solar/solarave_2001050820010508.grid')
+** TODO main awap links must be obvious
+# Function to download the Australian Water Availability Grids http://www.bom.gov.au/jsp/awap/
+# urls can be like
+  # rain                http://www.bom.gov.au/web03/ncc/www/awap/   rainfall/totals/daily/    grid/0.05/history/nat/2010120120101201.grid.Z
+	# tmax                http://www.bom.gov.au/web03/ncc/www/awap/   temperature/maxave/daily/ grid/0.05/history/nat/2012020620120206.grid.Z
+	# tmin                http://www.bom.gov.au/web03/ncc/www/awap/   temperature/minave/daily/ grid/0.05/history/nat/2012020620120206.grid.Z
+	# vapour pressure 9am http://www.bom.gov.au/web03/ncc/www/awap/   vprp/vprph09/daily/       grid/0.05/history/nat/2012020620120206.grid.Z
+	# vapour pressure 3pm http://www.bom.gov.au/web03/ncc/www/awap/   vprp/vprph15/daily/       grid/0.05/history/nat/2012020620120206.grid.Z
+	# solar               http://www.bom.gov.au/web03/ncc/www/awap/   solar/solarave/daily/     grid/0.05/history/nat/2012020720120207.grid.Z
+	# NDVI                http://reg.bom.gov.au/web03/ncc/www/awap/   ndvi/ndviave/month/       grid/history/nat/2012010120120131.grid.Z
 * Introduction
 NCEPH holds Australian Bureau of Meteorology data for all stations from 1990 to 2010 \cite{NationalClimateCentreoftheBureauofMeteorology:2005}.
 The aim of this project is to download the Australian Water Availability Project (AWAP) gridded datasets \cite{Jones2009}.  In particular we want the vapour pressure data from 2010 so that we don't have to buy it again.  We want to compare it with the station data to see if they are close.
