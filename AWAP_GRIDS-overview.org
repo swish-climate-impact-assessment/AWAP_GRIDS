@@ -379,9 +379,9 @@ p <- getPassword()
 
 
 
-** func
+** COMMENT DEPRECATED IN FAVOUR OF PACKAGE func
 *** core libs
-#+begin_src R  :session *R* :exports none :eval no :tangle lib/func.r
+#+begin_src R  :session *R* :exports none :eval no :tangle no
   # Project: AWAP_GRIDS
   # Author: ivanhanigan
   # Maintainer: Who to complain to <ivan.hanigan@gmail.com>
@@ -423,7 +423,7 @@ p <- getPassword()
 #+end_src
 *** DatesUnavaliable
 #+name:DatesUnavailable
-#+begin_src R :session *shell* :tangle lib/DatesUnavailable.R :exports none :eval no
+#+begin_src R :session *shell* :tangle no :exports none :eval no
 ###########################################################################
 # newnode: DatesUnavailable
 
@@ -466,7 +466,7 @@ DatesUnavaliable <- function (dataBaseConnection, variableName, startDate, endDa
 #+end_src
 
 *** Get Data 
-#+begin_src R :session *R* :tangle lib/get_data.r :exports none :eval no
+#+begin_src R :session *R* :tangle no :exports none :eval no
 # newnode get_data
 # authors: Joseph Guillaume
 # downloads from http://www.bom.gov.au/jsp/awap/
@@ -482,7 +482,7 @@ get_data<-function(variable,measure,timestep,startdate,enddate){
   }
 #+end_src
 *** Get Data Range
-#+begin_src R :session *R* :tangle lib/get_data_range.r :exports none :eval no
+#+begin_src R :session *R* :tangle no :exports none :eval no
 # newnode get_data_range
 # authors: Joseph Guillaume and Francis Markham
 # downloads from http://www.bom.gov.au/jsp/awap/
@@ -514,7 +514,7 @@ get_data_range<-function(variable,measure,timestep,startdate,enddate){
 
 *** variableslist
 #+name:variableslist
-#+begin_src R :session *R* :tangle lib/variableslist.r :exports none :eval no
+#+begin_src R :session *R* :tangle no :exports none :eval no
   ###########################################################################
   # newnode: variableslist
   variableslist<-"variable,measure,timestep
@@ -532,7 +532,7 @@ get_data_range<-function(variable,measure,timestep,startdate,enddate){
 
 *** ProcessFunctions
 #+name:ProcessFunctions.R
-#+begin_src R :session *R* :tangle lib/ProcessFunctions.R :exports none :eval no
+#+begin_src R :session *R* :tangle no :exports none :eval no
   ################################################################
   # name:ProcessFunctions.R
   
@@ -574,7 +574,7 @@ get_data_range<-function(variable,measure,timestep,startdate,enddate){
 
 *** ZipFunctions
 #+name:ZipFunctions.R
-#+begin_src R :session *R* :tangle lib/ZipFunctions.R :exports none :eval no
+#+begin_src R :session *R* :tangle no :exports none :eval no
   ################################################################
   # name:ZipFunctions.R
   uncompress_linux <- function(filename)
@@ -635,7 +635,7 @@ get_data_range<-function(variable,measure,timestep,startdate,enddate){
 
 *** raster_aggregate
 #+name:raster_aggregate
-#+begin_src R :session *R* :tangle lib/raster_aggregate.r :exports none :eval no
+#+begin_src R :session *R* :tangle no :exports none :eval no
   ################################################################
   # name:raster_aggregate
   raster_aggregate <- function(filename, aggregationfactor, delete = TRUE)
@@ -760,7 +760,7 @@ pgListTables <- function(conn, schema, pattern = NA)
 #+end_src
 *** sqlquery_oracle
 #+name:sqlquery
-#+begin_src R :session *R* :tangle lib/sqlquery.r :exports none :eval no
+#+begin_src R :session *R* :tangle no :exports none :eval no
   ################################################################
   # name:aggregate_postgres
   sqlquery <- function(channel, dimensions, operation,
@@ -826,7 +826,7 @@ pgListTables <- function(conn, schema, pattern = NA)
 #+end_src
 *** sqlquery_postgres
 #+name:sqlquery
-#+begin_src R :session *R* :tangle lib/sqlquery_postgres.r :exports none :eval no
+#+begin_src R :session *R* :tangle no :exports none :eval no
   ################################################################
   # name:aggregate_postgres
     
@@ -1739,7 +1739,7 @@ system('test.bat')
 ** clean
 *** COMMENT check_duplicates-lib
 #+name:check_duplicates
-#+begin_src R :session *R* :tangle lib/check_duplicates.r :exports none :eval no
+#+begin_src R :session *R* :tangle no :exports none :eval no
   ################################################################
   # name:check_duplicates
   check_duplicates <- function(conn, measures = c("vprph09","vprph15"), dates)
