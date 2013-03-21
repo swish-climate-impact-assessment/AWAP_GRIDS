@@ -8,7 +8,19 @@
 
 * TODOlist
 ** TODO check solar radiation solarave_2001050820010508.grid
+'http://www.bom.gov.au/web03/ncc/www/awap/solar/solarave/daily/grid/0.05/history/nat/1993080619930806.grid.Z'
+'http://www.bom.gov.au/web03/ncc/www/awap/solar/solarave/daily/grid/0.05/history/nat/2001050820010508.grid.Z'
 # file.remove('data2000-2004/solar/solarave_2001050820010508.grid')
+** TODO main awap links must be obvious
+# Function to download the Australian Water Availability Grids http://www.bom.gov.au/jsp/awap/
+# urls can be like
+  # rain                http://www.bom.gov.au/web03/ncc/www/awap/   rainfall/totals/daily/    grid/0.05/history/nat/2010120120101201.grid.Z
+	# tmax                http://www.bom.gov.au/web03/ncc/www/awap/   temperature/maxave/daily/ grid/0.05/history/nat/2012020620120206.grid.Z
+	# tmin                http://www.bom.gov.au/web03/ncc/www/awap/   temperature/minave/daily/ grid/0.05/history/nat/2012020620120206.grid.Z
+	# vapour pressure 9am http://www.bom.gov.au/web03/ncc/www/awap/   vprp/vprph09/daily/       grid/0.05/history/nat/2012020620120206.grid.Z
+	# vapour pressure 3pm http://www.bom.gov.au/web03/ncc/www/awap/   vprp/vprph15/daily/       grid/0.05/history/nat/2012020620120206.grid.Z
+	# solar               http://www.bom.gov.au/web03/ncc/www/awap/   solar/solarave/daily/     grid/0.05/history/nat/2012020720120207.grid.Z
+	# NDVI                http://reg.bom.gov.au/web03/ncc/www/awap/   ndvi/ndviave/month/       grid/history/nat/2012010120120131.grid.Z
 * Introduction
 NCEPH holds Australian Bureau of Meteorology data for all stations from 1990 to 2010 \cite{NationalClimateCentreoftheBureauofMeteorology:2005}.
 The aim of this project is to download the Australian Water Availability Project (AWAP) gridded datasets \cite{Jones2009}.  In particular we want the vapour pressure data from 2010 so that we don't have to buy it again.  We want to compare it with the station data to see if they are close.
@@ -1731,7 +1743,7 @@ system('test.bat')
   # name:check_duplicates
   check_duplicates <- function(conn, measures = c("vprph09","vprph15"), dates)
       {
-    suspicious_dates <- list()
+    #suspicious_dates <- list()
     #measures <- c("maxave","minave", "solarave","totals",
   
     for(j in 1:length(dates))
@@ -1743,10 +1755,10 @@ system('test.bat')
         rasters <- list()
   
     #      print(measure)
-          rastername <- paste(measures[1], "_", date_i, sep ="")
+          rastername1 <- paste(measures[1], "_", date_i, sep ="")
           rastername2 <- paste(measures[2], "_", date_i, sep ="")
           tableExists <- pgListTables(ch, schema="awap_grids",
-      pattern=rastername)
+      pattern=rastername1)
           tableExists2 <- pgListTables(ch, schema="awap_grids", pattern=rastername2)
           if(nrow(tableExists) == 0 | nrow(tableExists2) == 0)
           {
@@ -1756,6 +1768,7 @@ system('test.bat')
         {
     #      i = 2
           measure <- measures[i]
+          rastername <- paste(measures[i], "_", date_i, sep ="")
             r1 <- readGDAL2("115.146.84.135", "gislibrary", "ewedb",
                             "awap_grids", rastername, p = pwd)
     #        image(r1)
@@ -1770,14 +1783,18 @@ system('test.bat')
         #all.equal(head(rasters[[1]]@data), head(rasters[[2]]@data))
         if(suspect)
           {
-            counter <- length(suspicious_dates)
-            suspicious_dates[[counter + 1]] <- rastername
+            #counter <- length(suspicious_dates)
+            #suspicious_dates[[counter + 1]] <- rastername
+            sink('sus_dates.csv', append = T)
+            cat(rastername)
+            cat('\n')
+            sink()
           }
         rm(suspect)
   
       }
   
-    return(suspicious_dates)
+    #return(suspicious_dates)
     }
   
 #+end_src
@@ -1806,7 +1823,37 @@ system('test.bat')
   sus_dates <- check_duplicates(ch, dates = datesList)
     )
   unlist(sus_dates)
-  
+#+end_src
+*** COMMENT check-duplicates-report-code
+#+name:check-duplicates-report
+#+begin_src R :session *R* :tangle diagnostics/check_duplicates_report.r :exports none :eval no
+################################################################
+# name:check-duplicates-report
+sus_dates <- read.table("~/data/AWAP_GRIDS/sus_dates.csv", quote="\"")
+sus_dates$date <- paste(substr(gsub(paste(measure_i,"_",sep=""),"",sus_dates[,1]),1,4),
+  substr(gsub(paste(measure_i,"_",sep=""),"",sus_dates[,1]),5,6),
+  substr(gsub(paste(measure_i,"_",sep=""),"",sus_dates[,1]),7,8),
+  sep="-")
+sus_dates$date <- as.Date(sus_dates$date)
+head(sus_dates)
+
+full_dates <- as.data.frame(c(as.Date('2007-10-23'), seq(as.Date('2009-01-08'), as.Date('2010-04-17'),1)))
+names(full_dates) <- 'date'
+sus_dates2 <- merge(full_dates, sus_dates, all.x=TRUE)
+sus_dates2[which(is.na(sus_dates2$V1)),]
+head(sus_dates2)
+
+#+end_src
+
+*** COMMENT deprecated-check-duplicates-sql-code
+#+name:deprecated-check-duplicates-sql
+#+begin_src R :session *R* :tangle no :exports none :eval no
+################################################################
+# name:deprecated-check-duplicates-sql
+
+
+
+    
   # or on db
   measures = c("vprph09","vprph15")
   #measures <- c("maxave","minave", "solarave","totals",
@@ -1880,16 +1927,8 @@ system('test.bat')
   sus_dates2
   dir()
   
-#+end_src
-*** COMMENT deprecated dupl stuff-code
-#+name:deprecated dupl stuff
-#+begin_src R :session *R* :tangle no :exports none :eval no
-################################################################
-# name:deprecated dupl stuff
 
 
-
-    
   ## sql <- sql_subset(ch, paste("awap_grids.",rastername,sep=""), limit = 1, eval = F, check = F)
   ## cat(sql)
   ## compare <- dbGetQuery(ch,
@@ -1925,8 +1964,8 @@ system('test.bat')
   ##           ) foo
   ##           ", sep = "")
   ##           )
-#+end_src  
-
+  
+#+end_src
 
 *** clean-check against stations
 #+name:clean
