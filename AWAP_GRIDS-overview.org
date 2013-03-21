@@ -67,7 +67,7 @@ cache_loading: on
 munging: on
 logging: off
 load_libraries: on
-libraries: reshape, plyr, ggplot2, stringr, lubridate, fgui, raster, rgdal, swishdbtools
+libraries: reshape, plyr, ggplot2, stringr, lubridate, fgui, raster, rgdal, swishdbtools, awaptools
 as_factors: on
 data_tables: off
 
@@ -199,7 +199,8 @@ data_tables: off
 #+begin_src R :session *shell* :tangle src/scoping.r :exports none :eval no
   ###########################################################################
   # newnode: scoping
-  
+    require(awaptools)
+    variableslist <- variableslist()  
     require(fgui)
     #require(ProjectTemplate)
     #load.project()
@@ -1085,10 +1086,11 @@ pgListTables <- function(conn, schema, pattern = NA)
     variable <- variableslist[which(variableslist$measure == measure_i),]
     vname <- as.character(variable[,1])
   
-    datelist <- DatesUnavaliable(ch, measure_i, start_at, end_at)
+    datelist <- DatesUnavailable(ch, measure_i, start_at, end_at)
   
     for(date_i in datelist)
     {
+    # date_i <- datelist[1]
       date_i <- as.Date(date_i, origin = '1970-01-01')
       date_i <- as.character(date_i)
     #  print(date_i)

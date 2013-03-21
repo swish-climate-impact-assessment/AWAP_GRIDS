@@ -1,7 +1,8 @@
 
 ###########################################################################
 # newnode: scoping
-
+  require(awaptools)
+  variableslist <- variableslist()  
   require(fgui)
   #require(ProjectTemplate)
   #load.project()

@@ -38,10 +38,11 @@ for(i in 1:length(vars[[1]])){
   variable <- variableslist[which(variableslist$measure == measure_i),]
   vname <- as.character(variable[,1])
 
-  datelist <- DatesUnavaliable(ch, measure_i, start_at, end_at)
+  datelist <- DatesUnavailable(ch, measure_i, start_at, end_at)
 
   for(date_i in datelist)
   {
+  # date_i <- datelist[1]
     date_i <- as.Date(date_i, origin = '1970-01-01')
     date_i <- as.character(date_i)
   #  print(date_i)
