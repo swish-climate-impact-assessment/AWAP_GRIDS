@@ -1045,7 +1045,7 @@ pgListTables <- function(conn, schema, pattern = NA)
 ** load
 *** load if day not available
 #+name:load
-#+begin_src R :session *shell* :tangle src/load.r :exports none :eval no
+#+begin_src R :session *R* :tangle src/load.r :exports none :eval no
   ################################################################
   # name:load
   ################################################################
@@ -1062,9 +1062,10 @@ pgListTables <- function(conn, schema, pattern = NA)
   setwd(workdir)
   require(ProjectTemplate)
   load.project()
-  ch <- connect2postgres(h = '115.146.84.135', db = 'ewedb',
-                         user = 'gislibrary',
-                         p='gislibrary')
+  ## ch <- connect2postgres(h = '115.146.84.135', db = 'ewedb',
+  ##                        user = 'gislibrary',
+  ##                        p='gislibrary')
+  ch <- connect2postgres2("ewedb")
   print(paste('root directory:', workdir))
   setwd('data')
   
