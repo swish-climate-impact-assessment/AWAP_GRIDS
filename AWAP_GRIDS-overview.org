@@ -1142,7 +1142,103 @@ pgListTables <- function(conn, schema, pattern = NA)
   
 #+end_src
 
-*** TODO load as function
+*** load monthly
+**** download
+#+name:load-monthly
+#+begin_src R :session *R* :tangle src/load-monthly.r :exports none :eval yes
+  ################################################################
+  # name:load-monthly
+  # workdir <- getwd()
+  # outdir <- outdir
+  # setwd(outdir)
+  
+  require(devtools)
+  install_github("awaptools", "swish-climate-impact-assessment")
+  require(awaptools)
+  variableslist <- variableslist()
+  variableslist
+  vname <- variableslist[1,1]
+  measure_i <- variableslist[1,2]
+  
+  start_date <- as.POSIXlt("2012-01-01")
+  end_date <- as.POSIXlt(
+                   paste(as.numeric(format(Sys.Date(), "%Y")),
+                         as.numeric(format(Sys.Date(), "%m")) -1, 1, sep = "-")
+                 )
+  dateslist <- as.character(seq(start_date, end_date, by = "month"))
+  for(date_i in dateslist)
+    {
+  #    date_i <- dateslist[1]
+      flist <- dir(pattern = measure_i)
+      fileExists <- grep(paste(measure_i, gsub("-", "", date_i), sep = "_"), flist)
+      if(length(fileExists) > 0)
+        {
+          next
+        }
+  
+      sdate <- as.POSIXct(date_i)
+      if(as.numeric(format(sdate, "%m")) < 12)
+        {
+                   edate <- as.POSIXct(paste
+                              (format(sdate, "%Y"),
+                               as.numeric(format(sdate, "%m")) + 1, 1, sep = "-"
+                               )
+                              )
+         } else {
+                   edate <- as.POSIXct(paste
+                              (as.numeric(format(sdate, "%Y")) +1,
+                               1, 1, sep = "-"
+                               )
+                              )
+         }
+      get_data_range(
+                     variable = vname,
+                     measure = measure_i,
+                     timestep = "monthly",
+                     startdate = sdate,
+                     enddate = edate
+                 )
+    }
+    #setwd(workdir)  
+#+end_src
+
+#+RESULTS: load-monthly
+
+**** unzip
+
+#+name:unzip
+#+begin_src R :session *R* :tangle src/unzip-monthly.r :exports none :eval yes
+  ################################################################
+  # name:unzip
+  ## load(".RData")
+  ## setwd(outdir)
+  require(devtools)
+  install_github("awaptools", "swish-climate-impact-assessment")
+  require(awaptools)
+  require(swishdbtools)
+  os <- LinuxOperatingSystem()
+  require(raster)
+  aggregation_factor <- 1
+  filelist <- dir(pattern = "grid.Z$")
+  for(fname in filelist)
+    {
+        if(os)
+          {
+            uncompress_linux(filename = fname)
+          } else {
+            Decompress7Zip(zipFileName= fname, outputDirectory=getwd(), TRUE)
+          }
+  
+        raster_aggregate(filename = gsub('.Z$','',fname),
+          aggregationfactor = aggregation_factor, delete = TRUE)
+     }
+  
+#+end_src
+
+#+RESULTS: unzip
+
+
+*** COMMENT TODO load as function
 #+name:load
 #+begin_src R :session *R* :tangle no :exports none :eval no
     ################################################################
