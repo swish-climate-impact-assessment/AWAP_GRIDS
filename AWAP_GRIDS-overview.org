@@ -7,6 +7,13 @@
 -----
 
 * TODOlist
+
+** TODO links to get pgutils
+http://download.osgeo.org/postgis/windows/pg92/
+postgis-pg92-binaries-2.0.2w64.zip	17-Jan-2013 14:25	21M	 
+http://download.osgeo.org/postgis/windows/pg92/postgis-pg92-binaries-2.0.2w64.zip
+http://www.enterprisedb.com/products-services-training/pgbindownload
+
 ** TODO check solar radiation solarave_2001050820010508.grid
 'http://www.bom.gov.au/web03/ncc/www/awap/solar/solarave/daily/grid/0.05/history/nat/1993080619930806.grid.Z'
 'http://www.bom.gov.au/web03/ncc/www/awap/solar/solarave/daily/grid/0.05/history/nat/2001050820010508.grid.Z'
