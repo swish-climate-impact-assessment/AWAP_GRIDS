@@ -5,18 +5,24 @@
 # are the same.
 require(ProjectTemplate)
 load.project()
+require(devtools)
+install_github("awaptools", "swish-climate-impact-assessment")
 ch <- connect2postgres2("ewedb")
 pwd <- get_passwordTable()
 pwd <- pwd[which(pwd$V3 == 'ewedb'),5]
-datesList <- seq(as.Date("2010-01-01"), as.Date("2010-05-01"), 1)
+datesList <- seq(as.Date("2010-01-02"), as.Date("2010-01-05"), 1)
 date_j <- datesList[1]
 print(date_j)
 
 r <- readGDAL2("115.146.84.135", "gislibrary", "ewedb", "awap_grids",
                "maxave_20130305", pwd)
 image(r)
-rm(sus_dates)
+#rm(sus_dates)
 system.time(
-sus_dates <- check_duplicates(ch, dates = datesList)
+sus_dates <- check_duplicates(ch, dates = datesList, measures = c("vprph09", "vprph15"), measure_name = "vprph")
   )
-unlist(sus_dates)
+
+system.time(
+sus_dates <- check_duplicates(ch, dates = datesList, measures = c("maxave", "minave"), measure_name = "temp")
+  )
+#unlist(sus_dates)
