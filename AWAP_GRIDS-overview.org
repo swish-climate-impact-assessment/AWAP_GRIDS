@@ -1748,68 +1748,6 @@ system('test.bat')
 #+end_src
 
 ** clean
-*** COMMENT check_duplicates-lib
-#+name:check_duplicates
-#+begin_src R :session *R* :tangle no :exports none :eval no
-  ################################################################
-  # name:check_duplicates
-  check_duplicates <- function(conn, measures = c("vprph09","vprph15"), dates)
-      {
-    #suspicious_dates <- list()
-    #measures <- c("maxave","minave", "solarave","totals",
-  
-    for(j in 1:length(dates))
-      {
-        #date_j <- dates[2]
-        date_j <- dates[j]
-        date_i <- gsub("-","",date_j)
-        print(date_i)
-        rasters <- list()
-  
-    #      print(measure)
-          rastername1 <- paste(measures[1], "_", date_i, sep ="")
-          rastername2 <- paste(measures[2], "_", date_i, sep ="")
-          tableExists <- pgListTables(ch, schema="awap_grids",
-      pattern=rastername1)
-          tableExists2 <- pgListTables(ch, schema="awap_grids", pattern=rastername2)
-          if(nrow(tableExists) == 0 | nrow(tableExists2) == 0)
-          {
-            next
-          }
-        for(i in 1:length(measures))
-        {
-    #      i = 2
-          measure <- measures[i]
-          rastername <- paste(measures[i], "_", date_i, sep ="")
-            r1 <- readGDAL2("115.146.84.135", "gislibrary", "ewedb",
-                            "awap_grids", rastername, p = pwd)
-    #        image(r1)
-            rasters[[i]] <- r1
-  
-        }
-          ## str(rasters)
-        ##   par(mfrow = c(1,2))
-        ##   image(rasters[[1]])
-        ##   image(rasters[[2]])
-        suspect <- identical(rasters[[1]]@data, rasters[[2]]@data)
-        #all.equal(head(rasters[[1]]@data), head(rasters[[2]]@data))
-        if(suspect)
-          {
-            #counter <- length(suspicious_dates)
-            #suspicious_dates[[counter + 1]] <- rastername
-            sink('sus_dates.csv', append = T)
-            cat(rastername)
-            cat('\n')
-            sink()
-          }
-        rm(suspect)
-  
-      }
-  
-    #return(suspicious_dates)
-    }
-  
-#+end_src
 
 *** COMMENT check-duplicates-src
 #+name:check-duplicates
@@ -1820,42 +1758,62 @@ system('test.bat')
   # are the same.
   require(ProjectTemplate)
   load.project()
+  require(devtools)
+  install_github("awaptools", "swish-climate-impact-assessment")
   ch <- connect2postgres2("ewedb")
   pwd <- get_passwordTable()
   pwd <- pwd[which(pwd$V3 == 'ewedb'),5]
-  datesList <- seq(as.Date("2010-01-01"), as.Date("2010-05-01"), 1)
+  datesList <- seq(as.Date("2010-01-02"), as.Date("2010-01-05"), 1)
   date_j <- datesList[1]
   print(date_j)
   
   r <- readGDAL2("115.146.84.135", "gislibrary", "ewedb", "awap_grids",
                  "maxave_20130305", pwd)
   image(r)
-  rm(sus_dates)
+  #rm(sus_dates)
   system.time(
-  sus_dates <- check_duplicates(ch, dates = datesList)
+  sus_dates <- check_duplicates(ch, dates = datesList, measures = c("vprph09", "vprph15"), measure_name = "vprph")
     )
-  unlist(sus_dates)
+  
+  system.time(
+  sus_dates <- check_duplicates(ch, dates = datesList, measures = c("maxave", "minave"), measure_name = "temp")
+    )
+  #unlist(sus_dates)
+  
 #+end_src
 *** COMMENT check-duplicates-report-code
 #+name:check-duplicates-report
 #+begin_src R :session *R* :tangle diagnostics/check_duplicates_report.r :exports none :eval no
-################################################################
-# name:check-duplicates-report
-sus_dates <- read.table("~/data/AWAP_GRIDS/sus_dates.csv", quote="\"")
-sus_dates$date <- paste(substr(gsub(paste(measure_i,"_",sep=""),"",sus_dates[,1]),1,4),
-  substr(gsub(paste(measure_i,"_",sep=""),"",sus_dates[,1]),5,6),
-  substr(gsub(paste(measure_i,"_",sep=""),"",sus_dates[,1]),7,8),
-  sep="-")
-sus_dates$date <- as.Date(sus_dates$date)
-head(sus_dates)
-
-full_dates <- as.data.frame(c(as.Date('2007-10-23'), seq(as.Date('2009-01-08'), as.Date('2010-04-17'),1)))
-names(full_dates) <- 'date'
-sus_dates2 <- merge(full_dates, sus_dates, all.x=TRUE)
-sus_dates2[which(is.na(sus_dates2$V1)),]
-head(sus_dates2)
-
+  ################################################################
+  # name:check-duplicates-report
+  measure_name <- "vprph"
+  sus_dates <- read.table(paste("~/data/AWAP_GRIDS/sus_dates_",measure_name,".csv",sep = ""), quote="\"")
+  sus_dates$date <- paste(substr(gsub(paste(measure_i,"_",sep=""),"",sus_dates[,1]),1,4),
+    substr(gsub(paste(measure_i,"_",sep=""),"",sus_dates[,1]),5,6),
+    substr(gsub(paste(measure_i,"_",sep=""),"",sus_dates[,1]),7,8),
+    sep="-")
+  sus_dates$date <- as.Date(sus_dates$date)
+  head(sus_dates)
+  
+  full_dates <- as.data.frame(c(as.Date('2007-10-23'), seq(as.Date('2009-01-08'), as.Date('2010-04-17'),1)))
+  names(full_dates) <- 'date'
+  sus_dates2 <- merge(full_dates, sus_dates, all.x=TRUE)
+  sus_dates2[which(is.na(sus_dates2$V1)),]
+  head(sus_dates2)
+  
 #+end_src
+*** COMMENT remove_duplicates-code
+#+name:remove_duplicates
+#+begin_src R :session *R* :tangle diagnostics/remove_duplicates.r :exports none :eval no
+  ################################################################
+  # name:remove_duplicates
+  require(ProjectTemplate)
+  load.project()
+  source("diagnostics/check_duplicates_report.r")
+  sus_dates2
+  
+#+end_src
+
 
 *** COMMENT deprecated-check-duplicates-sql-code
 #+name:deprecated-check-duplicates-sql
