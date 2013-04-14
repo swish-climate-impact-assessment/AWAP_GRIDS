@@ -26,6 +26,7 @@ load.project()
 # user definitions, or setup interactively
 startdate <- '2013-04-01'
 enddate <-  Sys.Date()-2
+checkDates <- TRUE
 interactively <- FALSE
 variablenames <- 'maxave,minave,solarave,totals,vprph09,vprph15'
 aggregation_factor <- 3

@@ -45,7 +45,7 @@ The aim of this project is to download the Australian Water Availability Project
   
 #+end_src
 ** init
-
+*** project
 #+name: R-init
 #+begin_src R  :session *R* :exports none :eval no :tangle no
   # INITIALISE THE PROJECT
@@ -66,6 +66,17 @@ The aim of this project is to download the Australian Water Availability Project
   
   
 #+end_src
+*** create schema
+#+name:create_schema
+#+begin_src R :session *R* :tangle no :exports none :eval no
+################################################################
+# name:create_schema
+CREATE SCHEMA awap_grids
+grant ALL on schema awap_grids to ivan_hanigan;
+GRANT ALL ON ALL TABLES IN SCHEMA awap_grids TO ivan_hanigan;
+grant ALL on all functions in schema awap_grids to ivan_hanigan;
+grant ALL on all sequences in schema awap_grids to ivan_hanigan; 
+#+end_src
 ** config
 #+name:global.dcf
 #+begin_src R :session *R* :tangle config/global.dcf :exports none :eval no
@@ -83,7 +94,7 @@ data_tables: off
 ** main
 *** main
 #+name:main
-#+begin_src R :session *R* :tangle main.r :exports none :eval no
+#+begin_src R :session *shell* :tangle main.r :exports none :eval no
   ################################################################
   # Project: AWAP_GRIDS
   # Author: ivanhanigan
@@ -111,6 +122,7 @@ data_tables: off
   # user definitions, or setup interactively
   startdate <- '2013-04-01'
   enddate <-  Sys.Date()-2
+  checkDates <- TRUE
   interactively <- FALSE
   variablenames <- 'maxave,minave,solarave,totals,vprph09,vprph15'
   aggregation_factor <- 3
@@ -1053,7 +1065,7 @@ pgListTables <- function(conn, schema, pattern = NA)
 ** load
 *** load if day not available
 #+name:load
-#+begin_src R :session *R* :tangle src/load.r :exports none :eval no
+#+begin_src R :session *shell* :tangle src/load.r :exports none :eval no
   ################################################################
   # name:load
   ################################################################
@@ -1072,7 +1084,7 @@ pgListTables <- function(conn, schema, pattern = NA)
   load.project()
   ## ch <- connect2postgres(h = '115.146.84.135', db = 'ewedb',
   ##                        user = 'gislibrary')
-  ##                        
+  ##
   ch <- connect2postgres2("ewedb")
   print(paste('root directory:', workdir))
   setwd('data')
@@ -1092,9 +1104,12 @@ pgListTables <- function(conn, schema, pattern = NA)
     measure_i <- vars[[1]][i]
     variable <- variableslist[which(variableslist$measure == measure_i),]
     vname <- as.character(variable[,1])
-  
-    datelist <- DatesUnavailable(ch, measure_i, start_at, end_at)
-  
+    if(checkDates == TRUE)
+      {
+        datelist <- DatesUnavailable(ch, measure_i, start_at, end_at)
+      } else {
+        datelist <- seq(as.Date(start_at), as.Date(end_at), 1)
+      }
     for(date_i in datelist)
     {
     # date_i <- datelist[1]
@@ -1459,17 +1474,7 @@ pgListTables <- function(conn, schema, pattern = NA)
 # with(dat, plot(date, maxave, type = 'l'))
   
 ** test upload to postgres
-*** create schema
-#+name:create_schema
-#+begin_src R :session *R* :tangle no :exports none :eval no
-################################################################
-# name:create_schema
-CREATE SCHEMA awap_grids
-grant ALL on schema awap_grids to ian_szarka;
-GRANT ALL ON ALL TABLES IN SCHEMA awap_grids TO ian_szarka;
-grant ALL on all functions in schema awap_grids to ian_szarka;
-grant ALL on all sequences in schema awap_grids to ian_szarka; 
-#+end_src
+
 *** raster2pgsql
 http://postgis.refractions.net/docs/using_raster.xml.html#RT_Raster_Loader
 ie

@@ -17,7 +17,7 @@ require(ProjectTemplate)
 load.project()
 ## ch <- connect2postgres(h = '115.146.84.135', db = 'ewedb',
 ##                        user = 'gislibrary')
-##                        
+##
 ch <- connect2postgres2("ewedb")
 print(paste('root directory:', workdir))
 setwd('data')
@@ -37,9 +37,12 @@ for(i in 1:length(vars[[1]])){
   measure_i <- vars[[1]][i]
   variable <- variableslist[which(variableslist$measure == measure_i),]
   vname <- as.character(variable[,1])
-
-  datelist <- DatesUnavailable(ch, measure_i, start_at, end_at)
-
+  if(checkDates == TRUE)
+    {
+      datelist <- DatesUnavailable(ch, measure_i, start_at, end_at)
+    } else {
+      datelist <- seq(as.Date(start_at), as.Date(end_at), 1)
+    }
   for(date_i in datelist)
   {
   # date_i <- datelist[1]
