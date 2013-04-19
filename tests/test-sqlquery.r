@@ -5,7 +5,8 @@ require(ProjectTemplate)
 load.project()
 
 require(swishdbtools)
-ch <- connect2postgres(hostip='115.146.84.135', db='ewedb', user='gislibrary', p='gislibrary')
+p <- getPassword(remote=T)
+ch <- connect2postgres(hostip='115.146.84.135', db='ewedb', user='gislibrary', p=p)
 sqlquery_postgres(
     channel = ch,
     append = TRUE,

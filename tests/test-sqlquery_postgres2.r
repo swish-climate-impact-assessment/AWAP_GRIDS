@@ -10,7 +10,8 @@
     load.project()
   
     require(swishdbtools)
-    ch <- connect2postgres(hostip='115.146.84.135', db='ewedb', user='gislibrary', p='gislibrary')
+    p <- getPassword(remote=T)
+    ch <- connect2postgres(hostip='115.146.84.135', db='ewedb', user='gislibrary', p=p)
   
     variable_j <- "maxave"
     date_i <- '2012-01-01'

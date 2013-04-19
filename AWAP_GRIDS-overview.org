@@ -962,7 +962,8 @@ pgListTables <- function(conn, schema, pattern = NA)
   load.project()
   
   require(swishdbtools)
-  ch <- connect2postgres(hostip='115.146.84.135', db='ewedb', user='gislibrary', p='gislibrary')
+  p <- getPassword(remote=T)
+  ch <- connect2postgres(hostip='115.146.84.135', db='ewedb', user='gislibrary', p=p)
   sqlquery_postgres(
       channel = ch,
       append = TRUE,
@@ -1017,7 +1018,8 @@ pgListTables <- function(conn, schema, pattern = NA)
     load.project()
   
     require(swishdbtools)
-    ch <- connect2postgres(hostip='115.146.84.135', db='ewedb', user='gislibrary', p='gislibrary')
+    p <- getPassword(remote=T)
+    ch <- connect2postgres(hostip='115.146.84.135', db='ewedb', user='gislibrary', p=p)
   
     variable_j <- "maxave"
     date_i <- '2012-01-01'
@@ -1063,6 +1065,30 @@ pgListTables <- function(conn, schema, pattern = NA)
 #+end_src
 
 ** load
+*** COMMENT clean-slate-code
+#+name:clean-slate
+#+begin_src R :session *R* :tangle src/clean-slate.r :exports none :eval no
+  ################################################################
+  # name:clean-slate
+  require(ProjectTemplate)
+  load.project()
+  pwd  <- getPassword(remote = T)
+  ch <- connect2postgres("115.146.92.162", "ewedb", "gislibrary", p = pwd)
+  grids2remove  <- pgListTables(ch, "awap_grids")
+  head(grids2remove)
+  # check
+  dbGetQuery(ch, sprintf("select * from awap_grids.%s", grids2remove[1,1]))
+  for(grid_i in grids2remove[1,1])
+    {
+  #    grid_i <- grids2remove[1,1]    
+      print(grid_i)    
+      dbSendQuery(ch,
+                  sprintf("drop table awap_grids.%s; ", grid_i)
+                  )      
+    }
+  
+#+end_src
+
 *** load if day not available
 #+name:load
 #+begin_src R :session *shell* :tangle src/load.r :exports none :eval no
@@ -1183,9 +1209,10 @@ pgListTables <- function(conn, schema, pattern = NA)
     setwd(workdir)
     require(ProjectTemplate)
     load.project()
+    p <- getPassword(remote=T)
     ch <- connect2postgres(h = '115.146.84.135', db = 'ewedb',
                            user = 'gislibrary',
-                           p='gislibrary')
+                           p=p)
     print(paste('root directory:', workdir))
     setwd('data')
   
@@ -1293,8 +1320,9 @@ pgListTables <- function(conn, schema, pattern = NA)
     load.project()
   
     require(swishdbtools)
+    p <- getPassword(remote=T)
     ch <- connect2postgres(h = '115.146.84.135', db = 'ewedb', user=
-                           'gislibrary', p = 'gislibrary')
+                           'gislibrary', p = p)
     sql_subset(ch, x = 'dbsize', limit = -1, eval = TRUE)
   
 #+end_src
@@ -1662,16 +1690,17 @@ save storage space as geotiff
                  schema = 'awap_grids', table = 'tmax2013010820130108'
                  )
   # bah
-  r <-
-                 readGDAL("PG:host=115.146.84.135 port=5432 dbname='ewedb' user='gislibrary' password='gislibrary' schema='awap_grids' table=maxave_20130108")
+  require(swishdbtools)
+  p <- getPassword(remote=T)
+  r <- readGDAL(sprintf("PG:host=115.146.84.135 port=5432 dbname='ewedb' user='gislibrary' password='%s' schema='awap_grids' table=maxave_20130108", p))
   
   r2 <- raster(r)
   r3 <- aggregate(r2, fact=2, fun = mean)
   writeGDAL(r2, 'data/test1.TIF',drivername="GTiff")
   writeRaster(r3, 'data/test2.TIF',format="GTiff")
   
-                                          #writeGDAL(r3, "PG:host=115.146.84.135 port=5432 dbname='ewedb' user='gislibrary' password='gislibrary' schema='awap_grids' table=tmax20130108201301082")
-# gdalinfo  "PG:host=115.146.84.135 port=5432 dbname='ewedb' user='gislibrary' password='gislibrary' schema='awap_grids' table=tmax2013010820130108"   
+                                          #writeGDAL(r3, "PG:host=115.146.84.135 port=5432 dbname='ewedb' user='gislibrary' password='' schema='awap_grids' table=tmax20130108201301082")
+# gdalinfo  "PG:host=115.146.84.135 port=5432 dbname='ewedb' user='gislibrary' password='' schema='awap_grids' table=tmax2013010820130108"   
 #+end_src
 
 ** test uncompress
