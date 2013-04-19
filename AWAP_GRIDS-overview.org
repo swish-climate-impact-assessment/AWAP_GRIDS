@@ -764,7 +764,7 @@ pgListTables <- function(conn, schema, pattern = NA)
   ch <- connect2postgres(h = '115.146.84.135', db = 'ewedb', user=
                          'gislibrary', p=p)
   measure_i <- 'vprph15'
-  tbls <- pgListTables(conn=ch, schema='awap_grids', pattern=measure_i)
+  tbls <- pgListTables(conn=ch, schema='awap_grids', table=measure_i, match=F)
   tbls$date <- paste(substr(gsub(paste(measure_i,"_",sep=""),"",tbls[,1]),1,4),
           substr(gsub(paste(measure_i,"_",sep=""),"",tbls[,1]),5,6),
           substr(gsub(paste(measure_i,"_",sep=""),"",tbls[,1]),7,8),
@@ -2040,7 +2040,7 @@ system('test.bat')
   names(datelist_full) <- 'date'
   
   measure_i <- 'maxave'
-  tbls <- pgListTables(conn=ch, schema='awap_grids', pattern = measure_i)
+  tbls <- pgListTables(conn=ch, schema='awap_grids', table = measure_i, match = F)
   
   pattern_x <- paste(measure_i,"_",sep="")
   tbls$date <- paste(
@@ -2058,9 +2058,9 @@ system('test.bat')
     datelist <- datelist_full[datelist,]
   }
   
-  tbl_exists <- pgListTables(conn=ch, schema='awap_grids', pattern =
+  tbl_exists <- pgListTables(conn=ch, schema='awap_grids', table =
                              paste(measure_i,"_join_stations",
-                                   sep = "")
+                                   sep = ""), match = T
                              )
   tbl_exists
   for(date_i in datelist)

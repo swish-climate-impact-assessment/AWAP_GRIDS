@@ -15,7 +15,7 @@ datelist_full <- as.data.frame(seq(as.Date(start_at),
 names(datelist_full) <- 'date'
 
 measure_i <- 'maxave'
-tbls <- pgListTables(conn=ch, schema='awap_grids', pattern = measure_i)
+tbls <- pgListTables(conn=ch, schema='awap_grids', table = measure_i, match = F)
 
 pattern_x <- paste(measure_i,"_",sep="")
 tbls$date <- paste(
@@ -33,9 +33,9 @@ if(length(datelist) == 0)
   datelist <- datelist_full[datelist,]
 }
 
-tbl_exists <- pgListTables(conn=ch, schema='awap_grids', pattern =
+tbl_exists <- pgListTables(conn=ch, schema='awap_grids', table =
                            paste(measure_i,"_join_stations",
-                                 sep = "")
+                                 sep = ""), match = T
                            )
 tbl_exists
 for(date_i in datelist)

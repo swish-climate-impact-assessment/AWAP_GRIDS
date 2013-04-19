@@ -9,7 +9,7 @@ p <- getPassword(remote=T)
 ch <- connect2postgres(h = '115.146.84.135', db = 'ewedb', user=
                        'gislibrary', p=p)
 measure_i <- 'vprph15'
-tbls <- pgListTables(conn=ch, schema='awap_grids', pattern=measure_i)
+tbls <- pgListTables(conn=ch, schema='awap_grids', table=measure_i, match=F)
 tbls$date <- paste(substr(gsub(paste(measure_i,"_",sep=""),"",tbls[,1]),1,4),
         substr(gsub(paste(measure_i,"_",sep=""),"",tbls[,1]),5,6),
         substr(gsub(paste(measure_i,"_",sep=""),"",tbls[,1]),7,8),
