@@ -18,7 +18,7 @@ load.project()
 ## ch <- connect2postgres(h = '115.146.84.135', db = 'ewedb',
 ##                        user = 'gislibrary')
 ##
-ch <- connect2postgres2("ewedb")
+ch <- connect2postgres2("django")
 print(paste('root directory:', workdir))
 setwd('data')
 
@@ -78,13 +78,13 @@ for(i in 1:length(vars[[1]])){
       aggregationfactor = aggregation_factor, delete = TRUE)
     outname <- gsub('.tif',"", fname)
     outname <- substr(outname, 1, nchar(outname) - (7 + 8))
-    load2postgres_raster(
-                         ipaddress = "115.146.92.162",
-                         u = "gislibrary", d = 'ewedb',
+    load2postgres_raster2(
+                         ipaddress = "localhost",
+                         u = "gislibrary", d = 'django',
                          pgisutils = "", srid = 4283,
                          filename = gsub(".grid.Z", ".tif", fname),
                          out_schema="awap_grids",
-                         out_table=outname
+                         out_table=outname, remove = F
                          )
 
   }
