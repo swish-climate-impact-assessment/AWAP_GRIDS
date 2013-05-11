@@ -228,7 +228,7 @@ data_tables: off
     # enddate <-  '1997-01-01'
     # interactively <- FALSE
     # variablenames <- 'maxave'
-    aggregation_factor <- 3
+    # aggregation_factor <- 3
     # this will aggregate the 5 km pixels into 15 km averages, for storage
     if (exists('startdate')){
       startdate <- as.Date(startdate)
@@ -761,10 +761,10 @@ pgListTables <- function(conn, schema, pattern = NA)
   
   require(swishdbtools)
   p <- getPassword(remote=T)
-  ch <- connect2postgres(h = '115.146.84.135', db = 'ewedb', user=
+  ch <- connect2postgres(h = '130.102.48.116', db = 'ewedb', user=
                          'gislibrary', p=p)
   measure_i <- 'vprph15'
-  tbls <- pgListTables(conn=ch, schema='awap_grids', table=measure_i, match=F)
+  tbls <- pgListTables(conn=ch, schema='awap_grids')#, table=measure_i, match=F)
   tbls$date <- paste(substr(gsub(paste(measure_i,"_",sep=""),"",tbls[,1]),1,4),
           substr(gsub(paste(measure_i,"_",sep=""),"",tbls[,1]),5,6),
           substr(gsub(paste(measure_i,"_",sep=""),"",tbls[,1]),7,8),
@@ -1073,12 +1073,12 @@ pgListTables <- function(conn, schema, pattern = NA)
   require(ProjectTemplate)
   load.project()
   pwd  <- getPassword(remote = T)
-  ch <- connect2postgres("115.146.92.162", "ewedb", "gislibrary", p = pwd)
+  ch <- connect2postgres("tern5.qern.qcif.edu.au", "ewedb", "gislibrary", p = pwd)
   grids2remove  <- pgListTables(ch, "awap_grids")
   head(grids2remove)
   # check
-  dbGetQuery(ch, sprintf("select * from awap_grids.%s", grids2remove[1,1]))
-  for(grid_i in grids2remove[1,1])
+  dbGetQuery(ch, sprintf("select * from awap_grids.%s", grids2remove[20,1]))
+  for(grid_i in grids2remove[-1,1])
     {
   #    grid_i <- grids2remove[1,1]    
       print(grid_i)    
@@ -1177,7 +1177,7 @@ pgListTables <- function(conn, schema, pattern = NA)
                            pgisutils = "", srid = 4283,
                            filename = gsub(".grid.Z", ".tif", fname),
                            out_schema="awap_grids",
-                           out_table=outname
+                           out_table=outname, remove = F
                            )
   
     }
@@ -1664,43 +1664,49 @@ save storage space as geotiff
 ** test readGDAL
 #+name:test-readGDAL
 #+begin_src R :session *shell* :tangle tests/test-readGDAL2.r :exports none :eval no
-  ################################################################
-  # name:test-readGDAL
-  require(raster)
-  readGDAL2 <- function(hostip=NA,user=NA,db=NA, schema= NA, table=NA, p = NA) {
-   if (!require(rgdal)) install.packages('rgdal', repos='http://cran.csiro.au'); require(rgdal)
-   if(is.na(p)){
-   pwd=readline('enter password (ctrl-L will clear the console after): ')
-   } else {
-   pwd <- p
-   }
-   r <- readGDAL(sprintf('PG:host=%s
-                           user=%s
-                           dbname=%s
-                           password=%s
-                           table=%s
-                           schema=%s
-                           port=5432',hostip,user,db,pwd, table, schema)
-                          # layer=layer
-                 )
-   return(r)
-  }
+    ################################################################
+    # name:test-readGDAL
+    require(raster)
+    readGDAL2 <- function(hostip=NA,user=NA,db=NA, schema= NA, table=NA, p = NA) {
+     if (!require(rgdal)) install.packages('rgdal', repos='http://cran.csiro.au'); require(rgdal)
+     if(is.na(p)){
+     pwd=readline('enter password (ctrl-L will clear the console after): ')
+     } else {
+     pwd <- p
+     }
+     r <- readGDAL(sprintf('PG:host=%s
+                             user=%s
+                             dbname=%s
+                             password=%s
+                             table=%s
+                             schema=%s
+                             port=5432',hostip,user,db,pwd, table, schema)
+                            # layer=layer
+                   )
+     return(r)
+    }
+    
+    # bah
+    require(swishdbtools)
+    p <- getPassword(remote=F)
+  #dbSendQuery(ch, "drop table awap_grids.maxave_20130101")
+  r <- readGDAL2('tern5.qern.qcif.edu.au', 'gislibrary', 'ewedb',
+                 schema = 'awap_grids', table = 'maxave_19881005', p = p
+  )
+  image(r)
+  writeGDAL(r, '~/test1.TIF',drivername="GTiff")
   
-  r <- readGDAL2('115.146.84.135', 'gislibrary', 'ewedb',
-                 schema = 'awap_grids', table = 'tmax2013010820130108'
-                 )
-  # bah
-  require(swishdbtools)
-  p <- getPassword(remote=T)
-  r <- readGDAL(sprintf("PG:host=115.146.84.135 port=5432 dbname='ewedb' user='gislibrary' password='%s' schema='awap_grids' table=maxave_20130108", p))
   
-  r2 <- raster(r)
-  r3 <- aggregate(r2, fact=2, fun = mean)
-  writeGDAL(r2, 'data/test1.TIF',drivername="GTiff")
-  writeRaster(r3, 'data/test2.TIF',format="GTiff")
+    r <- readGDAL(sprintf("PG:host=115.146.84.135 port=5432 dbname='ewedb' user='gislibrary' password='%s' schema='awap_grids' table=maxave_20130108", p))
+    
+    r2 <- raster(r)
+    r3 <- aggregate(r2, fact=2, fun = mean)
+    
+    writeRaster(r3, 'data/test2.TIF',format="GTiff")
+    
+                                            #writeGDAL(r3, "PG:host=115.146.84.135 port=5432 dbname='ewedb' user='gislibrary' password='' schema='awap_grids' table=tmax20130108201301082")
+  # gdalinfo  "PG:host=115.146.84.135 port=5432 dbname='ewedb' user='gislibrary' password='' schema='awap_grids' table=tmax2013010820130108"
   
-                                          #writeGDAL(r3, "PG:host=115.146.84.135 port=5432 dbname='ewedb' user='gislibrary' password='' schema='awap_grids' table=tmax20130108201301082")
-# gdalinfo  "PG:host=115.146.84.135 port=5432 dbname='ewedb' user='gislibrary' password='' schema='awap_grids' table=tmax2013010820130108"   
 #+end_src
 
 ** test uncompress
