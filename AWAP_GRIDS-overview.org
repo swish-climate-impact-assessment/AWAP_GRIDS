@@ -8,17 +8,17 @@
 
 * TODOlist
 
-** TODO links to get pgutils
+** DONE links to get pgutils
 http://download.osgeo.org/postgis/windows/pg92/
 postgis-pg92-binaries-2.0.2w64.zip	17-Jan-2013 14:25	21M	 
 http://download.osgeo.org/postgis/windows/pg92/postgis-pg92-binaries-2.0.2w64.zip
 http://www.enterprisedb.com/products-services-training/pgbindownload
 
-** TODO check solar radiation solarave_2001050820010508.grid
+** DONE check solar radiation solarave_2001050820010508.grid
 'http://www.bom.gov.au/web03/ncc/www/awap/solar/solarave/daily/grid/0.05/history/nat/1993080619930806.grid.Z'
 'http://www.bom.gov.au/web03/ncc/www/awap/solar/solarave/daily/grid/0.05/history/nat/2001050820010508.grid.Z'
 # file.remove('data2000-2004/solar/solarave_2001050820010508.grid')
-** TODO main awap links must be obvious
+** DONE main awap links must be obvious
 # Function to download the Australian Water Availability Grids http://www.bom.gov.au/jsp/awap/
 # urls can be like
   # rain                http://www.bom.gov.au/web03/ncc/www/awap/   rainfall/totals/daily/    grid/0.05/history/nat/2010120120101201.grid.Z
@@ -2027,9 +2027,9 @@ system('test.bat')
   
 #+end_src
 
-*** clean-check against stations
+*** clean-check-against-stations
 #+name:checkAstation
-#+begin_src R :session *R* :tangle src/clean.r :exports none :eval no
+#+begin_src R :session *R* :tangle src/check-against-stations.r :exports none :eval no
   require(ProjectTemplate)
   load.project()
   require(swishdbtools)
@@ -2042,6 +2042,8 @@ system('test.bat')
   sampled  <- stations[which(stations$stnum %in% sampled),]
   nrow(sampled)
   plot(sampled$lon, sampled$lat, pch = 16)
+  # send lat long to postgis
+  
   
   # get the observed data for these
   d<-dbGetQuery(ch,
@@ -2057,7 +2059,7 @@ system('test.bat')
    str(d)
    with(d, plot(as.POSIXct(timestamp), vapour_pressure_in_hpa, type='b',pch=16))
   
-   # send lat long to postgis
+  
   
    # extract_awap_by_day
   
@@ -2065,7 +2067,7 @@ system('test.bat')
   
   
 #+end_src
-*** deprecated checkAstation
+*** COMMENT deprecated checkAstation
 #+name:clean
 #+begin_src R :session *R* :tangle no :exports none :eval no
   ################################################################

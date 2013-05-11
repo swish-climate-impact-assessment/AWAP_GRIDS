@@ -11,6 +11,8 @@ sampled  <- sample(stations$stnum, 0.015*nrow(stations))
 sampled  <- stations[which(stations$stnum %in% sampled),]
 nrow(sampled)
 plot(sampled$lon, sampled$lat, pch = 16)
+# send lat long to postgis
+
 
 # get the observed data for these
 d<-dbGetQuery(ch,
@@ -26,7 +28,7 @@ d<-dbGetQuery(ch,
  str(d)
  with(d, plot(as.POSIXct(timestamp), vapour_pressure_in_hpa, type='b',pch=16))
 
- # send lat long to postgis
+
 
  # extract_awap_by_day
 
