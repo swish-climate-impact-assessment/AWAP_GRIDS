@@ -5,7 +5,14 @@ require(swishdbtools)
 p <- getPassword()
 ch <- connect2postgres(h = 'tern5.qern.qcif.edu.au', db = 'ewedb', user= 'gislibrary', p = p)
 pgListTables(ch, "weather_bom")
-sql_subset(ch, "weather_bom.combstats", eval = T, limit = 6)
+stations  <- sql_subset(ch, "weather_bom.combstats", eval = T)
+stations <- subset(stations, lat > -50 & lon < 160)
+sampled  <- sample(stations$stnum, 0.015*nrow(stations))
+sampled  <- stations[which(stations$stnum %in% sampled),]
+nrow(sampled)
+plot(sampled$lon, sampled$lat, pch = 16)
+
+# get the observed data for these
 d<-dbGetQuery(ch,
  'SELECT  name, year, month, day, hour, "timestamp" ,     t2.lat ,     lon,
        vapour_pressure_in_hpa
@@ -22,3 +29,5 @@ d<-dbGetQuery(ch,
  # send lat long to postgis
 
  # extract_awap_by_day
+
+ # get mean absolute difference with the grid vs stations
