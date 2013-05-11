@@ -2028,8 +2028,35 @@ system('test.bat')
 #+end_src
 
 *** clean-check against stations
-#+name:clean
+#+name:checkAstation
 #+begin_src R :session *R* :tangle src/clean.r :exports none :eval no
+  require(ProjectTemplate)
+  load.project()
+  require(swishdbtools)
+  p <- getPassword()
+  ch <- connect2postgres(h = 'tern5.qern.qcif.edu.au', db = 'ewedb', user= 'gislibrary', p = p)
+  pgListTables(ch, "weather_bom")
+  sql_subset(ch, "weather_bom.combstats", eval = T, limit = 6)
+  d<-dbGetQuery(ch,
+   'SELECT  name, year, month, day, hour, "timestamp" ,     t2.lat ,     lon,
+         vapour_pressure_in_hpa
+    FROM weather_bom.bom_3hourly_data_2010 join weather_bom.combstats t2
+    on station_number = stnum
+    where station_number = 70014
+    and month  =8 and (hour = 9 or hour = 15)
+    order by day, hour
+   ')
+   d
+   str(d)
+   with(d, plot(as.POSIXct(timestamp), vapour_pressure_in_hpa, type='b',pch=16))
+  
+   # send lat long to postgis
+  
+   # extract_awap_by_day
+#+end_src
+*** deprecated checkAstation
+#+name:clean
+#+begin_src R :session *R* :tangle no :exports none :eval no
   ################################################################
   # name:clean
   # Project: AWAP_GRIDS
