@@ -7,7 +7,7 @@
 # eg
 workingdir <- "~/data/AWAP_GRIDS/data" 
 # eg
-percentSample <- 0.015
+percentSample <- 0.1
 #fileName <-  "zones.xlsx"
 # eg
 outputFileName <- "locations.shp"
@@ -78,13 +78,15 @@ stations  <- merge(stations, selectedStations, by.x = "stnum", by.y = "station_n
 nrow(stations)
 # 939
 sampled  <- sample(stations$stnum, percentSample * nrow(stations))
+length(sampled)
+# 93
 locations  <- stations[which(stations$stnum %in% sampled),]
 names(locations) <- gsub("lon", "long", names(locations))
 names(locations) <- gsub("stnum", "address", names(locations))
 # not gid
 locations <- locations[,-1]
-#nrow(locations)
-#plot(locations$long, locations$lat, pch = 16)
+nrow(locations)
+plot(locations$long, locations$lat, pch = 16)
 
 
 
