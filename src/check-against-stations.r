@@ -22,7 +22,7 @@ EndDate <- "2010-01-01"
 # name: Get-selected-stations
 # want to get a set of stations that observed any of our awap variables
 require(swishdbtools)
-p  <- getPassword()
+p  <- getPassword(remote = T)
 ch <- connect2postgres("tern5.qern.qcif.edu.au", "ewedb", "gislibrary", p = p)
 tbls  <- pgListTables(ch, "weather_bom")
 tbls
@@ -84,7 +84,7 @@ locations  <- stations[which(stations$stnum %in% sampled),]
 names(locations) <- gsub("lon", "long", names(locations))
 names(locations) <- gsub("stnum", "address", names(locations))
 # not gid
-locations <- locations[,-1]
+locations <- locations[,-c(which(names(locations) == "gid"))]
 nrow(locations)
 plot(locations$long, locations$lat, pch = 16)
 
