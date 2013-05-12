@@ -84,7 +84,7 @@ for(i in 1:length(vars[[1]])){
                          pgisutils = "/usr/pgsql-9.1/bin/", srid = 4283,
                          filename = gsub(".grid.Z", ".tif", fname),
                          out_schema="awap_grids",
-                         out_table=outname
+                         out_table=outname, remove = F
                          )
 
   }

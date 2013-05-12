@@ -8,17 +8,17 @@
 
 * TODOlist
 
-** TODO links to get pgutils
+** DONE links to get pgutils
 http://download.osgeo.org/postgis/windows/pg92/
 postgis-pg92-binaries-2.0.2w64.zip	17-Jan-2013 14:25	21M	 
 http://download.osgeo.org/postgis/windows/pg92/postgis-pg92-binaries-2.0.2w64.zip
 http://www.enterprisedb.com/products-services-training/pgbindownload
 
-** TODO check solar radiation solarave_2001050820010508.grid
+** DONE check solar radiation solarave_2001050820010508.grid
 'http://www.bom.gov.au/web03/ncc/www/awap/solar/solarave/daily/grid/0.05/history/nat/1993080619930806.grid.Z'
 'http://www.bom.gov.au/web03/ncc/www/awap/solar/solarave/daily/grid/0.05/history/nat/2001050820010508.grid.Z'
 # file.remove('data2000-2004/solar/solarave_2001050820010508.grid')
-** TODO main awap links must be obvious
+** DONE main awap links must be obvious
 # Function to download the Australian Water Availability Grids http://www.bom.gov.au/jsp/awap/
 # urls can be like
   # rain                http://www.bom.gov.au/web03/ncc/www/awap/   rainfall/totals/daily/    grid/0.05/history/nat/2010120120101201.grid.Z
@@ -228,7 +228,7 @@ data_tables: off
     # enddate <-  '1997-01-01'
     # interactively <- FALSE
     # variablenames <- 'maxave'
-    aggregation_factor <- 3
+    # aggregation_factor <- 3
     # this will aggregate the 5 km pixels into 15 km averages, for storage
     if (exists('startdate')){
       startdate <- as.Date(startdate)
@@ -761,10 +761,10 @@ pgListTables <- function(conn, schema, pattern = NA)
   
   require(swishdbtools)
   p <- getPassword(remote=T)
-  ch <- connect2postgres(h = '115.146.84.135', db = 'ewedb', user=
+  ch <- connect2postgres(h = '130.102.48.116', db = 'ewedb', user=
                          'gislibrary', p=p)
   measure_i <- 'vprph15'
-  tbls <- pgListTables(conn=ch, schema='awap_grids', table=measure_i, match=F)
+  tbls <- pgListTables(conn=ch, schema='awap_grids')#, table=measure_i, match=F)
   tbls$date <- paste(substr(gsub(paste(measure_i,"_",sep=""),"",tbls[,1]),1,4),
           substr(gsub(paste(measure_i,"_",sep=""),"",tbls[,1]),5,6),
           substr(gsub(paste(measure_i,"_",sep=""),"",tbls[,1]),7,8),
@@ -1073,12 +1073,12 @@ pgListTables <- function(conn, schema, pattern = NA)
   require(ProjectTemplate)
   load.project()
   pwd  <- getPassword(remote = T)
-  ch <- connect2postgres("115.146.92.162", "ewedb", "gislibrary", p = pwd)
+  ch <- connect2postgres("tern5.qern.qcif.edu.au", "ewedb", "gislibrary", p = pwd)
   grids2remove  <- pgListTables(ch, "awap_grids")
   head(grids2remove)
   # check
-  dbGetQuery(ch, sprintf("select * from awap_grids.%s", grids2remove[1,1]))
-  for(grid_i in grids2remove[1,1])
+  dbGetQuery(ch, sprintf("select * from awap_grids.%s", grids2remove[20,1]))
+  for(grid_i in grids2remove[-1,1])
     {
   #    grid_i <- grids2remove[1,1]    
       print(grid_i)    
@@ -1177,7 +1177,7 @@ pgListTables <- function(conn, schema, pattern = NA)
                            pgisutils = "", srid = 4283,
                            filename = gsub(".grid.Z", ".tif", fname),
                            out_schema="awap_grids",
-                           out_table=outname
+                           out_table=outname, remove = F
                            )
   
     }
@@ -1664,43 +1664,49 @@ save storage space as geotiff
 ** test readGDAL
 #+name:test-readGDAL
 #+begin_src R :session *shell* :tangle tests/test-readGDAL2.r :exports none :eval no
-  ################################################################
-  # name:test-readGDAL
-  require(raster)
-  readGDAL2 <- function(hostip=NA,user=NA,db=NA, schema= NA, table=NA, p = NA) {
-   if (!require(rgdal)) install.packages('rgdal', repos='http://cran.csiro.au'); require(rgdal)
-   if(is.na(p)){
-   pwd=readline('enter password (ctrl-L will clear the console after): ')
-   } else {
-   pwd <- p
-   }
-   r <- readGDAL(sprintf('PG:host=%s
-                           user=%s
-                           dbname=%s
-                           password=%s
-                           table=%s
-                           schema=%s
-                           port=5432',hostip,user,db,pwd, table, schema)
-                          # layer=layer
-                 )
-   return(r)
-  }
+    ################################################################
+    # name:test-readGDAL
+    require(raster)
+    readGDAL2 <- function(hostip=NA,user=NA,db=NA, schema= NA, table=NA, p = NA) {
+     if (!require(rgdal)) install.packages('rgdal', repos='http://cran.csiro.au'); require(rgdal)
+     if(is.na(p)){
+     pwd=readline('enter password (ctrl-L will clear the console after): ')
+     } else {
+     pwd <- p
+     }
+     r <- readGDAL(sprintf('PG:host=%s
+                             user=%s
+                             dbname=%s
+                             password=%s
+                             table=%s
+                             schema=%s
+                             port=5432',hostip,user,db,pwd, table, schema)
+                            # layer=layer
+                   )
+     return(r)
+    }
+    
+    # bah
+    require(swishdbtools)
+    p <- getPassword(remote=F)
+  #dbSendQuery(ch, "drop table awap_grids.maxave_20130101")
+  r <- readGDAL2('tern5.qern.qcif.edu.au', 'gislibrary', 'ewedb',
+                 schema = 'awap_grids', table = 'maxave_19881005', p = p
+  )
+  image(r)
+  writeGDAL(r, '~/test1.TIF',drivername="GTiff")
   
-  r <- readGDAL2('115.146.84.135', 'gislibrary', 'ewedb',
-                 schema = 'awap_grids', table = 'tmax2013010820130108'
-                 )
-  # bah
-  require(swishdbtools)
-  p <- getPassword(remote=T)
-  r <- readGDAL(sprintf("PG:host=115.146.84.135 port=5432 dbname='ewedb' user='gislibrary' password='%s' schema='awap_grids' table=maxave_20130108", p))
   
-  r2 <- raster(r)
-  r3 <- aggregate(r2, fact=2, fun = mean)
-  writeGDAL(r2, 'data/test1.TIF',drivername="GTiff")
-  writeRaster(r3, 'data/test2.TIF',format="GTiff")
+    r <- readGDAL(sprintf("PG:host=115.146.84.135 port=5432 dbname='ewedb' user='gislibrary' password='%s' schema='awap_grids' table=maxave_20130108", p))
+    
+    r2 <- raster(r)
+    r3 <- aggregate(r2, fact=2, fun = mean)
+    
+    writeRaster(r3, 'data/test2.TIF',format="GTiff")
+    
+                                            #writeGDAL(r3, "PG:host=115.146.84.135 port=5432 dbname='ewedb' user='gislibrary' password='' schema='awap_grids' table=tmax20130108201301082")
+  # gdalinfo  "PG:host=115.146.84.135 port=5432 dbname='ewedb' user='gislibrary' password='' schema='awap_grids' table=tmax2013010820130108"
   
-                                          #writeGDAL(r3, "PG:host=115.146.84.135 port=5432 dbname='ewedb' user='gislibrary' password='' schema='awap_grids' table=tmax20130108201301082")
-# gdalinfo  "PG:host=115.146.84.135 port=5432 dbname='ewedb' user='gislibrary' password='' schema='awap_grids' table=tmax2013010820130108"   
 #+end_src
 
 ** test uncompress
@@ -2021,9 +2027,216 @@ system('test.bat')
   
 #+end_src
 
-*** clean-check against stations
+*** clean-check-against-stations
+#+name:checkAstation
+#+begin_src R :session *R* :tangle src/check-against-stations.r :exports none :eval no
+  # based on
+  # ~/projects/swish-climate-impact-assessment.github.com/tools/ExtractAWAPdata4locations
+  
+  # this script runs the ExtractAWAPGRIDS functions for sample locations
+  # depends on swishdbtools package from http:/swish-climate-impact-assessment.github.com
+  # eg
+  workingdir <- "~/data/AWAP_GRIDS/data" 
+  # eg
+  percentSample <- 0.1
+  #fileName <-  "zones.xlsx"
+  # eg
+  outputFileName <- "locations.shp"
+  # eg
+  outputDataFile <- "check-against-stations.csv"
+  # eg
+  StartDate <- "2010-01-01" 
+  # eg
+  EndDate <- "2010-01-01" 
+    
+  ################################################################
+  # name: Get-selected-stations
+  # want to get a set of stations that observed any of our awap variables
+  require(swishdbtools)
+  p  <- getPassword()
+  ch <- connect2postgres("tern5.qern.qcif.edu.au", "ewedb", "gislibrary", p = p)
+  tbls  <- pgListTables(ch, "weather_bom")
+  tbls
+  # vprph
+  sql  <- sql_subset(ch, "weather_bom.bom_3hourly_data_1990_2010_master",
+                     select = "distinct station_number",
+                     subset = "quality_of_vapour_pressure = 'Y'",
+                     eval = T
+                     )
+  head(sql)  
+  nrow(sql)
+  # 953
+  # temp
+  sql2  <- sql_subset(ch, "weather_bom.bom_3hourly_data_1990_2010_master",
+                     select = "distinct station_number",
+                     subset = "quality_of_air_temperature = 'Y'",
+                     eval = T
+                     )
+  head(sql2)  
+  nrow(sql2)
+  # 980
+  # rain
+  sql3  <- sql_subset(ch, "weather_bom.bom_3hourly_data_1990_2010_master",
+                     select = "distinct station_number",
+                     subset = "quality_of_precipitation = 'Y'",
+                     eval = T
+                     )
+  head(sql3)  
+  nrow(sql3)  
+  # 948
+  stations  <- merge(sql, sql2)
+  nrow(stations)
+  # 953
+  stations  <- merge(stations, sql3)
+  nrow(stations)
+  # 943
+  write.csv(stations, file.path(workingdir, "selected-stations.csv"), row.names = F)
+  
+  ################################################################
+  # name: GeoCode-selected-stations
+  require(swishdbtools)
+  ch <- connect2postgres2("ewedb")
+  stations  <- sql_subset(ch, "weather_bom.combstats", eval = T)
+  nrow(stations)
+  # 8139
+  # only on mainland
+  stations <- subset(stations, lat > -50 & lon < 160)
+  # only those with observations of all vars
+  selectedStations  <- read_file(file.path(workingdir, "selected-stations.csv"))
+  head(stations)
+  head(selectedStations)
+  stations  <- merge(stations, selectedStations, by.x = "stnum", by.y = "station_number")
+  nrow(stations)
+  # 939
+  sampled  <- sample(stations$stnum, percentSample * nrow(stations))
+  length(sampled)
+  # 93
+  locations  <- stations[which(stations$stnum %in% sampled),]
+  names(locations) <- gsub("lon", "long", names(locations))
+  names(locations) <- gsub("stnum", "address", names(locations))
+  # not gid
+  locations <- locations[,-1]
+  nrow(locations)
+  plot(locations$long, locations$lat, pch = 16)
+  
+  
+  
+  epsg <- make_EPSG()
+  df <- SpatialPointsDataFrame(cbind(locations$long,locations$lat),locations,                             
+                               proj4string=CRS(epsg$prj4[epsg$code %in% "4283"])
+                               )
+  setwd(workingdir)
+  if(file.exists(outputFileName))
+  {
+    for(ext in c(".shp", ".shx", ".dbf", ".prj"))
+    {
+      file.remove(gsub(".shp",ext,outputFileName))
+    }
+  }
+  writeOGR(df,outputFileName,gsub(".shp","",outputFileName),"ESRI Shapefile")
+  tempTableName <- outputFileName
+  
+  ################################################################
+  # name: send2postgis
+  require(swishdbtools)
+  ch <- connect2postgres2("ewedb")
+  locations <- read_file(file.path(workingdir,tempTableName))
+  locations <- locations@data
+  tempTableName <- swish_temptable()
+  dbWriteTable(ch, tempTableName$table, locations, row.names = F)
+  tested <- sql_subset(ch, tempTableName$fullname, eval = T)
+  #tested
+  tempTableName <- tempTableName$fullname
+  tempTableName
+  
+  # points2geom
+  sch <- strsplit(tempTableName, "\\.")[[1]][1]
+  tbl <- strsplit(tempTableName, "\\.")[[1]][2]
+  sql <- points2geom(
+    schema=sch,
+    tablename=tbl,
+    col_lat= "lat",col_long="long", srid="4283"
+  )
+  # cat(sql)
+  dbSendQuery(ch, sql)
+  tbl
+  
+  ################################################################
+  # name: R_raster_extract_by_day
+  require(swishdbtools)
+  require(awaptools)
+  if(!require(reshape))  install.packages("reshape", repos="http://cran.csiro.au/"); require(reshape);
+  tempTableName_locations <- tbl
+  startdate <- StartDate
+  enddate <- EndDate
+  ch<-connect2postgres2("ewedb")
+  tempTableName <- swish_temptable("ewedb")
+  
+  raster_extract_by_day(ch, startdate, enddate,
+                        schemaName = tempTableName$schema,
+                        tableName = tempTableName$table,
+                        pointsLayer = tempTableName_locations,
+                        measures = c("maxave", "minave", "totals", "vprph09", "vprph15")
+  )
+  
+  output_data <- reformat_awap_data(
+    tableName = tempTableName$fullname
+  )
+  
+  outputDataFile <- file.path(workingdir, outputDataFile)
+  write.csv(output_data,outputDataFile, row.names = FALSE)
+  outputFileName <- outputDataFile
+  outputFileName
+  
+  
+  
+  
+  ## # send lat long to postgis
+  
+  
+  ## # get the observed data for these
+  ## d<-dbGetQuery(ch,
+  ##  'SELECT  name, year, month, day, hour, "timestamp" ,     t2.lat ,     lon,
+  ##        vapour_pressure_in_hpa
+  ##   FROM weather_bom.bom_3hourly_data_2010 join weather_bom.combstats t2
+  ##   on station_number = stnum
+  ##   where station_number = 70014
+  ##   and month  =8 and (hour = 9 or hour = 15)
+  ##   order by day, hour
+  ##  ')
+  ##  d
+  ##  str(d)
+  ##  with(d, plot(as.POSIXct(timestamp), vapour_pressure_in_hpa, type='b',pch=16))
+  
+  
+  
+  ##  # extract_awap_by_day
+  
+  ##  # get mean absolute difference with the grid vs stations
+  
+  ################################################################
+  # name: tidy up
+  require(swishdbtools)
+  ch<-connect2postgres2("ewedb")
+  sch <- swish_temptable("ewedb")
+  sch <- sch$schema
+  tbls <- pgListTables(ch, sch, table="foo", match = FALSE)
+  tbls
+  for(tab in tbls[,1])
+  {
+    dbSendQuery(ch, 
+                sprintf("drop table %s.%s", sch, tab)
+    )
+  }
+    
+  check.against.stations <- read.csv("~/data/AWAP_GRIDS/data/check-against-stations.csv")
+  head(check.against.stations)
+  with(subset(check.against.stations, address == 3001), plot(as.Date(date), maxave, type = "l"))
+  
+#+end_src
+*** COMMENT deprecated checkAstation
 #+name:clean
-#+begin_src R :session *R* :tangle src/clean.r :exports none :eval no
+#+begin_src R :session *R* :tangle no :exports none :eval no
   ################################################################
   # name:clean
   # Project: AWAP_GRIDS
