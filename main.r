@@ -24,11 +24,11 @@ load.project()
 
 ####################
 # user definitions, or setup interactively
-startdate <- '2013-04-01'
+startdate <- '1980-01-02'
 enddate <-  Sys.Date()-2
 checkDates <- TRUE
 interactively <- FALSE
-variablenames <- 'maxave,minave,solarave,totals,vprph09,vprph15'
+variablenames <- 'totals' #,vprph09,vprph15'
 aggregation_factor <- 3
 if(length(grep('linux',sessionInfo()[[1]]$os)) == 1)
 {
