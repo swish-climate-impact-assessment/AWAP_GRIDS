@@ -2048,22 +2048,76 @@ system('test.bat')
   StartDate <- "2010-01-01" 
   # eg
   EndDate <- "2010-01-01" 
+    
+  ################################################################
+  # name: Get-selected-stations
+  # want to get a set of stations that observed any of our awap variables
+  require(swishdbtools)
+  p  <- getPassword()
+  ch <- connect2postgres("tern5.qern.qcif.edu.au", "ewedb", "gislibrary", p = p)
+  tbls  <- pgListTables(ch, "weather_bom")
+  tbls
+  # vprph
+  sql  <- sql_subset(ch, "weather_bom.bom_3hourly_data_1990_2010_master",
+                     select = "distinct station_number",
+                     subset = "quality_of_vapour_pressure = 'Y'",
+                     eval = T
+                     )
+  head(sql)  
+  nrow(sql)
+  # 953
+  # temp
+  sql2  <- sql_subset(ch, "weather_bom.bom_3hourly_data_1990_2010_master",
+                     select = "distinct station_number",
+                     subset = "quality_of_air_temperature = 'Y'",
+                     eval = T
+                     )
+  head(sql2)  
+  nrow(sql2)
+  # 980
+  # rain
+  sql3  <- sql_subset(ch, "weather_bom.bom_3hourly_data_1990_2010_master",
+                     select = "distinct station_number",
+                     subset = "quality_of_precipitation = 'Y'",
+                     eval = T
+                     )
+  head(sql3)  
+  nrow(sql3)  
+  # 948
+  stations  <- merge(sql, sql2)
+  nrow(stations)
+  # 953
+  stations  <- merge(stations, sql3)
+  nrow(stations)
+  # 943
+  write.csv(stations, file.path(workingdir, "selected-stations.csv"), row.names = F)
   
   ################################################################
-  # name: GeoCode
+  # name: GeoCode-selected-stations
   require(swishdbtools)
   ch <- connect2postgres2("ewedb")
   stations  <- sql_subset(ch, "weather_bom.combstats", eval = T)
+  nrow(stations)
+  # 8139
+  # only on mainland
   stations <- subset(stations, lat > -50 & lon < 160)
+  # only those with observations of all vars
+  selectedStations  <- read_file(file.path(workingdir, "selected-stations.csv"))
+  head(stations)
+  head(selectedStations)
+  stations  <- merge(stations, selectedStations, by.x = "stnum", by.y = "station_number")
+  nrow(stations)
+  # 939
   sampled  <- sample(stations$stnum, percentSample * nrow(stations))
   locations  <- stations[which(stations$stnum %in% sampled),]
   names(locations) <- gsub("lon", "long", names(locations))
   names(locations) <- gsub("stnum", "address", names(locations))
   # not gid
-  # not gid
   locations <- locations[,-1]
   #nrow(locations)
   #plot(locations$long, locations$lat, pch = 16)
+  
+  
   
   epsg <- make_EPSG()
   df <- SpatialPointsDataFrame(cbind(locations$long,locations$lat),locations,                             
@@ -2120,7 +2174,7 @@ system('test.bat')
                         schemaName = tempTableName$schema,
                         tableName = tempTableName$table,
                         pointsLayer = tempTableName_locations,
-                        measures = c("maxave", "minave")
+                        measures = c("maxave", "minave", "totals", "vprph09", "vprph15")
   )
   
   output_data <- reformat_awap_data(
@@ -2172,10 +2226,10 @@ system('test.bat')
                 sprintf("drop table %s.%s", sch, tab)
     )
   }
-
-check.against.stations <- read.csv("~/data/AWAP_GRIDS/data/check-against-stations.csv")
-head(check.against.stations)
-with(subset(check.against.stations, address == 3001), plot(as.Date(date), maxave, type = "l"))
+    
+  check.against.stations <- read.csv("~/data/AWAP_GRIDS/data/check-against-stations.csv")
+  head(check.against.stations)
+  with(subset(check.against.stations, address == 3001), plot(as.Date(date), maxave, type = "l"))
   
 #+end_src
 *** COMMENT deprecated checkAstation
