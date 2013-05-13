@@ -7,93 +7,28 @@
 # eg
 workingdir <- "~/data/AWAP_GRIDS/data" 
 # eg
-percentSample <- 0.1
-#fileName <-  "zones.xlsx"
-# eg
 outputFileName <- "locations.shp"
 # eg
-outputDataFile <- "check-against-stations.csv"
+outputDataFile <- "calculate-for-grid.csv"
 # eg
-StartDate <- "2010-01-01" 
+StartDate <- "2013-01-10" 
 # eg
-EndDate <- "2010-01-01" 
+EndDate <- "2013-01-20" 
   
 ################################################################
-# name: Get-selected-stations
-# want to get a set of stations that observed any of our awap variables
-require(swishdbtools)
-p  <- getPassword(remote = T)
-ch <- connect2postgres("tern5.qern.qcif.edu.au", "ewedb", "gislibrary", p = p)
-tbls  <- pgListTables(ch, "weather_bom")
-tbls
-# vprph
-sql  <- sql_subset(ch, "weather_bom.bom_3hourly_data_1990_2010_master",
-                   select = "distinct station_number",
-                   subset = "quality_of_vapour_pressure = 'Y'",
-                   eval = T
-                   )
-head(sql)  
-nrow(sql)
-# 953
-# temp
-sql2  <- sql_subset(ch, "weather_bom.bom_3hourly_data_1990_2010_master",
-                   select = "distinct station_number",
-                   subset = "quality_of_air_temperature = 'Y'",
-                   eval = T
-                   )
-head(sql2)  
-nrow(sql2)
-# 980
-# rain
-sql3  <- sql_subset(ch, "weather_bom.bom_3hourly_data_1990_2010_master",
-                   select = "distinct station_number",
-                   subset = "quality_of_precipitation = 'Y'",
-                   eval = T
-                   )
-head(sql3)  
-nrow(sql3)  
-# 948
-stations  <- merge(sql, sql2)
-nrow(stations)
-# 953
-stations  <- merge(stations, sql3)
-nrow(stations)
-# 943
-write.csv(stations, file.path(workingdir, "selected-stations.csv"), row.names = F)
-
-################################################################
-# name: GeoCode-selected-stations
-require(swishdbtools)
-ch <- connect2postgres2("ewedb")
-stations  <- sql_subset(ch, "weather_bom.combstats", eval = T)
-nrow(stations)
-# 8139
-# only on mainland
-stations <- subset(stations, lat > -50 & lon < 160)
-# only those with observations of all vars
-selectedStations  <- read_file(file.path(workingdir, "selected-stations.csv"))
-head(stations)
-head(selectedStations)
-stations  <- merge(stations, selectedStations, by.x = "stnum", by.y = "station_number")
-nrow(stations)
-# 939
-sampled  <- sample(stations$stnum, percentSample * nrow(stations))
-length(sampled)
-# 93
-locations  <- stations[which(stations$stnum %in% sampled),]
-names(locations) <- gsub("lon", "long", names(locations))
-names(locations) <- gsub("stnum", "address", names(locations))
-# not gid
-locations <- locations[,-c(which(names(locations) == "gid"))]
-nrow(locations)
-plot(locations$long, locations$lat, pch = 16)
-
-
+# name: Get-test-grid-locations
+require(rgdal)
+res=0.1
+xs=seq(112,155,res)
+ys=seq(-45,-9,res)
+d=expand.grid(xs,ys)
+head(d)
+#points(gr1, pch = 16)
 
 epsg <- make_EPSG()
-df <- SpatialPointsDataFrame(cbind(locations$long,locations$lat),locations,                             
-                             proj4string=CRS(epsg$prj4[epsg$code %in% "4283"])
-                             )
+df <- SpatialPointsDataFrame(cbind(d$Var1,d$Var2),d,
+                              proj4string=CRS(epsg$prj4[epsg$code %in% '4283']))
+
 setwd(workingdir)
 if(file.exists(outputFileName))
 {
@@ -112,9 +47,10 @@ ch <- connect2postgres2("ewedb")
 locations <- read_file(file.path(workingdir,tempTableName))
 locations <- locations@data
 tempTableName <- swish_temptable()
+names(locations) <- c("long", "lat")
 dbWriteTable(ch, tempTableName$table, locations, row.names = F)
 tested <- sql_subset(ch, tempTableName$fullname, eval = T)
-#tested
+#head(tested)
 tempTableName <- tempTableName$fullname
 tempTableName
 
@@ -140,14 +76,24 @@ startdate <- StartDate
 enddate <- EndDate
 ch<-connect2postgres2("ewedb")
 tempTableName <- swish_temptable("ewedb")
-
+# address doesn't exist
+dbSendQuery(ch, sprintf("alter table gislibrary.%s add column address serial", tempTableName_locations))
 raster_extract_by_day(ch, startdate, enddate,
                       schemaName = tempTableName$schema,
                       tableName = tempTableName$table,
                       pointsLayer = tempTableName_locations,
-                      measures = c("maxave", "minave", "totals", "vprph09", "vprph15")
+                      measures = c("maxave", "minave") 
 )
+# test_out <- sql_subset(ch, tempTableName$fullname, eval = T)
+# test_out_loc <- sql_subset(ch, paste("gislibrary.", tempTableName_locations, sep =""), eval = T)
+# head(test_out)
+# head(test_out_loc)
+# test_out <- merge(test_out_loc, test_out)
+# head(test_out)
+# points(test_out$long, test_out$lat, col = test_out$value)
 
+
+# "minave", "totals", "vprph09", "vprph15")
 output_data <- reformat_awap_data(
   tableName = tempTableName$fullname
 )
