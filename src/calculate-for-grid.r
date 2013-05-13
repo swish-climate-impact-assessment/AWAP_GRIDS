@@ -1,4 +1,7 @@
 
+################################################################
+# name:calculate-for-grid
+
 # based on
 # ~/projects/swish-climate-impact-assessment.github.com/tools/ExtractAWAPdata4locations
 
