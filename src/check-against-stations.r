@@ -113,6 +113,7 @@ locations <- locations@data
 
 if(!require(oz)) install.packages("oz"); require(oz)
 require(maps)
+require(fields)
 png("reports/selected-stations.png")
 with(stations, plot(lon, lat, pch = 16, xlim =c(112,155), cex = .5))
 with(locations, points(long, lat, pch = 19, col = 'red'))
@@ -121,13 +122,20 @@ map.scale(ratio=F)
 dev.off()
 
 r <- readGDAL2("115.146.92.162","gislibrary","ewedb","awap_grids","maxave_20130118",p=p)
-png("reports/grid-nsw.png")
-oz(sections=4, xlim=c(140,155), ylim = c(-36,-28))
-image(r, add = T)
+
+png("reports/grid-nsw.png", width = 800, height = 500)
+
+zs <- c(15,48)
+par(oma=c( 0,0,0,4)) # margin of 4 spaces width at right hand side
+oz(sections=4, xlim=c(140,155), ylim = c(-38,-28))
+image(r, add = T,  zlim=zs, col=tim.colors())
 oz(add=T)
 map.scale(ratio=F)
 box()
-title(main="maximum temperature 2013-01-18")
+title(main="maximum temperature (C) 2013-01-18")
+par(oma=c( 0,0,0,1))# reset margin to be much smaller.
+image.plot( legend.only=TRUE, zlim=zs) 
+
 dev.off()
 
 
