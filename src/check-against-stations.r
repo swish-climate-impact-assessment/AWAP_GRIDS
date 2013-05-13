@@ -5,7 +5,8 @@
 # this script runs the ExtractAWAPGRIDS functions for sample locations
 # depends on swishdbtools package from http:/swish-climate-impact-assessment.github.com
 # eg
-workingdir <- "~/data/AWAP_GRIDS/data" 
+workingdir <- "~/data/AWAP_GRIDS/data"
+setwd("~/data/AWAP_GRIDS")
 # eg
 percentSample <- 0.1
 #fileName <-  "zones.xlsx"
@@ -157,31 +158,50 @@ write.csv(output_data,outputDataFile, row.names = FALSE)
 outputFileName <- outputDataFile
 outputFileName
 
-
-
-
-## # send lat long to postgis
-
-
-## # get the observed data for these
-## d<-dbGetQuery(ch,
-##  'SELECT  name, year, month, day, hour, "timestamp" ,     t2.lat ,     lon,
-##        vapour_pressure_in_hpa
-##   FROM weather_bom.bom_3hourly_data_2010 join weather_bom.combstats t2
-##   on station_number = stnum
-##   where station_number = 70014
-##   and month  =8 and (hour = 9 or hour = 15)
-##   order by day, hour
-##  ')
-##  d
-##  str(d)
-##  with(d, plot(as.POSIXct(timestamp), vapour_pressure_in_hpa, type='b',pch=16))
-
-
-
-##  # extract_awap_by_day
+################################################################
+# name: get the observed data for these
+require(swishdbtools)
+require(reshape)
+p <- getPassword(remote = T)
+ch <- connect2postgres("tern5.qern.qcif.edu.au", "ewedb", "gislibrary", p = p)
+# all the stations are in
+# selectedStations  <- read_file(file.path(workingdir, "selected-stations.csv"))
+check_against_stations <- read.csv("~/data/AWAP_GRIDS/data/check-against-stations.csv")
+check_against_stations$date <- as.Date(check_against_stations$date)
+head(check_against_stations)
+stnum  <- check_against_stations$address[1]
+stnum
+with(subset(check_against_stations, address == stnum), plot(date, maxave, type = "l"))
+selectedStations <- names(table(check_against_stations$address))
+head(selectedStations)
+length(selectedStations)
+d <- dbGetQuery(ch,
+# cat(
+ paste("SELECT  station_number as address, name, cast(year || '-' || month || '-' ||  day as date) as date, hour, \"timestamp\" ,     t2.lat ,     lon,
+       vapour_pressure_in_hpa
+  FROM weather_bom.bom_3hourly_data_2004 join weather_bom.combstats t2
+  on station_number = stnum
+  where station_number in ('",
+       paste(selectedStations[1:3], sep = "", collapse = c("','")),
+       "')
+  and month  =8 and (hour = 9)
+  and quality_of_vapour_pressure = 'Y'
+  order by day, hour
+ ", sep = "")
+)
+                
+head(d)
+str(d)
+## with(d,
+##      plot(
+##        as.POSIXct(timestamp), vapour_pressure_in_hpa,type='b',pch=16
+##        )
+##      )
 
 ##  # get mean absolute difference with the grid vs stations
+str(check_against_stations)
+df <- merge(check_against_stations, d)
+head(df)
 
 ################################################################
 # name: tidy up
@@ -197,7 +217,3 @@ for(tab in tbls[,1])
               sprintf("drop table %s.%s", sch, tab)
   )
 }
-  
-check.against.stations <- read.csv("~/data/AWAP_GRIDS/data/check-against-stations.csv")
-head(check.against.stations)
-with(subset(check.against.stations, address == 3001), plot(as.Date(date), maxave, type = "l"))
