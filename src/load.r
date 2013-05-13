@@ -73,7 +73,12 @@ for(i in 1:length(vars[[1]])){
       } else {
         Decompress7Zip(zipFileName= fname, outputDirectory=getwd(), TRUE)
       }
-
+    # hack to see if this fixes random breaking
+    if(!file.exists(gsub('.Z$','',fname)))
+    {
+      Sys.sleep(time=10)
+      uncompress_linux(filename = fname)
+    }
     raster_aggregate(filename = gsub('.Z$','',fname),
       aggregationfactor = aggregation_factor, delete = TRUE)
     outname <- gsub('.tif',"", fname)
