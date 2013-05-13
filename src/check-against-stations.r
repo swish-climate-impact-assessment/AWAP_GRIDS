@@ -3,26 +3,26 @@
 # ~/projects/swish-climate-impact-assessment.github.com/tools/ExtractAWAPdata4locations
 
 # this script runs the ExtractAWAPGRIDS functions for sample locations
-# depends on swishdbtools package from http:/swish-climate-impact-assessment.github.com
+# depends on swishdbtools package from http:/swish-climate-impact-assessment.github.comC
 # eg
 workingdir <- "~/data/AWAP_GRIDS/data" 
 # eg
 percentSample <- 0.1
 #fileName <-  "zones.xlsx"
 # eg
-outputFileName <- "locations.shp"
+outputFileName <- "test.shp"
 # eg
 outputDataFile <- "check-against-stations.csv"
 # eg
-StartDate <- "2010-01-01" 
+StartDate <- "2013-01-10" 
 # eg
-EndDate <- "2010-01-01" 
+EndDate <- "2013-01-20" 
   
 ################################################################
 # name: Get-selected-stations
 # want to get a set of stations that observed any of our awap variables
 require(swishdbtools)
-p  <- getPassword()
+p  <- getPassword(remote=T)
 ch <- connect2postgres("tern5.qern.qcif.edu.au", "ewedb", "gislibrary", p = p)
 tbls  <- pgListTables(ch, "weather_bom")
 tbls
@@ -61,6 +61,20 @@ nrow(stations)
 # 943
 write.csv(stations, file.path(workingdir, "selected-stations.csv"), row.names = F)
 
+# or test grid
+require(rgdal)
+res=0.1
+xs=seq(112,155,res)
+ys=seq(-45,-9,res)
+d=expand.grid(xs,ys)
+head(d)
+#points(gr1, pch = 16)
+
+epsg <- make_EPSG()
+pts <- SpatialPointsDataFrame(cbind(d$Var1,d$Var2),d,
+                              proj4string=CRS(epsg$prj4[epsg$code %in% '4283']))
+writeOGR(pts, 'test.shp', 'test', driver='ESRI Shapefile')
+
 ################################################################
 # name: GeoCode-selected-stations
 require(swishdbtools)
@@ -84,7 +98,7 @@ locations  <- stations[which(stations$stnum %in% sampled),]
 names(locations) <- gsub("lon", "long", names(locations))
 names(locations) <- gsub("stnum", "address", names(locations))
 # not gid
-locations <- locations[,-1]
+locations <- locations[,-c(which(names(locations) == "gid"))]
 nrow(locations)
 plot(locations$long, locations$lat, pch = 16)
 
@@ -112,9 +126,10 @@ ch <- connect2postgres2("ewedb")
 locations <- read_file(file.path(workingdir,tempTableName))
 locations <- locations@data
 tempTableName <- swish_temptable()
+names(locations) <- c("long", "lat")
 dbWriteTable(ch, tempTableName$table, locations, row.names = F)
 tested <- sql_subset(ch, tempTableName$fullname, eval = T)
-#tested
+#head(tested)
 tempTableName <- tempTableName$fullname
 tempTableName
 
@@ -140,14 +155,24 @@ startdate <- StartDate
 enddate <- EndDate
 ch<-connect2postgres2("ewedb")
 tempTableName <- swish_temptable("ewedb")
-
+# address doesn't exist
+dbSendQuery(ch, "alter table gislibrary.foof053d732e0d add column address serial")
 raster_extract_by_day(ch, startdate, enddate,
                       schemaName = tempTableName$schema,
                       tableName = tempTableName$table,
                       pointsLayer = tempTableName_locations,
-                      measures = c("maxave", "minave", "totals", "vprph09", "vprph15")
+                      measures = c("maxave") 
 )
+# test_out <- sql_subset(ch, tempTableName$fullname, eval = T)
+# test_out_loc <- sql_subset(ch, paste("gislibrary.", tempTableName_locations, sep =""), eval = T)
+# head(test_out)
+# head(test_out_loc)
+# test_out <- merge(test_out_loc, test_out)
+# head(test_out)
+# points(test_out$long, test_out$lat, col = test_out$value)
 
+
+# "minave", "totals", "vprph09", "vprph15")
 output_data <- reformat_awap_data(
   tableName = tempTableName$fullname
 )
