@@ -22,7 +22,7 @@ EndDate <- "2013-01-20"
 # name: Get-selected-stations
 # want to get a set of stations that observed any of our awap variables
 require(swishdbtools)
-p  <- getPassword(remote=T)
+p  <- getPassword(remote = T)
 ch <- connect2postgres("tern5.qern.qcif.edu.au", "ewedb", "gislibrary", p = p)
 tbls  <- pgListTables(ch, "weather_bom")
 tbls

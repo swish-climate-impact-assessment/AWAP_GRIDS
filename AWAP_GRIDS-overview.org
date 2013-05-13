@@ -1166,7 +1166,12 @@ pgListTables <- function(conn, schema, pattern = NA)
         } else {
           Decompress7Zip(zipFileName= fname, outputDirectory=getwd(), TRUE)
         }
-  
+      # hack to see if this fixes random breaking
+      if(!file.exists(gsub('.Z$','',fname)))
+      {
+        Sys.sleep(time=10)
+        uncompress_linux(filename = fname)
+      }
       raster_aggregate(filename = gsub('.Z$','',fname),
         aggregationfactor = aggregation_factor, delete = TRUE)
       outname <- gsub('.tif',"", fname)
@@ -2053,7 +2058,7 @@ system('test.bat')
   # name: Get-selected-stations
   # want to get a set of stations that observed any of our awap variables
   require(swishdbtools)
-  p  <- getPassword()
+  p  <- getPassword(remote = T)
   ch <- connect2postgres("tern5.qern.qcif.edu.au", "ewedb", "gislibrary", p = p)
   tbls  <- pgListTables(ch, "weather_bom")
   tbls
@@ -2115,7 +2120,7 @@ system('test.bat')
   names(locations) <- gsub("lon", "long", names(locations))
   names(locations) <- gsub("stnum", "address", names(locations))
   # not gid
-  locations <- locations[,-1]
+  locations <- locations[,-c(which(names(locations) == "gid"))]
   nrow(locations)
   plot(locations$long, locations$lat, pch = 16)
   
