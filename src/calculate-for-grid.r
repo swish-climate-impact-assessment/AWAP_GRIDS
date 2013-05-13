@@ -106,31 +106,16 @@ write.csv(output_data,outputDataFile, row.names = FALSE)
 outputFileName <- outputDataFile
 outputFileName
 
+################################################################
+# name: visualise a pixel
+head(output_data)
+which(test_out_loc$long == 150 & test_out_loc$lat == -30)
+subset(output_data, address == 65031)
+with(subset(output_data, address == 65031), plot(date, maxave, type= "l"))
 
-
-
-## # send lat long to postgis
-
-
-## # get the observed data for these
-## d<-dbGetQuery(ch,
-##  'SELECT  name, year, month, day, hour, "timestamp" ,     t2.lat ,     lon,
-##        vapour_pressure_in_hpa
-##   FROM weather_bom.bom_3hourly_data_2010 join weather_bom.combstats t2
-##   on station_number = stnum
-##   where station_number = 70014
-##   and month  =8 and (hour = 9 or hour = 15)
-##   order by day, hour
-##  ')
-##  d
-##  str(d)
-##  with(d, plot(as.POSIXct(timestamp), vapour_pressure_in_hpa, type='b',pch=16))
-
-
-
-##  # extract_awap_by_day
-
-##  # get mean absolute difference with the grid vs stations
+# TODO figure out how to turn these into a raster?
+head(test_out_loc)
+head(output_data)
 
 ################################################################
 # name: tidy up
@@ -146,7 +131,3 @@ for(tab in tbls[,1])
               sprintf("drop table %s.%s", sch, tab)
   )
 }
-  
-check.against.stations <- read.csv("~/data/AWAP_GRIDS/data/check-against-stations.csv")
-head(check.against.stations)
-with(subset(check.against.stations, address == 3001), plot(as.Date(date), maxave, type = "l"))
