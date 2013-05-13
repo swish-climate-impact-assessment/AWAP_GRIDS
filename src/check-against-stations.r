@@ -87,8 +87,6 @@ names(locations) <- gsub("stnum", "address", names(locations))
 # not gid
 locations <- locations[,-c(which(names(locations) == "gid"))]
 nrow(locations)
-plot(locations$long, locations$lat, pch = 16)
-
 
 
 epsg <- make_EPSG()
@@ -112,6 +110,27 @@ require(swishdbtools)
 ch <- connect2postgres2("ewedb")
 locations <- read_file(file.path(workingdir,tempTableName))
 locations <- locations@data
+
+if(!require(oz)) install.packages("oz"); require(oz)
+require(maps)
+png("reports/selected-stations.png")
+with(stations, plot(lon, lat, pch = 16, xlim =c(112,155), cex = .5))
+with(locations, points(long, lat, pch = 19, col = 'red'))
+oz(add = T)
+map.scale(ratio=F)
+dev.off()
+
+r <- readGDAL2("115.146.92.162","gislibrary","ewedb","awap_grids","maxave_20130118",p=p)
+png("reports/grid-nsw.png")
+oz(sections=4, xlim=c(140,155), ylim = c(-36,-28))
+image(r, add = T)
+oz(add=T)
+map.scale(ratio=F)
+box()
+title(main="maximum temperature 2013-01-18")
+dev.off()
+
+
 tempTableName <- swish_temptable()
 dbWriteTable(ch, tempTableName$table, locations, row.names = F)
 tested <- sql_subset(ch, tempTableName$fullname, eval = T)
@@ -169,9 +188,18 @@ ch <- connect2postgres("tern5.qern.qcif.edu.au", "ewedb", "gislibrary", p = p)
 check_against_stations <- read.csv("~/data/AWAP_GRIDS/data/check-against-stations.csv")
 check_against_stations$date <- as.Date(check_against_stations$date)
 head(check_against_stations)
-stnum  <- check_against_stations$address[1]
-stnum
-with(subset(check_against_stations, address == stnum), plot(date, maxave, type = "l"))
+stnum_ids  <- sample(1:93, 4)
+locations[stnum_ids,]
+stnums <- locations[stnum_ids,1]
+stnames <- locations[stnum_ids,2]
+png("reports/sampled-timeseries-from-grid.png", width = 800, height = 500)
+par(mfrow = c(2,2))
+for(j in 1:4){
+  with(subset(check_against_stations, address == stnums[j]), plot(date, maxave, type = "l"))
+  title(main = paste("maxt, ", stnames[j], "(", format(locations$long[j], digits = 4), ", ", format(locations$lat[j], digits = 4), ")"), cex = .6)
+}
+dev.off()
+
 selectedStations <- names(table(check_against_stations$address))
 head(selectedStations)
 length(selectedStations)
