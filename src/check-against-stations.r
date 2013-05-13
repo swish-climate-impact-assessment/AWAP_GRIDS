@@ -267,26 +267,33 @@ str(check_against_stations)
 df <- merge(check_against_stations, d)
 head(df)
   
-  # plots 
-    fit <- lm(df$maxave ~ df$maximum_temperature_in_24_hours_after_9am_local_time_in_degrees)
-    summary(fit)
-    png("reports/maxave.png")
-    plot(df$maximum_temperature_in_24_hours_after_9am_local_time_in_degrees, df$maxave)
-    #abline(0,1, col = 'blue')
-    abline(fit, col = 'red')
-    legend("topright", legend = paste("R2 is ", format(summary(fit)$adj.r.squared, digits = 4)))
-    dev.off()
-  
-    fit <- lm(df$vprph15 ~ df$vapour_pressure_in_hpa)
-    #summary(fit)
-    png("reports/vprph15.png")
-    plot(df$vapour_pressure_in_hpa, df$vprph15)
-    #abline(0,1, col = 'blue')
-    abline(fit, col = 'red')
-    legend("topright", legend = paste("R2 is ", format(summary(fit)$adj.r.squared, digits = 4)))
-    dev.off()  
-  }
-}
+# plots 
+fit <- lm(df$maxave ~ df$maximum_temperature_in_24_hours_after_9am_local_time_in_degrees)
+summary(fit)
+png("reports/maxave.png")
+plot(df$maximum_temperature_in_24_hours_after_9am_local_time_in_degrees, df$maxave)
+#abline(0,1, col = 'blue')
+abline(fit, col = 'red')
+legend("topright", legend = paste("R2 is ", format(summary(fit)$adj.r.squared, digits = 4)))
+dev.off()
+
+fit <- lm(df$minave ~ df$minimum_temperature_in_24_hours_before_9am_local_time_in_degree)
+#summary(fit)
+png("reports/minave.png")
+plot(df$minimum_temperature_in_24_hours_before_9am_local_time_in_degree, df$minave)
+#abline(0,1, col = 'blue')
+abline(fit, col = 'red')
+legend("topright", legend = paste("R2 is ", format(summary(fit)$adj.r.squared, digits = 4)))
+dev.off()  
+
+fit <- lm(df$totals ~ df$precipitation_in_the_24_hours_before_9am_local_time_in_mm)
+#summary(fit)
+png("reports/totals.png")
+plot(df$precipitation_in_the_24_hours_before_9am_local_time_in_mm, df$totals)
+#abline(0,1, col = 'blue')
+abline(fit, col = 'red')
+legend("topright", legend = paste("R2 is ", format(summary(fit)$adj.r.squared, digits = 4)))
+dev.off()  
 
 
 ################################################################
