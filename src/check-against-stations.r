@@ -123,7 +123,7 @@ dev.off()
 
 r <- readGDAL2("115.146.92.162","gislibrary","ewedb","awap_grids","maxave_20130118",p=p)
 
-png("reports/grid-nsw.png", width = 800, height = 500)
+png("reports/grid-nsw.png", width = 500, height = 400)
 
 zs <- c(15,48)
 par(oma=c( 0,0,0,4)) # margin of 4 spaces width at right hand side
