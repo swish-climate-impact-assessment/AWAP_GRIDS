@@ -175,7 +175,9 @@ with(subset(check_against_stations, address == stnum), plot(date, maxave, type =
 selectedStations <- names(table(check_against_stations$address))
 head(selectedStations)
 length(selectedStations)
-hour <- 9
+for(hour in c(15))
+{
+#hour <- 9
 d <- dbGetQuery(ch,
 # cat(
  paste("SELECT  station_number as address, name, cast(year || '-' || month || '-' ||  day as date) as date, hour, \"timestamp\" ,     t2.lat ,     lon,
@@ -191,8 +193,8 @@ d <- dbGetQuery(ch,
  ", sep = "")
 )
                 
-head(d)
-str(d)
+#head(d)
+#str(d)
 ## with(d,
 ##      plot(
 ##        as.POSIXct(timestamp), vapour_pressure_in_hpa,type='b',pch=16
@@ -200,11 +202,91 @@ str(d)
 ##      )
 
 ##  # get mean absolute difference with the grid vs stations
+#str(check_against_stations)
+df <- merge(check_against_stations, d)
+#head(df)
+
+# plots 
+  if(hour == 9){
+  fit <- lm(df$vprph09 ~ df$vapour_pressure_in_hpa)
+  summary(fit)
+  # Multiple R-squared: 0.969,
+  png("reports/vprph09.png")
+  plot(df$vapour_pressure_in_hpa, df$vprph09)
+  #abline(0,1, col = 'blue')
+  abline(fit, col = 'red')
+  legend("topright", legend = paste("R2 is ", format(summary(fit)$adj.r.squared, digits = 4)))
+  dev.off()
+  } else {
+  fit <- lm(df$vprph15 ~ df$vapour_pressure_in_hpa)
+  #summary(fit)
+  png("reports/vprph15.png")
+  plot(df$vapour_pressure_in_hpa, df$vprph15)
+  #abline(0,1, col = 'blue')
+  abline(fit, col = 'red')
+  legend("topright", legend = paste("R2 is ", format(summary(fit)$adj.r.squared, digits = 4)))
+  dev.off()  
+  }
+}
+# great stuff. now temps and rain
+names(sql_subset(ch, "weather_bom.bom_daily_data_1990_2010", limit = 1, eval = T))
+# [1] "station_number"                                                 
+# [2] "year"                                                           
+# [3] "month"                                                          
+# [4] "day"  
+# [5] "global_solar_exposure_at_location_derived_from_satellite_data_i"
+# [6] "quality_of_global_solar_exposure_value"                         
+# [7] "precipitation_in_the_24_hours_before_9am_local_time_in_mm"      
+# [8] "quality_of_precipitation_value"                                 
+# [9] "number_of_days_of_rain_within_the_days_of_accumulation"         
+# [10] "accumulated_number_of_days_over_which_the_precipitation_was_mea"
+# [11] "maximum_temperature_in_24_hours_after_9am_local_time_in_degrees"
+# [12] "quality_of_maximum_temperature_in_24_hours_after_9am_local_time"
+# [13] "days_of_accumulation_of_maximum_temperature"                    
+# [14] "minimum_temperature_in_24_hours_before_9am_local_time_in_degree"
+# [15] "quality_of_minimum_temperature_in_24_hours_before_9am_local_tim"
+d <- dbGetQuery(ch,
+                # cat(
+                paste("SELECT  station_number as address, name, cast(year || '-' || month || '-' ||  day as date) as date, t2.lat ,     lon,
+       maximum_temperature_in_24_hours_after_9am_local_time_in_degrees,
+                      quality_of_maximum_temperature_in_24_hours_after_9am_local_time,
+                      minimum_temperature_in_24_hours_before_9am_local_time_in_degree,
+                      quality_of_minimum_temperature_in_24_hours_before_9am_local_tim,
+                      precipitation_in_the_24_hours_before_9am_local_time_in_mm,
+                      quality_of_precipitation_value
+                      FROM weather_bom.bom_daily_data_1990_2010 join weather_bom.combstats t2
+                      on station_number = stnum
+                      where station_number in ('",
+       paste(selectedStations, sep = "", collapse = c("','")),
+                      "') 
+                      ", sep = "")
+)
+str(d)
+
 str(check_against_stations)
 df <- merge(check_against_stations, d)
 head(df)
-# plot(df$vapour_pressure_in_hpa, df$vprph09)
-# great stuff.
+  
+  # plots 
+    fit <- lm(df$maxave ~ df$maximum_temperature_in_24_hours_after_9am_local_time_in_degrees)
+    summary(fit)
+    png("reports/maxave.png")
+    plot(df$maximum_temperature_in_24_hours_after_9am_local_time_in_degrees, df$maxave)
+    #abline(0,1, col = 'blue')
+    abline(fit, col = 'red')
+    legend("topright", legend = paste("R2 is ", format(summary(fit)$adj.r.squared, digits = 4)))
+    dev.off()
+  
+    fit <- lm(df$vprph15 ~ df$vapour_pressure_in_hpa)
+    #summary(fit)
+    png("reports/vprph15.png")
+    plot(df$vapour_pressure_in_hpa, df$vprph15)
+    #abline(0,1, col = 'blue')
+    abline(fit, col = 'red')
+    legend("topright", legend = paste("R2 is ", format(summary(fit)$adj.r.squared, digits = 4)))
+    dev.off()  
+  }
+}
 
 
 ################################################################
