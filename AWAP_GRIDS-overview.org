@@ -2211,16 +2211,17 @@ system('test.bat')
   selectedStations <- names(table(check_against_stations$address))
   head(selectedStations)
   length(selectedStations)
+  hour <- 9
   d <- dbGetQuery(ch,
   # cat(
    paste("SELECT  station_number as address, name, cast(year || '-' || month || '-' ||  day as date) as date, hour, \"timestamp\" ,     t2.lat ,     lon,
          vapour_pressure_in_hpa
-    FROM weather_bom.bom_3hourly_data_2004 join weather_bom.combstats t2
+    FROM weather_bom.bom_3hourly_data_1990_2010_master join weather_bom.combstats t2
     on station_number = stnum
     where station_number in ('",
-         paste(selectedStations[1:3], sep = "", collapse = c("','")),
+         paste(selectedStations, sep = "", collapse = c("','")),
          "')
-    and month  =8 and (hour = 9)
+    and hour = ", hour ,"
     and quality_of_vapour_pressure = 'Y'
     order by day, hour
    ", sep = "")
@@ -2238,6 +2239,9 @@ system('test.bat')
   str(check_against_stations)
   df <- merge(check_against_stations, d)
   head(df)
+  # plot(df$vapour_pressure_in_hpa, df$vprph09)
+  # great stuff.
+  
   
   ################################################################
   # name: tidy up
