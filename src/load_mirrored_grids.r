@@ -53,36 +53,44 @@ for(i in 1:length(vars[[1]])){
     sdate <- date_i
     edate <- date_i
   #}
-    get_data_range(variable=as.character(variable[,1]),
-                   measure=as.character(variable[,2]),
-                   timestep=as.character(variable[,3]),
-                   startdate=as.POSIXct(sdate),
-                   enddate=as.POSIXct(edate))
+#     get_data_range(variable=as.character(variable[,1]),
+#                    measure=as.character(variable[,2]),
+#                    timestep=as.character(variable[,3]),
+#                    startdate=as.POSIXct(sdate),
+#                    enddate=as.POSIXct(edate))
 
     fname <- sprintf("%s_%s%s.grid.Z",measure_i,gsub("-","",sdate),gsub("-","",edate))
+# 
+#     if(file.info(fname)$size == 0)
+#       {
+#         file.remove(fname)
+#         next
+#       }
 
-    if(file.info(fname)$size == 0)
-      {
-        file.remove(fname)
-        next
-      }
-
-    if(os == 'linux')
-      {
-        uncompress_linux(filename = fname)
-      } else {
-        Decompress7Zip(zipFileName= fname, outputDirectory=getwd(), TRUE)
-      }
-    # hack to see if this fixes random breaking
-    if(!file.exists(gsub('.Z$','',fname)))
-    {
-      Sys.sleep(time=10)
-      uncompress_linux(filename = fname)
-    }
-    raster_aggregate(filename = gsub('.Z$','',fname),
-      aggregationfactor = aggregation_factor, delete = TRUE)
-    outname <- gsub('.tif',"", fname)
-    outname <- substr(outname, 1, nchar(outname) - (7 + 8))
+#     if(os == 'linux')
+#       {
+#         uncompress_linux(filename = fname)
+#       } else {
+#         Decompress7Zip(zipFileName= fname, outputDirectory=getwd(), TRUE)
+#       }
+#     # hack to see if this fixes random breaking
+#     if(!file.exists(gsub('.Z$','',fname)))
+#     {
+#       Sys.sleep(time=10)
+#       uncompress_linux(filename = fname)
+#     }
+#     raster_aggregate(filename = gsub('.Z$','',fname),
+#       aggregationfactor = aggregation_factor, delete = TRUE)
+     outname <- gsub('.grid.Z',"", fname)
+     outname <- substr(outname, 1, nchar(outname) - (8))
+    
+    p <- get_passwordTable()
+    p <- p[which(p$V3 == "ewedb"), "V5"]
+    r <- readGDAL2(source_server, 'gislibrary', 'ewedb',
+                   schema = 'awap_grids', table = outname, p = p)
+#    image(r)
+    writeGDAL(r, gsub(".grid.Z", ".tif", fname), drivername="GTiff")  
+    
     load2postgres_raster(
                          ipaddress = destination_server,
                          u = "gislibrary", d = 'ewedb',

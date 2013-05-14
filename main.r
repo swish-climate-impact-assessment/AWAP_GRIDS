@@ -27,11 +27,11 @@ load.project()
 destination_server <- "tern5.qern.qcif.edu.au" 
 source_server <- "115.146.92.162"
 fresh <- FALSE
-startdate <- '2013-05-12'
-enddate <-  Sys.Date()-2
+startdate <- '1980-01-01'
+enddate <-  '1980-02-01' #Sys.Date()-2
 checkDates <- TRUE
 interactively <- FALSE
-variablenames <- 'maxave,minave,solarave,totals,vprph09,vprph15'
+variablenames <- 'maxave,minave,totals,vprph09,vprph15' #,solarave
 aggregation_factor <- 3
 if(length(grep('linux',sessionInfo()[[1]]$os)) == 1)
 {
