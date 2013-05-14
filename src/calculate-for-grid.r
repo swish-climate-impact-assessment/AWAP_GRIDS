@@ -139,7 +139,7 @@ on t1.address = t2.address
 ", sep = "")
             )
 df <- sql_subset(ch, paste(sep = ".", tempTableName$schema, "tempfoobar1"), limit = -1, eval = T)
-with(df, plot(long, lat, col = landmask, pch = 16))
+with(df, plot(long, lat, col = landmask+1, pch = 16))
 head(df)
 write.csv(df, "landmask.csv", row.names = F)
 ################################################################
