@@ -1,8 +1,7 @@
 
 ################################################################
-# name:load
-################################################################
-# name:load
+# name:load_mirrored_grids
+
 # Project: AWAP_GRIDS
 # Author: ivanhanigan
 # Maintainer: Who to complain to <ivan.hanigan@gmail.com>
@@ -60,7 +59,7 @@ for(i in 1:length(vars[[1]])){
 #                    enddate=as.POSIXct(edate))
 
     fname <- sprintf("%s_%s%s.grid.Z",measure_i,gsub("-","",sdate),gsub("-","",edate))
-# 
+#
 #     if(file.info(fname)$size == 0)
 #       {
 #         file.remove(fname)
@@ -83,21 +82,21 @@ for(i in 1:length(vars[[1]])){
 #       aggregationfactor = aggregation_factor, delete = TRUE)
      outname <- gsub('.grid.Z',"", fname)
      outname <- substr(outname, 1, nchar(outname) - (8))
-    
+
     p <- get_passwordTable()
     p <- p[which(p$V3 == "ewedb"), "V5"]
     r <- readGDAL2(source_server, 'gislibrary', 'ewedb',
                    schema = 'awap_grids', table = outname, p = p)
 #    image(r)
-    writeGDAL(r, gsub(".grid.Z", ".tif", fname), drivername="GTiff")  
-    
+    writeGDAL(r, gsub(".grid.Z", ".tif", fname), drivername="GTiff")
+
     load2postgres_raster(
                          ipaddress = destination_server,
                          u = "gislibrary", d = 'ewedb',
                          pgisutils = pgisutils, srid = 4283,
                          filename = gsub(".grid.Z", ".tif", fname),
                          out_schema="awap_grids",
-                         out_table=outname, remove = F
+                         out_table=outname, remove = T
                          )
 
   }
