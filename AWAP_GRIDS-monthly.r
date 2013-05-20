@@ -4,7 +4,7 @@ require(swishdbtools)
 workdir <- getwd()
 outdir <- "data"
 setwd(outdir)
-start_date <- "2012-12-01"
+start_date <- "1900-01-01"
 start_date <- as.POSIXlt(start_date)
 # do
 load_monthly(startdate = start_date)

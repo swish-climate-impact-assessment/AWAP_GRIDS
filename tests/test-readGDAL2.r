@@ -23,10 +23,10 @@
   
   # bah
   require(swishdbtools)
-  p <- getPassword(remote=F)
+  p <- getPassword(remote=T)
 #dbSendQuery(ch, "drop table awap_grids.maxave_20130101")
 r <- readGDAL2('tern5.qern.qcif.edu.au', 'gislibrary', 'ewedb',
-               schema = 'awap_grids', table = 'maxave_19881005', p = p
+               schema = 'awap_grids', table = 'maxave_20030607', p = p
 )
 image(r)
 writeGDAL(r, '~/test1.TIF',drivername="GTiff")
