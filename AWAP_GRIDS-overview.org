@@ -120,11 +120,14 @@ data_tables: off
   
   ####################
   # user definitions, or setup interactively
-  startdate <- '2013-04-01'
-  enddate <-  Sys.Date()-2
+  destination_server <- "tern5.qern.qcif.edu.au" 
+  source_server <- "115.146.92.162"
+  fresh <- FALSE
+  startdate <- '1980-01-01'
+  enddate <-  '1980-02-01' #Sys.Date()-2
   checkDates <- TRUE
   interactively <- FALSE
-  variablenames <- 'maxave,minave,solarave,totals,vprph09,vprph15'
+  variablenames <- 'maxave,minave,totals,vprph09,vprph15' #,solarave
   aggregation_factor <- 3
   if(length(grep('linux',sessionInfo()[[1]]$os)) == 1)
   {
@@ -133,14 +136,20 @@ data_tables: off
     os <- 'windows'
   }
   #os <- 'linux' # only linux and windoze supported
-  pgisutils <- "" #"/usr/pgsql-9.1/bin/"
+  pgisutils <- "/usr/pgsql-9.1/bin/"
   #"\"C:\\pgutils\\postgis-pg92-binaries-2.0.2w64\\bin\\"
   pgutils <- "\"C:\\pgutils\\pgsql\\bin\\"
   
   ####################
   # run the project (alternately do this from Kepler)
   source(file.path(workdir, "src/scoping.r"))
-  source(file.path(workdir, "src/load.r"))
+  if(fresh == TRUE)
+  {
+    source(file.path(workdir, "src/load.r"))  
+  } else {
+    source(file.path(workdir, "src/load_mirrored_grids.r"))  
+  }
+  
   # source("src/load.r")
   # source("src/clean.r")
   # source("src/do.r")
@@ -1177,12 +1186,12 @@ pgListTables <- function(conn, schema, pattern = NA)
       outname <- gsub('.tif',"", fname)
       outname <- substr(outname, 1, nchar(outname) - (7 + 8))
       load2postgres_raster(
-                           ipaddress = "115.146.92.162",
+                           ipaddress = destination_server,
                            u = "gislibrary", d = 'ewedb',
-                           pgisutils = "", srid = 4283,
+                           pgisutils = pgisutils, srid = 4283,
                            filename = gsub(".grid.Z", ".tif", fname),
                            out_schema="awap_grids",
-                           out_table=outname, remove = F
+                           out_table=outname, remove = T
                            )
   
     }
@@ -1194,6 +1203,116 @@ pgListTables <- function(conn, schema, pattern = NA)
 #+end_src
 
 
+*** load mirrored GRIDS
+#+name:load_mirrored_grids
+#+begin_src R :session *R* :tangle src/load_mirrored_grids.r :exports none :eval no
+################################################################
+# name:load_mirrored_grids
+
+# Project: AWAP_GRIDS
+# Author: ivanhanigan
+# Maintainer: Who to complain to <ivan.hanigan@gmail.com>
+
+# This file loads all the libraries and data files needed
+# Don't do any cleanup here
+
+### Load any needed libraries
+#load(LibraryName)
+setwd(workdir)
+require(ProjectTemplate)
+load.project()
+## ch <- connect2postgres(h = '115.146.84.135', db = 'ewedb',
+##                        user = 'gislibrary')
+##
+ch <- connect2postgres2("ewedb")
+print(paste('root directory:', workdir))
+setwd('data')
+
+start_at <- scope[[1]][1]
+print(start_at)
+end_at <- scope[[2]][1]
+print(end_at)
+
+vars <- scope[[3]]
+#  print(vars)
+
+#  started <- Sys.time()
+
+for(i in 1:length(vars[[1]])){
+#    i = 1
+  measure_i <- vars[[1]][i]
+  variable <- variableslist[which(variableslist$measure == measure_i),]
+  vname <- as.character(variable[,1])
+  if(checkDates == TRUE)
+    {
+      datelist <- DatesUnavailable(ch, measure_i, start_at, end_at)
+    } else {
+      datelist <- seq(as.Date(start_at), as.Date(end_at), 1)
+    }
+  for(date_i in datelist)
+  {
+  # date_i <- datelist[1]
+    date_i <- as.Date(date_i, origin = '1970-01-01')
+    date_i <- as.character(date_i)
+  #  print(date_i)
+
+    sdate <- date_i
+    edate <- date_i
+  #}
+#     get_data_range(variable=as.character(variable[,1]),
+#                    measure=as.character(variable[,2]),
+#                    timestep=as.character(variable[,3]),
+#                    startdate=as.POSIXct(sdate),
+#                    enddate=as.POSIXct(edate))
+
+    fname <- sprintf("%s_%s%s.grid.Z",measure_i,gsub("-","",sdate),gsub("-","",edate))
+#
+#     if(file.info(fname)$size == 0)
+#       {
+#         file.remove(fname)
+#         next
+#       }
+
+#     if(os == 'linux')
+#       {
+#         uncompress_linux(filename = fname)
+#       } else {
+#         Decompress7Zip(zipFileName= fname, outputDirectory=getwd(), TRUE)
+#       }
+#     # hack to see if this fixes random breaking
+#     if(!file.exists(gsub('.Z$','',fname)))
+#     {
+#       Sys.sleep(time=10)
+#       uncompress_linux(filename = fname)
+#     }
+#     raster_aggregate(filename = gsub('.Z$','',fname),
+#       aggregationfactor = aggregation_factor, delete = TRUE)
+     outname <- gsub('.grid.Z',"", fname)
+     outname <- substr(outname, 1, nchar(outname) - (8))
+
+    p <- get_passwordTable()
+    p <- p[which(p$V3 == "ewedb"), "V5"]
+    r <- readGDAL2(source_server, 'gislibrary', 'ewedb',
+                   schema = 'awap_grids', table = outname, p = p)
+#    image(r)
+    writeGDAL(r, gsub(".grid.Z", ".tif", fname), drivername="GTiff")
+
+    load2postgres_raster(
+                         ipaddress = destination_server,
+                         u = "gislibrary", d = 'ewedb',
+                         pgisutils = pgisutils, srid = 4283,
+                         filename = gsub(".grid.Z", ".tif", fname),
+                         out_schema="awap_grids",
+                         out_table=outname, remove = T
+                         )
+  closeAllConnections()
+  }
+
+}
+
+setwd(workdir)
+
+#+end_src
 
 *** COMMENT TODO load as function
 #+name:load
@@ -1700,6 +1819,10 @@ save storage space as geotiff
   )
   image(r)
   writeGDAL(r, '~/test1.TIF',drivername="GTiff")
+  ch <- connect2postgres("tern5.qern.qcif.edu.au","ewedb", user="gislibrary", p)
+  tbls <- pgListTables(ch, "awap_grids")
+  nrow(tbls)
+  nrow(tbls)/60000
   
   
     r <- readGDAL(sprintf("PG:host=115.146.84.135 port=5432 dbname='ewedb' user='gislibrary' password='%s' schema='awap_grids' table=maxave_20130108", p))
@@ -2123,8 +2246,6 @@ system('test.bat')
   # not gid
   locations <- locations[,-c(which(names(locations) == "gid"))]
   nrow(locations)
-  plot(locations$long, locations$lat, pch = 16)
-  
   
   
   epsg <- make_EPSG()
@@ -2148,6 +2269,35 @@ system('test.bat')
   ch <- connect2postgres2("ewedb")
   locations <- read_file(file.path(workingdir,tempTableName))
   locations <- locations@data
+  
+  if(!require(oz)) install.packages("oz"); require(oz)
+  require(maps)
+  require(fields)
+  png("reports/selected-stations.png")
+  with(stations, plot(lon, lat, pch = 16, xlim =c(112,155), cex = .5))
+  with(locations, points(long, lat, pch = 19, col = 'red'))
+  oz(add = T)
+  map.scale(ratio=F)
+  dev.off()
+  
+  r <- readGDAL2("115.146.92.162","gislibrary","ewedb","awap_grids","maxave_20130118",p=p)
+  
+  png("reports/grid-nsw.png", width = 500, height = 400)
+  
+  zs <- c(15,48)
+  par(oma=c( 0,0,0,4)) # margin of 4 spaces width at right hand side
+  oz(sections=4, xlim=c(140,155), ylim = c(-38,-28))
+  image(r, add = T,  zlim=zs, col=tim.colors())
+  oz(add=T)
+  map.scale(ratio=F)
+  box()
+  title(main="maximum temperature (C) 2013-01-18")
+  par(oma=c( 0,0,0,1))# reset margin to be much smaller.
+  image.plot( legend.only=TRUE, zlim=zs) 
+  
+  dev.off()
+  
+  
   tempTableName <- swish_temptable()
   dbWriteTable(ch, tempTableName$table, locations, row.names = F)
   tested <- sql_subset(ch, tempTableName$fullname, eval = T)
@@ -2205,13 +2355,24 @@ system('test.bat')
   check_against_stations <- read.csv("~/data/AWAP_GRIDS/data/check-against-stations.csv")
   check_against_stations$date <- as.Date(check_against_stations$date)
   head(check_against_stations)
-  stnum  <- check_against_stations$address[1]
-  stnum
-  with(subset(check_against_stations, address == stnum), plot(date, maxave, type = "l"))
+  stnum_ids  <- sample(1:93, 4)
+  locations[stnum_ids,]
+  stnums <- locations[stnum_ids,1]
+  stnames <- locations[stnum_ids,2]
+  png("reports/sampled-timeseries-from-grid.png", width = 800, height = 500)
+  par(mfrow = c(2,2))
+  for(j in 1:4){
+    with(subset(check_against_stations, address == stnums[j]), plot(date, maxave, type = "l"))
+    title(main = paste("maxt, ", stnames[j], "(", format(locations$long[j], digits = 4), ", ", format(locations$lat[j], digits = 4), ")"), cex = .6)
+  }
+  dev.off()
+  
   selectedStations <- names(table(check_against_stations$address))
   head(selectedStations)
   length(selectedStations)
-  hour <- 9
+  for(hour in c(15))
+  {
+  #hour <- 9
   d <- dbGetQuery(ch,
   # cat(
    paste("SELECT  station_number as address, name, cast(year || '-' || month || '-' ||  day as date) as date, hour, \"timestamp\" ,     t2.lat ,     lon,
@@ -2227,8 +2388,8 @@ system('test.bat')
    ", sep = "")
   )
                   
-  head(d)
-  str(d)
+  #head(d)
+  #str(d)
   ## with(d,
   ##      plot(
   ##        as.POSIXct(timestamp), vapour_pressure_in_hpa,type='b',pch=16
@@ -2236,11 +2397,98 @@ system('test.bat')
   ##      )
   
   ##  # get mean absolute difference with the grid vs stations
+  #str(check_against_stations)
+  df <- merge(check_against_stations, d)
+  #head(df)
+  
+  # plots 
+    if(hour == 9){
+    fit <- lm(df$vprph09 ~ df$vapour_pressure_in_hpa)
+    summary(fit)
+    # Multiple R-squared: 0.969,
+    png("reports/vprph09.png")
+    plot(df$vapour_pressure_in_hpa, df$vprph09)
+    #abline(0,1, col = 'blue')
+    abline(fit, col = 'red')
+    legend("topright", legend = paste("R2 is ", format(summary(fit)$adj.r.squared, digits = 4)))
+    dev.off()
+    } else {
+    fit <- lm(df$vprph15 ~ df$vapour_pressure_in_hpa)
+    #summary(fit)
+    png("reports/vprph15.png")
+    plot(df$vapour_pressure_in_hpa, df$vprph15)
+    #abline(0,1, col = 'blue')
+    abline(fit, col = 'red')
+    legend("topright", legend = paste("R2 is ", format(summary(fit)$adj.r.squared, digits = 4)))
+    dev.off()  
+    }
+  }
+  # great stuff. now temps and rain
+  names(sql_subset(ch, "weather_bom.bom_daily_data_1990_2010", limit = 1, eval = T))
+  # [1] "station_number"                                                 
+  # [2] "year"                                                           
+  # [3] "month"                                                          
+  # [4] "day"  
+  # [5] "global_solar_exposure_at_location_derived_from_satellite_data_i"
+  # [6] "quality_of_global_solar_exposure_value"                         
+  # [7] "precipitation_in_the_24_hours_before_9am_local_time_in_mm"      
+  # [8] "quality_of_precipitation_value"                                 
+  # [9] "number_of_days_of_rain_within_the_days_of_accumulation"         
+  # [10] "accumulated_number_of_days_over_which_the_precipitation_was_mea"
+  # [11] "maximum_temperature_in_24_hours_after_9am_local_time_in_degrees"
+  # [12] "quality_of_maximum_temperature_in_24_hours_after_9am_local_time"
+  # [13] "days_of_accumulation_of_maximum_temperature"                    
+  # [14] "minimum_temperature_in_24_hours_before_9am_local_time_in_degree"
+  # [15] "quality_of_minimum_temperature_in_24_hours_before_9am_local_tim"
+  d <- dbGetQuery(ch,
+                  # cat(
+                  paste("SELECT  station_number as address, name, cast(year || '-' || month || '-' ||  day as date) as date, t2.lat ,     lon,
+         maximum_temperature_in_24_hours_after_9am_local_time_in_degrees,
+                        quality_of_maximum_temperature_in_24_hours_after_9am_local_time,
+                        minimum_temperature_in_24_hours_before_9am_local_time_in_degree,
+                        quality_of_minimum_temperature_in_24_hours_before_9am_local_tim,
+                        precipitation_in_the_24_hours_before_9am_local_time_in_mm,
+                        quality_of_precipitation_value
+                        FROM weather_bom.bom_daily_data_1990_2010 join weather_bom.combstats t2
+                        on station_number = stnum
+                        where station_number in ('",
+         paste(selectedStations, sep = "", collapse = c("','")),
+                        "') 
+                        ", sep = "")
+  )
+  str(d)
+  
   str(check_against_stations)
   df <- merge(check_against_stations, d)
   head(df)
-  # plot(df$vapour_pressure_in_hpa, df$vprph09)
-  # great stuff.
+    
+  # plots 
+  fit <- lm(df$maxave ~ df$maximum_temperature_in_24_hours_after_9am_local_time_in_degrees)
+  summary(fit)
+  png("reports/maxave.png")
+  plot(df$maximum_temperature_in_24_hours_after_9am_local_time_in_degrees, df$maxave)
+  #abline(0,1, col = 'blue')
+  abline(fit, col = 'red')
+  legend("topright", legend = paste("R2 is ", format(summary(fit)$adj.r.squared, digits = 4)))
+  dev.off()
+  
+  fit <- lm(df$minave ~ df$minimum_temperature_in_24_hours_before_9am_local_time_in_degree)
+  #summary(fit)
+  png("reports/minave.png")
+  plot(df$minimum_temperature_in_24_hours_before_9am_local_time_in_degree, df$minave)
+  #abline(0,1, col = 'blue')
+  abline(fit, col = 'red')
+  legend("topright", legend = paste("R2 is ", format(summary(fit)$adj.r.squared, digits = 4)))
+  dev.off()  
+  
+  fit <- lm(df$totals ~ df$precipitation_in_the_24_hours_before_9am_local_time_in_mm)
+  #summary(fit)
+  png("reports/totals.png")
+  plot(df$precipitation_in_the_24_hours_before_9am_local_time_in_mm, df$totals)
+  #abline(0,1, col = 'blue')
+  abline(fit, col = 'red')
+  legend("topright", legend = paste("R2 is ", format(summary(fit)$adj.r.squared, digits = 4)))
+  dev.off()  
   
   
   ################################################################
@@ -2527,7 +2775,7 @@ system('test.bat')
   ch<-connect2postgres2("ewedb")
   tempTableName <- swish_temptable("ewedb")
   # address doesn't exist
-  dbSendQuery(ch, sprintf("alter table gislibrary.%s add column address serial", tempTableName_locations))
+  dbSendQuery(ch, sprintf("alter table %s.%s add column address serial",tempTableName$schema, tempTableName_locations))
   raster_extract_by_day(ch, startdate, enddate,
                         schemaName = tempTableName$schema,
                         tableName = tempTableName$table,
@@ -2553,6 +2801,42 @@ system('test.bat')
   outputFileName <- outputDataFile
   outputFileName
   
+  
+  ################################################################
+  # name: intersect pixels with coast
+  pgListTables(ch, "boundaries_electorates")
+  sql_subset(ch, 
+             "boundaries_electorates.electorates2009"
+             , limit = 1, eval = T)
+  loc_tab <- paste(sep = "",tempTableName$schema,".",tempTableName_locations)
+  sql <- sql_subset(ch, 
+             loc_tab
+             , limit = 1, eval = F)
+  cat(sql)
+  dbSendQuery(ch,
+             paste("
+  select long, lat, t1.gid, address, elect_div 
+  into tempfoobar
+  from ", loc_tab, " t1,
+  boundaries_electorates.electorates2009 t2
+  where st_contains(t2.the_geom, t1.the_geom)
+                   ", sep = "")
+             )
+  sql_subset(ch, paste(sep = ".", tempTableName$schema, "tempfoobar"), limit = 1, eval = T)
+  dbSendQuery(ch,
+              paste("
+  select t1.*, case when t2.elect_div is not null then 1 else 0 end as landmask 
+  into tempfoobar1
+  from ", loc_tab, " t1
+  left join
+  john_snow.tempfoobar t2
+  on t1.address = t2.address
+  ", sep = "")
+              )
+  df <- sql_subset(ch, paste(sep = ".", tempTableName$schema, "tempfoobar1"), limit = -1, eval = T)
+  with(df, plot(long, lat, col = landmask+1, pch = 16))
+  head(df)
+  write.csv(df, "landmask.csv", row.names = F)
   ################################################################
   # name: visualise a pixel
   head(output_data)

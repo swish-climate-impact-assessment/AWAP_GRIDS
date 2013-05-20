@@ -30,6 +30,10 @@ r <- readGDAL2('tern5.qern.qcif.edu.au', 'gislibrary', 'ewedb',
 )
 image(r)
 writeGDAL(r, '~/test1.TIF',drivername="GTiff")
+ch <- connect2postgres("tern5.qern.qcif.edu.au","ewedb", user="gislibrary", p)
+tbls <- pgListTables(ch, "awap_grids")
+nrow(tbls)
+nrow(tbls)/60000
 
 
   r <- readGDAL(sprintf("PG:host=115.146.84.135 port=5432 dbname='ewedb' user='gislibrary' password='%s' schema='awap_grids' table=maxave_20130108", p))
