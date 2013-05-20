@@ -98,7 +98,7 @@ for(i in 1:length(vars[[1]])){
                          out_schema="awap_grids",
                          out_table=outname, remove = T
                          )
-
+  closeAllConnections()
   }
 
 }
