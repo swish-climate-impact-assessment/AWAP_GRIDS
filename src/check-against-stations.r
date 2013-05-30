@@ -122,7 +122,8 @@ oz(add = T)
 map.scale(ratio=F)
 dev.off()
 
-# p <- getPassword(remote = T)
+p <- getPassword(remote = T)
+# check a grid
 # r <- readGDAL2("tern5.qern.qcif.edu.au","gislibrary","ewedb","awap_grids","totals_19900101",p=p)
 # image(r)
 # odd missings
@@ -131,6 +132,8 @@ dev.off()
 #image(r2)
 # checked download again and not missing.
 
+# make a temperature map
+r <- readGDAL2("tern5.qern.qcif.edu.au","gislibrary","ewedb","awap_grids","maxave_20130118",p=p)
 png("reports/grid-nsw.png", width = 500, height = 400)
 
 zs <- c(15,48)
@@ -176,18 +179,21 @@ startdate <- StartDate
 enddate <- EndDate
 ch<-connect2postgres2("ewedb")
 tempTableName <- swish_temptable("ewedb")
-
+st <- Sys.time()
 raster_extract_by_day(ch, startdate, enddate,
                       schemaName = tempTableName$schema,
                       tableName = tempTableName$table,
                       pointsLayer = tempTableName_locations,
                       measures = c("maxave", "minave", "totals", "vprph09", "vprph15")
 )
-
+end <- Sys.time()
+end - st
+# Time difference of 6.842461 hours
+system.time(
 output_data <- reformat_awap_data(
   tableName = tempTableName$fullname
 )
-
+)
 outputDataFile <- file.path(workingdir, outputDataFile)
 write.csv(output_data,outputDataFile, row.names = FALSE)
 outputFileName <- outputDataFile
@@ -197,13 +203,15 @@ outputFileName
 # name: get the observed data for these
 require(swishdbtools)
 require(reshape)
-p <- getPassword(remote = T)
-ch <- connect2postgres("tern5.qern.qcif.edu.au", "ewedb", "gislibrary", p = p)
+#p <- getPassword(remote = T)
+ch <- connect2postgres2("ewedb")
 # all the stations are in
 # selectedStations  <- read_file(file.path(workingdir, "selected-stations.csv"))
 check_against_stations <- read.csv("~/data/AWAP_GRIDS/data/check-against-stations.csv")
 check_against_stations$date <- as.Date(check_against_stations$date)
 head(check_against_stations)
+summary(check_against_stations)
+check_against_stations$totals <- ifelse(is.na(check_against_stations$totals),0,check_against_stations$totals)
 stnum_ids  <- sample(1:93, 4)
 locations[stnum_ids,]
 stnums <- locations[stnum_ids,1]
@@ -219,7 +227,7 @@ dev.off()
 selectedStations <- names(table(check_against_stations$address))
 head(selectedStations)
 length(selectedStations)
-for(hour in c(15))
+for(hour in c(9,15))
 {
 #hour <- 9
 d <- dbGetQuery(ch,
@@ -249,25 +257,26 @@ d <- dbGetQuery(ch,
 #str(check_against_stations)
 df <- merge(check_against_stations, d)
 #head(df)
-
+Lab.palette <- colorRampPalette(c("lightblue", "orange", "red"), space = "Lab")
 # plots 
   if(hour == 9){
   fit <- lm(df$vprph09 ~ df$vapour_pressure_in_hpa)
   summary(fit)
   # Multiple R-squared: 0.969,
   png("reports/vprph09.png")
-  plot(df$vapour_pressure_in_hpa, df$vprph09)
+  #plot(df$vapour_pressure_in_hpa, df$vprph09)
+  smoothScatter(df$vapour_pressure_in_hpa, df$vprph09, colramp = Lab.palette)
   #abline(0,1, col = 'blue')
-  abline(fit, col = 'red')
+  abline(fit, col = 'black')
   legend("topright", legend = paste("R2 is ", format(summary(fit)$adj.r.squared, digits = 4)))
   dev.off()
   } else {
   fit <- lm(df$vprph15 ~ df$vapour_pressure_in_hpa)
   #summary(fit)
   png("reports/vprph15.png")
-  plot(df$vapour_pressure_in_hpa, df$vprph15)
+  smoothScatter(df$vapour_pressure_in_hpa, df$vprph15, colramp = Lab.palette)
   #abline(0,1, col = 'blue')
-  abline(fit, col = 'red')
+  abline(fit, col = 'black')
   legend("topright", legend = paste("R2 is ", format(summary(fit)$adj.r.squared, digits = 4)))
   dev.off()  
   }
@@ -315,27 +324,27 @@ head(df)
 fit <- lm(df$maxave ~ df$maximum_temperature_in_24_hours_after_9am_local_time_in_degrees)
 summary(fit)
 png("reports/maxave.png")
-plot(df$maximum_temperature_in_24_hours_after_9am_local_time_in_degrees, df$maxave)
+smoothScatter(df$maximum_temperature_in_24_hours_after_9am_local_time_in_degrees, df$maxave, colramp = Lab.palette)
 #abline(0,1, col = 'blue')
-abline(fit, col = 'red')
+abline(fit, col = 'black')
 legend("topright", legend = paste("R2 is ", format(summary(fit)$adj.r.squared, digits = 4)))
 dev.off()
 
 fit <- lm(df$minave ~ df$minimum_temperature_in_24_hours_before_9am_local_time_in_degree)
 #summary(fit)
 png("reports/minave.png")
-plot(df$minimum_temperature_in_24_hours_before_9am_local_time_in_degree, df$minave)
+smoothScatter(df$minimum_temperature_in_24_hours_before_9am_local_time_in_degree, df$minave, colramp = Lab.palette)
 #abline(0,1, col = 'blue')
-abline(fit, col = 'red')
+abline(fit, col = 'black')
 legend("topright", legend = paste("R2 is ", format(summary(fit)$adj.r.squared, digits = 4)))
 dev.off()  
 
 fit <- lm(df$totals ~ df$precipitation_in_the_24_hours_before_9am_local_time_in_mm)
 #summary(fit)
 png("reports/totals.png")
-plot(df$precipitation_in_the_24_hours_before_9am_local_time_in_mm, df$totals)
+smoothScatter(df$precipitation_in_the_24_hours_before_9am_local_time_in_mm, df$totals, colramp = Lab.palette)
 #abline(0,1, col = 'blue')
-abline(fit, col = 'red')
+abline(fit, col = 'black')
 legend("topright", legend = paste("R2 is ", format(summary(fit)$adj.r.squared, digits = 4)))
 dev.off()  
 
