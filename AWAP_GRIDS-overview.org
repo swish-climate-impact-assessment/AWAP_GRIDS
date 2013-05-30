@@ -2716,17 +2716,17 @@ system('test.bat')
   ################################################################
   # name: Get-test-grid-locations
   require(rgdal)
-  res=0.1
+  res=0.15
   xs=seq(112,155,res)
   ys=seq(-45,-9,res)
   d=expand.grid(xs,ys)
   head(d)
-  #points(gr1, pch = 16)
+  
   
   epsg <- make_EPSG()
   df <- SpatialPointsDataFrame(cbind(d$Var1,d$Var2),d,
                                 proj4string=CRS(epsg$prj4[epsg$code %in% '4283']))
-  
+  plot(df, pch = 16)
   setwd(workingdir)
   if(file.exists(outputFileName))
   {
@@ -2760,7 +2760,7 @@ system('test.bat')
     tablename=tbl,
     col_lat= "lat",col_long="long", srid="4283"
   )
-  # cat(sql)
+   cat(sql)
   dbSendQuery(ch, sql)
   tbl
   
