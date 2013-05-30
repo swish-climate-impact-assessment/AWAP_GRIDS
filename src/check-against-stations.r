@@ -15,16 +15,17 @@ outputFileName <- "locations.shp"
 # eg
 outputDataFile <- "check-against-stations.csv"
 # eg
-StartDate <- "2010-01-01" 
+StartDate <- "1990-01-01" 
 # eg
-EndDate <- "2010-01-01" 
+EndDate <- "2010-07-01" 
   
 ################################################################
 # name: Get-selected-stations
 # want to get a set of stations that observed any of our awap variables
 require(swishdbtools)
-p  <- getPassword(remote = T)
-ch <- connect2postgres("tern5.qern.qcif.edu.au", "ewedb", "gislibrary", p = p)
+#p  <- getPassword(remote = T)
+#ch <- connect2postgres("tern5.qern.qcif.edu.au", "ewedb", "gislibrary", p = p)
+ch <- connect2postgres2("ewedb")
 tbls  <- pgListTables(ch, "weather_bom")
 tbls
 # vprph
@@ -114,14 +115,20 @@ locations <- locations@data
 if(!require(oz)) install.packages("oz"); require(oz)
 require(maps)
 require(fields)
-png("reports/selected-stations.png")
+png("../reports/selected-stations.png")
 with(stations, plot(lon, lat, pch = 16, xlim =c(112,155), cex = .5))
 with(locations, points(long, lat, pch = 19, col = 'red'))
 oz(add = T)
 map.scale(ratio=F)
 dev.off()
 
-r <- readGDAL2("115.146.92.162","gislibrary","ewedb","awap_grids","maxave_20130118",p=p)
+# p <- getPassword(remote = T)
+# r <- readGDAL2("tern5.qern.qcif.edu.au","gislibrary","ewedb","awap_grids","totals_19900101",p=p)
+# image(r)
+# odd
+r2 <- readGDAL2("115.146.92.162","gislibrary","ewedb","awap_grids","totals_19900101",p=p)
+dev.off()
+image(r2)
 
 png("reports/grid-nsw.png", width = 500, height = 400)
 
