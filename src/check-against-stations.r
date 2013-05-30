@@ -125,10 +125,11 @@ dev.off()
 # p <- getPassword(remote = T)
 # r <- readGDAL2("tern5.qern.qcif.edu.au","gislibrary","ewedb","awap_grids","totals_19900101",p=p)
 # image(r)
-# odd
-r2 <- readGDAL2("115.146.92.162","gislibrary","ewedb","awap_grids","totals_19900101",p=p)
-dev.off()
-image(r2)
+# odd missings
+#r2 <- readGDAL2("115.146.92.162","gislibrary","ewedb","awap_grids","totals_19900101",p=p)
+#dev.off()
+#image(r2)
+# checked download again and not missing.
 
 png("reports/grid-nsw.png", width = 500, height = 400)
 
