@@ -14,10 +14,10 @@
 setwd(workdir)
 require(ProjectTemplate)
 load.project()
-## ch <- connect2postgres(h = '115.146.84.135', db = 'ewedb',
-##                        user = 'gislibrary')
-##
-ch <- connect2postgres2("ewedb")
+ch <- connect2postgres(h = destination_server, db = 'ewedb',
+                       user = 'gislibrary', p = pwd)
+
+#ch <- connect2postgres2("ewedb")
 print(paste('root directory:', workdir))
 setwd('data')
 

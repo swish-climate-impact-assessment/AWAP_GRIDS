@@ -26,7 +26,7 @@
   p <- getPassword(remote=T)
 #dbSendQuery(ch, "drop table awap_grids.maxave_20130101")
 r <- readGDAL2('tern5.qern.qcif.edu.au', 'gislibrary', 'ewedb',
-               schema = 'awap_grids', table = 'maxave_19881005', p = p
+               schema = 'awap_grids', table = 'maxave_20030607', p = p
 )
 image(r)
 writeGDAL(r, '~/test1.TIF',drivername="GTiff")
@@ -36,7 +36,7 @@ nrow(tbls)
 nrow(tbls)/71000
 
 
-  r <- readGDAL(sprintf("PG:host=115.146.84.135 port=5432 dbname='ewedb' user='gislibrary' password='%s' schema='awap_grids' table=maxave_20130108", p))
+  r <- readGDAL(sprintf("PG:host=brawn.anu.edu.au port=5432 dbname='ewedb' user='gislibrary' password='%s' schema='awap_grids' table=maxave_20130108", p))
   
   r2 <- raster(r)
   r3 <- aggregate(r2, fact=2, fun = mean)
