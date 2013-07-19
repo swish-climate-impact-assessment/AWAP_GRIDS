@@ -15,9 +15,9 @@ outputFileName <- "locations.shp"
 # eg
 outputDataFile <- "check-against-stations.csv"
 # eg
-StartDate <- "2010-01-01" 
+StartDate <- "1990-01-01" 
 # eg
-EndDate <- "2010-01-01" 
+EndDate <- "2010-07-01" 
   
 ################################################################
 # name: Get-selected-stations
@@ -175,9 +175,9 @@ raster_extract_by_day(ch, startdate, enddate,
                       pointsLayer = tempTableName_locations,
                       measures = c("maxave", "minave", "totals", "vprph09", "vprph15")
 )
-
+#tempTableName$fullname
 output_data <- reformat_awap_data(
-  tableName = tempTableName$fullname
+  tableName = paste(sch, tab, sep = ".")
 )
 
 outputDataFile <- file.path(workingdir, outputDataFile)
@@ -342,6 +342,9 @@ tbls <- pgListTables(ch, sch, table="foo", match = FALSE)
 tbls
 for(tab in tbls[,1])
 {
+#   df <- sql_subset(ch, paste(sch, tab, sep = "."), limit = 2, eval = T)
+# print(df)
+# }
   dbSendQuery(ch, 
               sprintf("drop table %s.%s", sch, tab)
   )
