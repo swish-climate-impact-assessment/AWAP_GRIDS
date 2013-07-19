@@ -36,7 +36,7 @@ nrow(tbls)
 nrow(tbls)/60000
 
 
-  r <- readGDAL(sprintf("PG:host=115.146.84.135 port=5432 dbname='ewedb' user='gislibrary' password='%s' schema='awap_grids' table=maxave_20130108", p))
+  r <- readGDAL(sprintf("PG:host=brawn.anu.edu.au port=5432 dbname='ewedb' user='gislibrary' password='%s' schema='awap_grids' table=maxave_20130108", p))
   
   r2 <- raster(r)
   r3 <- aggregate(r2, fact=2, fun = mean)
