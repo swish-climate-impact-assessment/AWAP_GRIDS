@@ -8,7 +8,9 @@ require(swishdbtools)
 p <- getPassword(remote=T)
 ch <- connect2postgres(h = 'brawn.anu.edu.au', db = 'ewedb', user=
                        'gislibrary', p=p)
+
 measure_i <- 'totals'
+
 tbls <- pgListTables(conn=ch, schema='awap_grids', table=measure_i, match=F)
 tbls$date <- paste(substr(gsub(paste(measure_i,"_",sep=""),"",tbls[,1]),1,4),
         substr(gsub(paste(measure_i,"_",sep=""),"",tbls[,1]),5,6),
