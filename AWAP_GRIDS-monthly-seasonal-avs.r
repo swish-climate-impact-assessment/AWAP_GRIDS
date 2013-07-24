@@ -9,6 +9,14 @@
 # this requires the files are listed in the right order by name, and all months are present. might be better to use grep on the file name and strsplit/substr to extract the month identifier more precisely? 
 #writeRaster(m, filename=paste("mean",years[i],".asc"))
 homedir <- "~/AWAP_GRIDS_RAIN"
+# first make sure there are no left over files from previous runs
+oldfiles <- list.files(pattern = '.tif', full.names=T) 
+for(oldfile in oldfiles)
+{
+  print(oldfile)
+  file.remove(oldfile)
+}
+################################################
 setwd("/ResearchData/AWAP_GRIDS_RAIN_MONTHLY")
 if(!require(raster)) install.packages("raster", dependencies = T); require(raster)
 if(!require(rgdal)) install.packages("rgdal", dependencies = T); require(rgdal)
@@ -49,7 +57,7 @@ for(season in c("hot", "cool"))
   } 
 }
 
-##### now
+##### now we will overall average
 setwd(homedir)
 for(season in c("cool", "hot"))
 {
