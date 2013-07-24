@@ -24,14 +24,16 @@ load.project()
 
 ####################
 # user definitions, or setup interactively
-destination_server <- "tern5.qern.qcif.edu.au" 
-source_server <- "115.146.92.162"
-fresh <- FALSE
-startdate <- '1980-01-01'
-enddate <-  '1980-02-01' #Sys.Date()-2
+destination_server <- "brawn.anu.edu.au"
+  #"tern5.qern.qcif.edu.au" 
+source_server <- "tern5.qern.qcif.edu.au" 
+  #"115.146.92.162"
+fresh <- TRUE
+startdate <- '1990-01-01'
+enddate <-  Sys.Date()-2
 checkDates <- TRUE
 interactively <- FALSE
-variablenames <- 'maxave,minave,totals,vprph09,vprph15' #,solarave
+variablenames <- 'solarave' #totals' #vprph09,vprph15' #,solarave maxave,minave' #,totals,
 aggregation_factor <- 3
 if(length(grep('linux',sessionInfo()[[1]]$os)) == 1)
 {
@@ -40,7 +42,7 @@ if(length(grep('linux',sessionInfo()[[1]]$os)) == 1)
   os <- 'windows'
 }
 #os <- 'linux' # only linux and windoze supported
-pgisutils <- "/usr/pgsql-9.1/bin/"
+pgisutils <- "/usr/pgsql-9.2/bin/"
 #"\"C:\\pgutils\\postgis-pg92-binaries-2.0.2w64\\bin\\"
 pgutils <- "\"C:\\pgutils\\pgsql\\bin\\"
 
