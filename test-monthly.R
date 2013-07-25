@@ -61,10 +61,23 @@ df[,1:4]
 require(reshape2)
 require(awaptools)
 reformat_awap_data
-df2 <- melt(df, id.vars=c("shp@data$stnum","ID"))
-str(df2)
-head(df2)
-table(df2[,"shp@data$stnum"])
+dat <- melt(df, id.vars=c("shp@data$stnum","ID"))
+str(dat)
+head(dat)
+table(dat[,"shp@data$stnum"])
+names(dat) <- c("stnum", "id", "raster_layer", "value")
+dat$raster_layer <- as.character(dat$raster_layer)
+
+
+dat$date <- matrix(unlist(strsplit(dat$raster_layer, "_")), ncol = 2, byrow=TRUE)[,2]
+dat$date <- paste(substr(dat$date,1,4), substr(dat$date,5,6), substr(dat$date,7,8), sep = "-")
+head(dat)
+qc <- subset(dat,stnum == 91004)
+qc$date <- as.Date(qc$date)
+str(qc)
+with(qc, plot(date, value, type  ="h"))
+dev.off()
+
 # r1 <- readGDAL(cfiles[1])
 # r2 <- readGDAL(cfiles[2])
 # r3 <- readGDAL(cfiles[3])
