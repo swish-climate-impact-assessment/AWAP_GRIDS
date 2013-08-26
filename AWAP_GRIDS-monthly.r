@@ -1,9 +1,10 @@
 require(awaptools)
 require(swishdbtools)
 # local customisations
-workdir <- getwd()
-outdir <- "data"
-setwd(outdir)
+workdir <- "/ResearchData/AWAP_GRIDS_RAIN_MONTHLY"
+setwd(workdir)
+#outdir <- "data"
+#setwd(outdir)
 start_date <- "1900-01-01"
 start_date <- as.POSIXlt(start_date)
 # do
