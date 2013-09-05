@@ -186,12 +186,16 @@ raster_extract_by_day(ch, startdate, enddate,
                       pointsLayer = tempTableName_locations,
                       measures = c("maxave", "minave", "totals", "vprph09", "vprph15")
 )
+<<<<<<< HEAD
+#tempTableName$fullname
+=======
 end <- Sys.time()
 end - st
 # Time difference of 6.842461 hours
 system.time(
+>>>>>>> 3fa8a5e24e9114a77f7681db091afb3d0c55f688
 output_data <- reformat_awap_data(
-  tableName = tempTableName$fullname
+  tableName = paste(sch, tab, sep = ".")
 )
 )
 outputDataFile <- file.path(workingdir, outputDataFile)
@@ -359,6 +363,9 @@ tbls <- pgListTables(ch, sch, table="foo", match = FALSE)
 tbls
 for(tab in tbls[,1])
 {
+#   df <- sql_subset(ch, paste(sch, tab, sep = "."), limit = 2, eval = T)
+# print(df)
+# }
   dbSendQuery(ch, 
               sprintf("drop table %s.%s", sch, tab)
   )

@@ -25,19 +25,31 @@
   require(swishdbtools)
   p <- getPassword(remote=T)
 #dbSendQuery(ch, "drop table awap_grids.maxave_20130101")
-r <- readGDAL2('tern5.qern.qcif.edu.au', 'gislibrary', 'ewedb',
-               schema = 'awap_grids', table = 'maxave_20030607', p = p
+r <- readGDAL2('brawn.anu.edu.au', 'gislibrary', 'ewedb',
+               schema = 'awap_grids', table = 'totals_20130522', p = p
 )
 image(r)
 writeGDAL(r, '~/test1.TIF',drivername="GTiff")
-ch <- connect2postgres("tern5.qern.qcif.edu.au","ewedb", user="gislibrary", p)
+ch <- connect2postgres("brawn.anu.edu.au","ewedb", user="gislibrary", p)
+for(i in 1:10){
 tbls <- pgListTables(ch, "awap_grids")
+<<<<<<< HEAD
+print(nrow(tbls))
+print(nrow(tbls)/76977)
+Sys.sleep(time=5*60)
+}
+check <- tbls$relname[nrow(tbls)]
+check
+  r <- readGDAL(sprintf("PG:host=brawn.anu.edu.au port=5432 dbname='ewedb' user='gislibrary' password='%s' schema='awap_grids' table=%s", p, check))
+  image(r)
+=======
 nrow(tbls)
-nrow(tbls)/60000
+nrow(tbls)/71000
 
 
-  r <- readGDAL(sprintf("PG:host=115.146.84.135 port=5432 dbname='ewedb' user='gislibrary' password='%s' schema='awap_grids' table=maxave_20130108", p))
+  r <- readGDAL(sprintf("PG:host=brawn.anu.edu.au port=5432 dbname='ewedb' user='gislibrary' password='%s' schema='awap_grids' table=maxave_20130108", p))
   
+>>>>>>> 8d4a3f05c8b6a267145268b4a59518f408394a57
   r2 <- raster(r)
   r3 <- aggregate(r2, fact=2, fun = mean)
   
