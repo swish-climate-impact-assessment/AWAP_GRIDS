@@ -5,7 +5,7 @@ workdir <- "data"
 setwd(workdir)
 
 startdate <- "2013-11-01"
-enddate <- "2014-01-01"
+enddate <- "2013-12-31"
 # do
 load_monthly(start_date = startdate, end_date = enddate)
 
