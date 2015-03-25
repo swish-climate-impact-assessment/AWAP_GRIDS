@@ -24,6 +24,7 @@ load.project()
 
 ####################
 # user definitions, or setup interactively
+<<<<<<< HEAD
 destination_server <- "brawn.anu.edu.au"
   #"tern5.qern.qcif.edu.au" 
 source_server <- "115.146.92.162" 
@@ -34,6 +35,7 @@ enddate <-   '2013-05-11' #Sys.Date()-2
 checkDates <- TRUE
 interactively <- FALSE
 variablenames <- 'totals,vprph09,vprph15,maxave,minave' #,totals,solarave
+
 aggregation_factor <- 3
 if(length(grep('linux',sessionInfo()[[1]]$os)) == 1)
 {
@@ -53,10 +55,6 @@ if(fresh == TRUE)
 {
   source(file.path(workdir, "src/load.r"))  
 } else {
-  if(!exists('pwd'))
-  {
-    pwd <- getPassword(remote=T)
-  }
   source(file.path(workdir, "src/load_mirrored_grids.r"))  
 }
 
