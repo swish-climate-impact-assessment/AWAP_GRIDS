@@ -23,9 +23,12 @@ b <- stack(cfiles)
 #   In file(fnamevals, "wb") :
 #   cannot open file '/tmp/R_raster_tmp/ivan_hanigan/raster_tmp_2013-07-25_160646_04951.gri': No such file or directory
 #str(meansmosas)
-require(swishdbtools)
-if(!exists("pwd")) pwd <- getPassword(remote=T)
-shp <- readOGR2(h='brawn.anu.edu.au', d='ewedb',u='john_snow',
+if(!exists("pwd")) 
+{
+  pwd <- get_passwordTable()
+  pwd <- pwd[which(    pwd$V3 == "gislibrary"),"V5"]
+}
+shp <- readOGR2(h='brawn.anu.edu.au', d='ewedb',u='gislibrary',
                 layer = 'weather_bom.combstats', pwd)
 plot(shp)
 # select a station
@@ -47,15 +50,23 @@ e <- extract(b, shp2, df=T)
 # user  system elapsed 
 # 366.178   4.961 464.571 
 nrow(e[,1:3])
-
+length(cfiles)
+file.info(cfiles[1])
 system.time(
   b <- stack(cfiles)
 )
+# user  system elapsed 
+# 360.326   2.612 363.834 
 system.time(
   e <- extract(b, shp, df=T)
 )
+# user  system elapsed 
+# 460.866   4.196 466.189 
+
 nrow(e[,1:3])
 output <- cbind(shp@data$stnum,e)
+rm(e)
+gc()
 df <- output[1:20,]
 df[,1:4]
 require(reshape2)

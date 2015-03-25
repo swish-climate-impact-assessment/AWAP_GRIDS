@@ -85,7 +85,7 @@ for(i in 1:length(vars[[1]])){
 
     p <- get_passwordTable()
     p <- p[which(p$V3 == "ewedb"), "V5"]
-    r <- readGDAL2(source_server, 'gislibrary', 'ewedb',
+    r <- readGDAL2(source_server, user='gislibrary', 'ewedb',
                    schema = 'awap_grids', table = outname, p = p)
 #    image(r)
     writeGDAL(r, gsub(".grid.Z", ".tif", fname), drivername="GTiff")
