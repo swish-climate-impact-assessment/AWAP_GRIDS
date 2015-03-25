@@ -3481,27 +3481,27 @@ mean(annmean1) - mean(annmean2)
 *** COMMENT dev-code
 #+name:dev
 #+begin_src R :session *R* :tangle src/dev.r :exports none :eval no
-#### name:dev####
-      setwd("inst/extdata")
-      # download a couple hundred megs
-      load_monthly(start_date="1970-01-01", end_date="2014-01-31")
-      # expand to over a gig
-      cfiles <- dir()
-      for(f in cfiles){
-        unzip_monthly(f)
-      }
-      # now we can try to select the seasonal bits
-  # this comes from Lu Porfirio
-  grids  <- dir()
-  # grids[1:12]
-  summer.mth <- c('11','12','01','02','03')
-  mths <- substr(grids,20,21) %in% summer.mth
-  test <- ifelse(mths == "TRUE", grids, NA)
-  grids.brick <- brick(stack(grids))
-  awap.stack<-stackApply(grids.brick, indices = match(test,grids), fun = "mean")
-  # the output has too many layers...
-  ## this is because we are not considering that summers go across 2-yr
-
+  #### name:dev####
+        setwd("inst/extdata")
+        # download a couple hundred megs
+        load_monthly(start_date="1970-01-01", end_date="2014-01-31")
+        # expand to over a gig
+        cfiles <- dir()
+        for(f in cfiles){
+          unzip_monthly(f)
+        }
+        # now we can try to select the seasonal bits
+    # this comes from Lu Porfirio
+    grids  <- dir()
+    # grids[1:12]
+    summer.mth <- c('11','12','01','02','03')
+    mths <- substr(grids,20,21) %in% summer.mth
+    test <- ifelse(mths == "TRUE", grids, NA)
+    grids.brick <- brick(stack(grids))
+    awap.stack<-stackApply(grids.brick, indices = match(test,grids), fun = "mean")
+    # the output has too many layers...
+    ## this is because we are not considering that summers go across 2-yr
+  
 #+end_src
 *** prod
 #+name:long-term-climatology-contextual-data-for-ecological-research-header
@@ -3675,3 +3675,951 @@ mean(annmean1) - mean(annmean2)
 
 * Conclusions
 * versions
+* COMMENT DEPRECATED SEE HUTCH PROJ GH PAGES  Monthly Rainfall
+*** COMMENT test-monthly-code
+#+name:test-monthly
+#+begin_src R :session *R* :tangle no :exports none :eval no
+  #### name:test-monthly####
+  
+  R version 3.1.3 (2015-03-09) -- "Smooth Sidewalk"
+  Copyright (C) 2015 The R Foundation for Statistical Computing
+  Platform: x86_64-pc-linux-gnu (64-bit)
+  
+  R is free software and comes with ABSOLUTELY NO WARRANTY.
+  You are welcome to redistribute it under certain conditions.
+  Type 'license()' or 'licence()' for distribution details.
+  
+    Natural language support but running in an English locale
+  
+  R is a collaborative project with many contributors.
+  Type 'contributors()' for more information and
+  'citation()' on how to cite R or R packages in publications.
+  
+  Type 'demo()' for some demos, 'help()' for on-line help, or
+  'help.start()' for an HTML browser interface to help.
+  Type 'q()' to quit R.
+  
+  > options(STERM='iESS', str.dendrogram.last="'", editor='emacsclient', show.error.locations=TRUE)
+  > > 
+  Error: unexpected '>' in ">"
+  > require(awaptools)
+  Loading required package: awaptools
+  Loading required package: raster
+  Loading required package: sp
+  > require(swishdbtools)
+  Loading required package: swishdbtools
+  Loading required package: foreign
+  Loading required package: rgdal
+  rgdal: version: 0.9-1, (SVN revision 518)
+  Geospatial Data Abstraction Library extensions to R successfully loaded
+  Loaded GDAL runtime: GDAL 1.10.0, released 2013/04/24
+  Path to GDAL shared files: /usr/share/gdal
+  Loaded PROJ.4 runtime: Rel. 4.8.0, 6 March 2012, [PJ_VERSION: 480]
+  Path to PROJ.4 shared files: (autodetected)
+  Loading required package: plyr
+  Loading required package: RODBC
+  > require(gisviz)
+  Loading required package: gisviz
+  Loading required package: RCurl
+  Loading required package: bitops
+  Loading required package: XML
+  Loading required package: ggmap
+  Loading required package: ggplot2
+  Loading required package: maps
+  Loading required package: maptools
+  Checking rgeos availability: TRUE
+  Loading required package: RColorBrewer
+  Loading required package: spdep
+  Loading required package: Matrix
+  > if(!require(raster)) install.packages('raster'); require(raster)
+  > locn <- geocode("daintree rainforest")
+  Information from URL : http://maps.googleapis.com/maps/api/geocode/json?address=daintree+rainforest&sensor=false
+  Google Maps API Terms of Service : http://developers.google.com/maps/terms
+  > epsg <- make_EPSG()
+  shp <- SpatialPointsDataFrame(cbind(locn$lon,locn$lat),locn,
+                                proj4string=CRS(epsg$prj4[epsg$code %in% '4283']))
+  > 
+  + > dir()
+   [1] "1.R"                             "AWAP_GRIDS-monthly-summary.r"   
+   [3] "extract-point-from-awap-grids.R" "test-monthly.R"                 
+   [5] "test-pgListTables.r"             "test-raster-outdb.R"            
+   [7] "test-raster-works.R"             "test-readGDAL2.r"               
+   [9] "test-sqlquery_postgres2.r"       "test-sqlquery.r"                
+  > setwd("../data-seasonal-vignette/")
+  > cfiles <-  dir(pattern="grid$")
+  > cfiles
+    [1] "totals_1970010119700131.grid" "totals_1970020119700228.grid"
+    [3] "totals_1970030119700331.grid" "totals_1970040119700430.grid"
+    [5] "totals_1970050119700531.grid" "totals_1970060119700630.grid"
+    [7] "totals_1970070119700731.grid" "totals_1970080119700831.grid"
+    [9] "totals_1970090119700930.grid" "totals_1970100119701031.grid"
+   [11] "totals_1970110119701130.grid" "totals_1970120119701231.grid"
+   [13] "totals_1971010119710131.grid" "totals_1971020119710228.grid"
+   [15] "totals_1971030119710331.grid" "totals_1971040119710430.grid"
+   [17] "totals_1971050119710531.grid" "totals_1971060119710630.grid"
+   [19] "totals_1971070119710731.grid" "totals_1971080119710831.grid"
+   [21] "totals_1971090119710930.grid" "totals_1971100119711031.grid"
+   [23] "totals_1971110119711130.grid" "totals_1971120119711231.grid"
+   [25] "totals_1972010119720131.grid" "totals_1972020119720229.grid"
+   [27] "totals_1972030119720331.grid" "totals_1972040119720430.grid"
+   [29] "totals_1972050119720531.grid" "totals_1972060119720630.grid"
+   [31] "totals_1972070119720731.grid" "totals_1972080119720831.grid"
+   [33] "totals_1972090119720930.grid" "totals_1972100119721031.grid"
+   [35] "totals_1972110119721130.grid" "totals_1972120119721231.grid"
+   [37] "totals_1973010119730131.grid" "totals_1973020119730228.grid"
+   [39] "totals_1973030119730331.grid" "totals_1973040119730430.grid"
+   [41] "totals_1973050119730531.grid" "totals_1973060119730630.grid"
+   [43] "totals_1973070119730731.grid" "totals_1973080119730831.grid"
+   [45] "totals_1973090119730930.grid" "totals_1973100119731031.grid"
+   [47] "totals_1973110119731130.grid" "totals_1973120119731231.grid"
+   [49] "totals_1974010119740131.grid" "totals_1974020119740228.grid"
+   [51] "totals_1974030119740331.grid" "totals_1974040119740430.grid"
+   [53] "totals_1974050119740531.grid" "totals_1974060119740630.grid"
+   [55] "totals_1974070119740731.grid" "totals_1974080119740831.grid"
+   [57] "totals_1974090119740930.grid" "totals_1974100119741031.grid"
+   [59] "totals_1974110119741130.grid" "totals_1974120119741231.grid"
+   [61] "totals_1975010119750131.grid" "totals_1975020119750228.grid"
+   [63] "totals_1975030119750331.grid" "totals_1975040119750430.grid"
+   [65] "totals_1975050119750531.grid" "totals_1975060119750630.grid"
+   [67] "totals_1975070119750731.grid" "totals_1975080119750831.grid"
+   [69] "totals_1975090119750930.grid" "totals_1975100119751031.grid"
+   [71] "totals_1975110119751130.grid" "totals_1975120119751231.grid"
+   [73] "totals_1976010119760131.grid" "totals_1976020119760229.grid"
+   [75] "totals_1976030119760331.grid" "totals_1976040119760430.grid"
+   [77] "totals_1976050119760531.grid" "totals_1976060119760630.grid"
+   [79] "totals_1976070119760731.grid" "totals_1976080119760831.grid"
+   [81] "totals_1976090119760930.grid" "totals_1976100119761031.grid"
+   [83] "totals_1976110119761130.grid" "totals_1976120119761231.grid"
+   [85] "totals_1977010119770131.grid" "totals_1977020119770228.grid"
+   [87] "totals_1977030119770331.grid" "totals_1977040119770430.grid"
+   [89] "totals_1977050119770531.grid" "totals_1977060119770630.grid"
+   [91] "totals_1977070119770731.grid" "totals_1977080119770831.grid"
+   [93] "totals_1977090119770930.grid" "totals_1977100119771031.grid"
+   [95] "totals_1977110119771130.grid" "totals_1977120119771231.grid"
+   [97] "totals_1978010119780131.grid" "totals_1978020119780228.grid"
+   [99] "totals_1978030119780331.grid" "totals_1978040119780430.grid"
+  [101] "totals_1978050119780531.grid" "totals_1978060119780630.grid"
+  [103] "totals_1978070119780731.grid" "totals_1978080119780831.grid"
+  [105] "totals_1978090119780930.grid" "totals_1978100119781031.grid"
+  [107] "totals_1978110119781130.grid" "totals_1978120119781231.grid"
+  [109] "totals_1979010119790131.grid" "totals_1979020119790228.grid"
+  [111] "totals_1979030119790331.grid" "totals_1979040119790430.grid"
+  [113] "totals_1979050119790531.grid" "totals_1979060119790630.grid"
+  [115] "totals_1979070119790731.grid" "totals_1979080119790831.grid"
+  [117] "totals_1979090119790930.grid" "totals_1979100119791031.grid"
+  [119] "totals_1979110119791130.grid" "totals_1979120119791231.grid"
+  [121] "totals_1980010119800131.grid" "totals_1980020119800229.grid"
+  [123] "totals_1980030119800331.grid" "totals_1980040119800430.grid"
+  [125] "totals_1980050119800531.grid" "totals_1980060119800630.grid"
+  [127] "totals_1980070119800731.grid" "totals_1980080119800831.grid"
+  [129] "totals_1980090119800930.grid" "totals_1980100119801031.grid"
+  [131] "totals_1980110119801130.grid" "totals_1980120119801231.grid"
+  [133] "totals_1981010119810131.grid" "totals_1981020119810228.grid"
+  [135] "totals_1981030119810331.grid" "totals_1981040119810430.grid"
+  [137] "totals_1981050119810531.grid" "totals_1981060119810630.grid"
+  [139] "totals_1981070119810731.grid" "totals_1981080119810831.grid"
+  [141] "totals_1981090119810930.grid" "totals_1981100119811031.grid"
+  [143] "totals_1981110119811130.grid" "totals_1981120119811231.grid"
+  [145] "totals_1982010119820131.grid" "totals_1982020119820228.grid"
+  [147] "totals_1982030119820331.grid" "totals_1982040119820430.grid"
+  [149] "totals_1982050119820531.grid" "totals_1982060119820630.grid"
+  [151] "totals_1982070119820731.grid" "totals_1982080119820831.grid"
+  [153] "totals_1982090119820930.grid" "totals_1982100119821031.grid"
+  [155] "totals_1982110119821130.grid" "totals_1982120119821231.grid"
+  [157] "totals_1983010119830131.grid" "totals_1983020119830228.grid"
+  [159] "totals_1983030119830331.grid" "totals_1983040119830430.grid"
+  [161] "totals_1983050119830531.grid" "totals_1983060119830630.grid"
+  [163] "totals_1983070119830731.grid" "totals_1983080119830831.grid"
+  [165] "totals_1983090119830930.grid" "totals_1983100119831031.grid"
+  [167] "totals_1983110119831130.grid" "totals_1983120119831231.grid"
+  [169] "totals_1984010119840131.grid" "totals_1984020119840229.grid"
+  [171] "totals_1984030119840331.grid" "totals_1984040119840430.grid"
+  [173] "totals_1984050119840531.grid" "totals_1984060119840630.grid"
+  [175] "totals_1984070119840731.grid" "totals_1984080119840831.grid"
+  [177] "totals_1984090119840930.grid" "totals_1984100119841031.grid"
+  [179] "totals_1984110119841130.grid" "totals_1984120119841231.grid"
+  [181] "totals_1985010119850131.grid" "totals_1985020119850228.grid"
+  [183] "totals_1985030119850331.grid" "totals_1985040119850430.grid"
+  [185] "totals_1985050119850531.grid" "totals_1985060119850630.grid"
+  [187] "totals_1985070119850731.grid" "totals_1985080119850831.grid"
+  [189] "totals_1985090119850930.grid" "totals_1985100119851031.grid"
+  [191] "totals_1985110119851130.grid" "totals_1985120119851231.grid"
+  [193] "totals_1986010119860131.grid" "totals_1986020119860228.grid"
+  [195] "totals_1986030119860331.grid" "totals_1986040119860430.grid"
+  [197] "totals_1986050119860531.grid" "totals_1986060119860630.grid"
+  [199] "totals_1986070119860731.grid" "totals_1986080119860831.grid"
+  [201] "totals_1986090119860930.grid" "totals_1986100119861031.grid"
+  [203] "totals_1986110119861130.grid" "totals_1986120119861231.grid"
+  [205] "totals_1987010119870131.grid" "totals_1987020119870228.grid"
+  [207] "totals_1987030119870331.grid" "totals_1987040119870430.grid"
+  [209] "totals_1987050119870531.grid" "totals_1987060119870630.grid"
+  [211] "totals_1987070119870731.grid" "totals_1987080119870831.grid"
+  [213] "totals_1987090119870930.grid" "totals_1987100119871031.grid"
+  [215] "totals_1987110119871130.grid" "totals_1987120119871231.grid"
+  [217] "totals_1988010119880131.grid" "totals_1988020119880229.grid"
+  [219] "totals_1988030119880331.grid" "totals_1988040119880430.grid"
+  [221] "totals_1988050119880531.grid" "totals_1988060119880630.grid"
+  [223] "totals_1988070119880731.grid" "totals_1988080119880831.grid"
+  [225] "totals_1988090119880930.grid" "totals_1988100119881031.grid"
+  [227] "totals_1988110119881130.grid" "totals_1988120119881231.grid"
+  [229] "totals_1989010119890131.grid" "totals_1989020119890228.grid"
+  [231] "totals_1989030119890331.grid" "totals_1989040119890430.grid"
+  [233] "totals_1989050119890531.grid" "totals_1989060119890630.grid"
+  [235] "totals_1989070119890731.grid" "totals_1989080119890831.grid"
+  [237] "totals_1989090119890930.grid" "totals_1989100119891031.grid"
+  [239] "totals_1989110119891130.grid" "totals_1989120119891231.grid"
+  [241] "totals_1990010119900131.grid" "totals_1990020119900228.grid"
+  [243] "totals_1990030119900331.grid" "totals_1990040119900430.grid"
+  [245] "totals_1990050119900531.grid" "totals_1990060119900630.grid"
+  [247] "totals_1990070119900731.grid" "totals_1990080119900831.grid"
+  [249] "totals_1990090119900930.grid" "totals_1990100119901031.grid"
+  [251] "totals_1990110119901130.grid" "totals_1990120119901231.grid"
+  [253] "totals_1991010119910131.grid" "totals_1991020119910228.grid"
+  [255] "totals_1991030119910331.grid" "totals_1991040119910430.grid"
+  [257] "totals_1991050119910531.grid" "totals_1991060119910630.grid"
+  [259] "totals_1991070119910731.grid" "totals_1991080119910831.grid"
+  [261] "totals_1991090119910930.grid" "totals_1991100119911031.grid"
+  [263] "totals_1991110119911130.grid" "totals_1991120119911231.grid"
+  [265] "totals_1992010119920131.grid" "totals_1992020119920229.grid"
+  [267] "totals_1992030119920331.grid" "totals_1992040119920430.grid"
+  [269] "totals_1992050119920531.grid" "totals_1992060119920630.grid"
+  [271] "totals_1992070119920731.grid" "totals_1992080119920831.grid"
+  [273] "totals_1992090119920930.grid" "totals_1992100119921031.grid"
+  [275] "totals_1992110119921130.grid" "totals_1992120119921231.grid"
+  [277] "totals_1993010119930131.grid" "totals_1993020119930228.grid"
+  [279] "totals_1993030119930331.grid" "totals_1993040119930430.grid"
+  [281] "totals_1993050119930531.grid" "totals_1993060119930630.grid"
+  [283] "totals_1993070119930731.grid" "totals_1993080119930831.grid"
+  [285] "totals_1993090119930930.grid" "totals_1993100119931031.grid"
+  [287] "totals_1993110119931130.grid" "totals_1993120119931231.grid"
+  [289] "totals_1994010119940131.grid" "totals_1994020119940228.grid"
+  [291] "totals_1994030119940331.grid" "totals_1994040119940430.grid"
+  [293] "totals_1994050119940531.grid" "totals_1994060119940630.grid"
+  [295] "totals_1994070119940731.grid" "totals_1994080119940831.grid"
+  [297] "totals_1994090119940930.grid" "totals_1994100119941031.grid"
+  [299] "totals_1994110119941130.grid" "totals_1994120119941231.grid"
+  [301] "totals_1995010119950131.grid" "totals_1995020119950228.grid"
+  [303] "totals_1995030119950331.grid" "totals_1995040119950430.grid"
+  [305] "totals_1995050119950531.grid" "totals_1995060119950630.grid"
+  [307] "totals_1995070119950731.grid" "totals_1995080119950831.grid"
+  [309] "totals_1995090119950930.grid" "totals_1995100119951031.grid"
+  [311] "totals_1995110119951130.grid" "totals_1995120119951231.grid"
+  [313] "totals_1996010119960131.grid" "totals_1996020119960229.grid"
+  [315] "totals_1996030119960331.grid" "totals_1996040119960430.grid"
+  [317] "totals_1996050119960531.grid" "totals_1996060119960630.grid"
+  [319] "totals_1996070119960731.grid" "totals_1996080119960831.grid"
+  [321] "totals_1996090119960930.grid" "totals_1996100119961031.grid"
+  [323] "totals_1996110119961130.grid" "totals_1996120119961231.grid"
+  [325] "totals_1997010119970131.grid" "totals_1997020119970228.grid"
+  [327] "totals_1997030119970331.grid" "totals_1997040119970430.grid"
+  [329] "totals_1997050119970531.grid" "totals_1997060119970630.grid"
+  [331] "totals_1997070119970731.grid" "totals_1997080119970831.grid"
+  [333] "totals_1997090119970930.grid" "totals_1997100119971031.grid"
+  [335] "totals_1997110119971130.grid" "totals_1997120119971231.grid"
+  [337] "totals_1998010119980131.grid" "totals_1998020119980228.grid"
+  [339] "totals_1998030119980331.grid" "totals_1998040119980430.grid"
+  [341] "totals_1998050119980531.grid" "totals_1998060119980630.grid"
+  [343] "totals_1998070119980731.grid" "totals_1998080119980831.grid"
+  [345] "totals_1998090119980930.grid" "totals_1998100119981031.grid"
+  [347] "totals_1998110119981130.grid" "totals_1998120119981231.grid"
+  [349] "totals_1999010119990131.grid" "totals_1999020119990228.grid"
+  [351] "totals_1999030119990331.grid" "totals_1999040119990430.grid"
+  [353] "totals_1999050119990531.grid" "totals_1999060119990630.grid"
+  [355] "totals_1999070119990731.grid" "totals_1999080119990831.grid"
+  [357] "totals_1999090119990930.grid" "totals_1999100119991031.grid"
+  [359] "totals_1999110119991130.grid" "totals_1999120119991231.grid"
+  [361] "totals_2000010120000131.grid" "totals_2000020120000229.grid"
+  [363] "totals_2000030120000331.grid" "totals_2000040120000430.grid"
+  [365] "totals_2000050120000531.grid" "totals_2000060120000630.grid"
+  [367] "totals_2000070120000731.grid" "totals_2000080120000831.grid"
+  [369] "totals_2000090120000930.grid" "totals_2000100120001031.grid"
+  [371] "totals_2000110120001130.grid" "totals_2000120120001231.grid"
+  [373] "totals_2001010120010131.grid" "totals_2001020120010228.grid"
+  [375] "totals_2001030120010331.grid" "totals_2001040120010430.grid"
+  [377] "totals_2001050120010531.grid" "totals_2001060120010630.grid"
+  [379] "totals_2001070120010731.grid" "totals_2001080120010831.grid"
+  [381] "totals_2001090120010930.grid" "totals_2001100120011031.grid"
+  [383] "totals_2001110120011130.grid" "totals_2001120120011231.grid"
+  [385] "totals_2002010120020131.grid" "totals_2002020120020228.grid"
+  [387] "totals_2002030120020331.grid" "totals_2002040120020430.grid"
+  [389] "totals_2002050120020531.grid" "totals_2002060120020630.grid"
+  [391] "totals_2002070120020731.grid" "totals_2002080120020831.grid"
+  [393] "totals_2002090120020930.grid" "totals_2002100120021031.grid"
+  [395] "totals_2002110120021130.grid" "totals_2002120120021231.grid"
+  [397] "totals_2003010120030131.grid" "totals_2003020120030228.grid"
+  [399] "totals_2003030120030331.grid" "totals_2003040120030430.grid"
+  [401] "totals_2003050120030531.grid" "totals_2003060120030630.grid"
+  [403] "totals_2003070120030731.grid" "totals_2003080120030831.grid"
+  [405] "totals_2003090120030930.grid" "totals_2003100120031031.grid"
+  [407] "totals_2003110120031130.grid" "totals_2003120120031231.grid"
+  [409] "totals_2004010120040131.grid" "totals_2004020120040229.grid"
+  [411] "totals_2004030120040331.grid" "totals_2004040120040430.grid"
+  [413] "totals_2004050120040531.grid" "totals_2004060120040630.grid"
+  [415] "totals_2004070120040731.grid" "totals_2004080120040831.grid"
+  [417] "totals_2004090120040930.grid" "totals_2004100120041031.grid"
+  [419] "totals_2004110120041130.grid" "totals_2004120120041231.grid"
+  [421] "totals_2005010120050131.grid" "totals_2005020120050228.grid"
+  [423] "totals_2005030120050331.grid" "totals_2005040120050430.grid"
+  [425] "totals_2005050120050531.grid" "totals_2005060120050630.grid"
+  [427] "totals_2005070120050731.grid" "totals_2005080120050831.grid"
+  [429] "totals_2005090120050930.grid" "totals_2005100120051031.grid"
+  [431] "totals_2005110120051130.grid" "totals_2005120120051231.grid"
+  [433] "totals_2006010120060131.grid" "totals_2006020120060228.grid"
+  [435] "totals_2006030120060331.grid" "totals_2006040120060430.grid"
+  [437] "totals_2006050120060531.grid" "totals_2006060120060630.grid"
+  [439] "totals_2006070120060731.grid" "totals_2006080120060831.grid"
+  [441] "totals_2006090120060930.grid" "totals_2006100120061031.grid"
+  [443] "totals_2006110120061130.grid" "totals_2006120120061231.grid"
+  [445] "totals_2007010120070131.grid" "totals_2007020120070228.grid"
+  [447] "totals_2007030120070331.grid" "totals_2007040120070430.grid"
+  [449] "totals_2007050120070531.grid" "totals_2007060120070630.grid"
+  [451] "totals_2007070120070731.grid" "totals_2007080120070831.grid"
+  [453] "totals_2007090120070930.grid" "totals_2007100120071031.grid"
+  [455] "totals_2007110120071130.grid" "totals_2007120120071231.grid"
+  [457] "totals_2008010120080131.grid" "totals_2008020120080229.grid"
+  [459] "totals_2008030120080331.grid" "totals_2008040120080430.grid"
+  [461] "totals_2008050120080531.grid" "totals_2008060120080630.grid"
+  [463] "totals_2008070120080731.grid" "totals_2008080120080831.grid"
+  [465] "totals_2008090120080930.grid" "totals_2008100120081031.grid"
+  [467] "totals_2008110120081130.grid" "totals_2008120120081231.grid"
+  [469] "totals_2009010120090131.grid" "totals_2009020120090228.grid"
+  [471] "totals_2009030120090331.grid" "totals_2009040120090430.grid"
+  [473] "totals_2009050120090531.grid" "totals_2009060120090630.grid"
+  [475] "totals_2009070120090731.grid" "totals_2009080120090831.grid"
+  [477] "totals_2009090120090930.grid" "totals_2009100120091031.grid"
+  [479] "totals_2009110120091130.grid" "totals_2009120120091231.grid"
+  [481] "totals_2010010120100131.grid" "totals_2010020120100228.grid"
+  [483] "totals_2010030120100331.grid" "totals_2010040120100430.grid"
+  [485] "totals_2010050120100531.grid" "totals_2010060120100630.grid"
+  [487] "totals_2010070120100731.grid" "totals_2010080120100831.grid"
+  [489] "totals_2010090120100930.grid" "totals_2010100120101031.grid"
+  [491] "totals_2010110120101130.grid" "totals_2010120120101231.grid"
+  [493] "totals_2011010120110131.grid" "totals_2011020120110228.grid"
+  [495] "totals_2011030120110331.grid" "totals_2011040120110430.grid"
+  [497] "totals_2011050120110531.grid" "totals_2011060120110630.grid"
+  [499] "totals_2011070120110731.grid" "totals_2011080120110831.grid"
+  [501] "totals_2011090120110930.grid" "totals_2011100120111031.grid"
+  [503] "totals_2011110120111130.grid" "totals_2011120120111231.grid"
+  [505] "totals_2012010120120131.grid" "totals_2012020120120229.grid"
+  [507] "totals_2012030120120331.grid" "totals_2012040120120430.grid"
+  [509] "totals_2012050120120531.grid" "totals_2012060120120630.grid"
+  [511] "totals_2012070120120731.grid" "totals_2012080120120831.grid"
+  [513] "totals_2012090120120930.grid" "totals_2012100120121031.grid"
+  [515] "totals_2012110120121130.grid" "totals_2012120120121231.grid"
+  [517] "totals_2013010120130131.grid" "totals_2013020120130228.grid"
+  [519] "totals_2013030120130331.grid" "totals_2013040120130430.grid"
+  [521] "totals_2013050120130531.grid" "totals_2013060120130630.grid"
+  [523] "totals_2013070120130731.grid" "totals_2013080120130831.grid"
+  [525] "totals_2013090120130930.grid" "totals_2013100120131031.grid"
+  [527] "totals_2013110120131130.grid" "totals_2013120120131231.grid"
+  [529] "totals_2014010120140131.grid"
+  > i = 1
+  >   #i <- 1 ## for stepping thru
+  >   gridname <- cfiles[[i]]
+  >   r <- raster(gridname)
+  >   e <- extract(r, shp, df=T)
+  >   e1 <- shp
+  >   e1@data$values <- e[,2]
+  >   e1@data$gridname <- gridname
+  > e1@data
+         lon       lat values                     gridname
+  1 145.4185 -16.17003   70.9 totals_1970010119700131.grid
+  > cfiles
+    [1] "totals_1970010119700131.grid" "totals_1970020119700228.grid"
+    [3] "totals_1970030119700331.grid" "totals_1970040119700430.grid"
+    [5] "totals_1970050119700531.grid" "totals_1970060119700630.grid"
+    [7] "totals_1970070119700731.grid" "totals_1970080119700831.grid"
+    [9] "totals_1970090119700930.grid" "totals_1970100119701031.grid"
+   [11] "totals_1970110119701130.grid" "totals_1970120119701231.grid"
+   [13] "totals_1971010119710131.grid" "totals_1971020119710228.grid"
+   [15] "totals_1971030119710331.grid" "totals_1971040119710430.grid"
+   [17] "totals_1971050119710531.grid" "totals_1971060119710630.grid"
+   [19] "totals_1971070119710731.grid" "totals_1971080119710831.grid"
+   [21] "totals_1971090119710930.grid" "totals_1971100119711031.grid"
+   [23] "totals_1971110119711130.grid" "totals_1971120119711231.grid"
+   [25] "totals_1972010119720131.grid" "totals_1972020119720229.grid"
+   [27] "totals_1972030119720331.grid" "totals_1972040119720430.grid"
+   [29] "totals_1972050119720531.grid" "totals_1972060119720630.grid"
+   [31] "totals_1972070119720731.grid" "totals_1972080119720831.grid"
+   [33] "totals_1972090119720930.grid" "totals_1972100119721031.grid"
+   [35] "totals_1972110119721130.grid" "totals_1972120119721231.grid"
+   [37] "totals_1973010119730131.grid" "totals_1973020119730228.grid"
+   [39] "totals_1973030119730331.grid" "totals_1973040119730430.grid"
+   [41] "totals_1973050119730531.grid" "totals_1973060119730630.grid"
+   [43] "totals_1973070119730731.grid" "totals_1973080119730831.grid"
+   [45] "totals_1973090119730930.grid" "totals_1973100119731031.grid"
+   [47] "totals_1973110119731130.grid" "totals_1973120119731231.grid"
+   [49] "totals_1974010119740131.grid" "totals_1974020119740228.grid"
+   [51] "totals_1974030119740331.grid" "totals_1974040119740430.grid"
+   [53] "totals_1974050119740531.grid" "totals_1974060119740630.grid"
+   [55] "totals_1974070119740731.grid" "totals_1974080119740831.grid"
+   [57] "totals_1974090119740930.grid" "totals_1974100119741031.grid"
+   [59] "totals_1974110119741130.grid" "totals_1974120119741231.grid"
+   [61] "totals_1975010119750131.grid" "totals_1975020119750228.grid"
+   [63] "totals_1975030119750331.grid" "totals_1975040119750430.grid"
+   [65] "totals_1975050119750531.grid" "totals_1975060119750630.grid"
+   [67] "totals_1975070119750731.grid" "totals_1975080119750831.grid"
+   [69] "totals_1975090119750930.grid" "totals_1975100119751031.grid"
+   [71] "totals_1975110119751130.grid" "totals_1975120119751231.grid"
+   [73] "totals_1976010119760131.grid" "totals_1976020119760229.grid"
+   [75] "totals_1976030119760331.grid" "totals_1976040119760430.grid"
+   [77] "totals_1976050119760531.grid" "totals_1976060119760630.grid"
+   [79] "totals_1976070119760731.grid" "totals_1976080119760831.grid"
+   [81] "totals_1976090119760930.grid" "totals_1976100119761031.grid"
+   [83] "totals_1976110119761130.grid" "totals_1976120119761231.grid"
+   [85] "totals_1977010119770131.grid" "totals_1977020119770228.grid"
+   [87] "totals_1977030119770331.grid" "totals_1977040119770430.grid"
+   [89] "totals_1977050119770531.grid" "totals_1977060119770630.grid"
+   [91] "totals_1977070119770731.grid" "totals_1977080119770831.grid"
+   [93] "totals_1977090119770930.grid" "totals_1977100119771031.grid"
+   [95] "totals_1977110119771130.grid" "totals_1977120119771231.grid"
+   [97] "totals_1978010119780131.grid" "totals_1978020119780228.grid"
+   [99] "totals_1978030119780331.grid" "totals_1978040119780430.grid"
+  [101] "totals_1978050119780531.grid" "totals_1978060119780630.grid"
+  [103] "totals_1978070119780731.grid" "totals_1978080119780831.grid"
+  [105] "totals_1978090119780930.grid" "totals_1978100119781031.grid"
+  [107] "totals_1978110119781130.grid" "totals_1978120119781231.grid"
+  [109] "totals_1979010119790131.grid" "totals_1979020119790228.grid"
+  [111] "totals_1979030119790331.grid" "totals_1979040119790430.grid"
+  [113] "totals_1979050119790531.grid" "totals_1979060119790630.grid"
+  [115] "totals_1979070119790731.grid" "totals_1979080119790831.grid"
+  [117] "totals_1979090119790930.grid" "totals_1979100119791031.grid"
+  [119] "totals_1979110119791130.grid" "totals_1979120119791231.grid"
+  [121] "totals_1980010119800131.grid" "totals_1980020119800229.grid"
+  [123] "totals_1980030119800331.grid" "totals_1980040119800430.grid"
+  [125] "totals_1980050119800531.grid" "totals_1980060119800630.grid"
+  [127] "totals_1980070119800731.grid" "totals_1980080119800831.grid"
+  [129] "totals_1980090119800930.grid" "totals_1980100119801031.grid"
+  [131] "totals_1980110119801130.grid" "totals_1980120119801231.grid"
+  [133] "totals_1981010119810131.grid" "totals_1981020119810228.grid"
+  [135] "totals_1981030119810331.grid" "totals_1981040119810430.grid"
+  [137] "totals_1981050119810531.grid" "totals_1981060119810630.grid"
+  [139] "totals_1981070119810731.grid" "totals_1981080119810831.grid"
+  [141] "totals_1981090119810930.grid" "totals_1981100119811031.grid"
+  [143] "totals_1981110119811130.grid" "totals_1981120119811231.grid"
+  [145] "totals_1982010119820131.grid" "totals_1982020119820228.grid"
+  [147] "totals_1982030119820331.grid" "totals_1982040119820430.grid"
+  [149] "totals_1982050119820531.grid" "totals_1982060119820630.grid"
+  [151] "totals_1982070119820731.grid" "totals_1982080119820831.grid"
+  [153] "totals_1982090119820930.grid" "totals_1982100119821031.grid"
+  [155] "totals_1982110119821130.grid" "totals_1982120119821231.grid"
+  [157] "totals_1983010119830131.grid" "totals_1983020119830228.grid"
+  [159] "totals_1983030119830331.grid" "totals_1983040119830430.grid"
+  [161] "totals_1983050119830531.grid" "totals_1983060119830630.grid"
+  [163] "totals_1983070119830731.grid" "totals_1983080119830831.grid"
+  [165] "totals_1983090119830930.grid" "totals_1983100119831031.grid"
+  [167] "totals_1983110119831130.grid" "totals_1983120119831231.grid"
+  [169] "totals_1984010119840131.grid" "totals_1984020119840229.grid"
+  [171] "totals_1984030119840331.grid" "totals_1984040119840430.grid"
+  [173] "totals_1984050119840531.grid" "totals_1984060119840630.grid"
+  [175] "totals_1984070119840731.grid" "totals_1984080119840831.grid"
+  [177] "totals_1984090119840930.grid" "totals_1984100119841031.grid"
+  [179] "totals_1984110119841130.grid" "totals_1984120119841231.grid"
+  [181] "totals_1985010119850131.grid" "totals_1985020119850228.grid"
+  [183] "totals_1985030119850331.grid" "totals_1985040119850430.grid"
+  [185] "totals_1985050119850531.grid" "totals_1985060119850630.grid"
+  [187] "totals_1985070119850731.grid" "totals_1985080119850831.grid"
+  [189] "totals_1985090119850930.grid" "totals_1985100119851031.grid"
+  [191] "totals_1985110119851130.grid" "totals_1985120119851231.grid"
+  [193] "totals_1986010119860131.grid" "totals_1986020119860228.grid"
+  [195] "totals_1986030119860331.grid" "totals_1986040119860430.grid"
+  [197] "totals_1986050119860531.grid" "totals_1986060119860630.grid"
+  [199] "totals_1986070119860731.grid" "totals_1986080119860831.grid"
+  [201] "totals_1986090119860930.grid" "totals_1986100119861031.grid"
+  [203] "totals_1986110119861130.grid" "totals_1986120119861231.grid"
+  [205] "totals_1987010119870131.grid" "totals_1987020119870228.grid"
+  [207] "totals_1987030119870331.grid" "totals_1987040119870430.grid"
+  [209] "totals_1987050119870531.grid" "totals_1987060119870630.grid"
+  [211] "totals_1987070119870731.grid" "totals_1987080119870831.grid"
+  [213] "totals_1987090119870930.grid" "totals_1987100119871031.grid"
+  [215] "totals_1987110119871130.grid" "totals_1987120119871231.grid"
+  [217] "totals_1988010119880131.grid" "totals_1988020119880229.grid"
+  [219] "totals_1988030119880331.grid" "totals_1988040119880430.grid"
+  [221] "totals_1988050119880531.grid" "totals_1988060119880630.grid"
+  [223] "totals_1988070119880731.grid" "totals_1988080119880831.grid"
+  [225] "totals_1988090119880930.grid" "totals_1988100119881031.grid"
+  [227] "totals_1988110119881130.grid" "totals_1988120119881231.grid"
+  [229] "totals_1989010119890131.grid" "totals_1989020119890228.grid"
+  [231] "totals_1989030119890331.grid" "totals_1989040119890430.grid"
+  [233] "totals_1989050119890531.grid" "totals_1989060119890630.grid"
+  [235] "totals_1989070119890731.grid" "totals_1989080119890831.grid"
+  [237] "totals_1989090119890930.grid" "totals_1989100119891031.grid"
+  [239] "totals_1989110119891130.grid" "totals_1989120119891231.grid"
+  [241] "totals_1990010119900131.grid" "totals_1990020119900228.grid"
+  [243] "totals_1990030119900331.grid" "totals_1990040119900430.grid"
+  [245] "totals_1990050119900531.grid" "totals_1990060119900630.grid"
+  [247] "totals_1990070119900731.grid" "totals_1990080119900831.grid"
+  [249] "totals_1990090119900930.grid" "totals_1990100119901031.grid"
+  [251] "totals_1990110119901130.grid" "totals_1990120119901231.grid"
+  [253] "totals_1991010119910131.grid" "totals_1991020119910228.grid"
+  [255] "totals_1991030119910331.grid" "totals_1991040119910430.grid"
+  [257] "totals_1991050119910531.grid" "totals_1991060119910630.grid"
+  [259] "totals_1991070119910731.grid" "totals_1991080119910831.grid"
+  [261] "totals_1991090119910930.grid" "totals_1991100119911031.grid"
+  [263] "totals_1991110119911130.grid" "totals_1991120119911231.grid"
+  [265] "totals_1992010119920131.grid" "totals_1992020119920229.grid"
+  [267] "totals_1992030119920331.grid" "totals_1992040119920430.grid"
+  [269] "totals_1992050119920531.grid" "totals_1992060119920630.grid"
+  [271] "totals_1992070119920731.grid" "totals_1992080119920831.grid"
+  [273] "totals_1992090119920930.grid" "totals_1992100119921031.grid"
+  [275] "totals_1992110119921130.grid" "totals_1992120119921231.grid"
+  [277] "totals_1993010119930131.grid" "totals_1993020119930228.grid"
+  [279] "totals_1993030119930331.grid" "totals_1993040119930430.grid"
+  [281] "totals_1993050119930531.grid" "totals_1993060119930630.grid"
+  [283] "totals_1993070119930731.grid" "totals_1993080119930831.grid"
+  [285] "totals_1993090119930930.grid" "totals_1993100119931031.grid"
+  [287] "totals_1993110119931130.grid" "totals_1993120119931231.grid"
+  [289] "totals_1994010119940131.grid" "totals_1994020119940228.grid"
+  [291] "totals_1994030119940331.grid" "totals_1994040119940430.grid"
+  [293] "totals_1994050119940531.grid" "totals_1994060119940630.grid"
+  [295] "totals_1994070119940731.grid" "totals_1994080119940831.grid"
+  [297] "totals_1994090119940930.grid" "totals_1994100119941031.grid"
+  [299] "totals_1994110119941130.grid" "totals_1994120119941231.grid"
+  [301] "totals_1995010119950131.grid" "totals_1995020119950228.grid"
+  [303] "totals_1995030119950331.grid" "totals_1995040119950430.grid"
+  [305] "totals_1995050119950531.grid" "totals_1995060119950630.grid"
+  [307] "totals_1995070119950731.grid" "totals_1995080119950831.grid"
+  [309] "totals_1995090119950930.grid" "totals_1995100119951031.grid"
+  [311] "totals_1995110119951130.grid" "totals_1995120119951231.grid"
+  [313] "totals_1996010119960131.grid" "totals_1996020119960229.grid"
+  [315] "totals_1996030119960331.grid" "totals_1996040119960430.grid"
+  [317] "totals_1996050119960531.grid" "totals_1996060119960630.grid"
+  [319] "totals_1996070119960731.grid" "totals_1996080119960831.grid"
+  [321] "totals_1996090119960930.grid" "totals_1996100119961031.grid"
+  [323] "totals_1996110119961130.grid" "totals_1996120119961231.grid"
+  [325] "totals_1997010119970131.grid" "totals_1997020119970228.grid"
+  [327] "totals_1997030119970331.grid" "totals_1997040119970430.grid"
+  [329] "totals_1997050119970531.grid" "totals_1997060119970630.grid"
+  [331] "totals_1997070119970731.grid" "totals_1997080119970831.grid"
+  [333] "totals_1997090119970930.grid" "totals_1997100119971031.grid"
+  [335] "totals_1997110119971130.grid" "totals_1997120119971231.grid"
+  [337] "totals_1998010119980131.grid" "totals_1998020119980228.grid"
+  [339] "totals_1998030119980331.grid" "totals_1998040119980430.grid"
+  [341] "totals_1998050119980531.grid" "totals_1998060119980630.grid"
+  [343] "totals_1998070119980731.grid" "totals_1998080119980831.grid"
+  [345] "totals_1998090119980930.grid" "totals_1998100119981031.grid"
+  [347] "totals_1998110119981130.grid" "totals_1998120119981231.grid"
+  [349] "totals_1999010119990131.grid" "totals_1999020119990228.grid"
+  [351] "totals_1999030119990331.grid" "totals_1999040119990430.grid"
+  [353] "totals_1999050119990531.grid" "totals_1999060119990630.grid"
+  [355] "totals_1999070119990731.grid" "totals_1999080119990831.grid"
+  [357] "totals_1999090119990930.grid" "totals_1999100119991031.grid"
+  [359] "totals_1999110119991130.grid" "totals_1999120119991231.grid"
+  [361] "totals_2000010120000131.grid" "totals_2000020120000229.grid"
+  [363] "totals_2000030120000331.grid" "totals_2000040120000430.grid"
+  [365] "totals_2000050120000531.grid" "totals_2000060120000630.grid"
+  [367] "totals_2000070120000731.grid" "totals_2000080120000831.grid"
+  [369] "totals_2000090120000930.grid" "totals_2000100120001031.grid"
+  [371] "totals_2000110120001130.grid" "totals_2000120120001231.grid"
+  [373] "totals_2001010120010131.grid" "totals_2001020120010228.grid"
+  [375] "totals_2001030120010331.grid" "totals_2001040120010430.grid"
+  [377] "totals_2001050120010531.grid" "totals_2001060120010630.grid"
+  [379] "totals_2001070120010731.grid" "totals_2001080120010831.grid"
+  [381] "totals_2001090120010930.grid" "totals_2001100120011031.grid"
+  [383] "totals_2001110120011130.grid" "totals_2001120120011231.grid"
+  [385] "totals_2002010120020131.grid" "totals_2002020120020228.grid"
+  [387] "totals_2002030120020331.grid" "totals_2002040120020430.grid"
+  [389] "totals_2002050120020531.grid" "totals_2002060120020630.grid"
+  [391] "totals_2002070120020731.grid" "totals_2002080120020831.grid"
+  [393] "totals_2002090120020930.grid" "totals_2002100120021031.grid"
+  [395] "totals_2002110120021130.grid" "totals_2002120120021231.grid"
+  [397] "totals_2003010120030131.grid" "totals_2003020120030228.grid"
+  [399] "totals_2003030120030331.grid" "totals_2003040120030430.grid"
+  [401] "totals_2003050120030531.grid" "totals_2003060120030630.grid"
+  [403] "totals_2003070120030731.grid" "totals_2003080120030831.grid"
+  [405] "totals_2003090120030930.grid" "totals_2003100120031031.grid"
+  [407] "totals_2003110120031130.grid" "totals_2003120120031231.grid"
+  [409] "totals_2004010120040131.grid" "totals_2004020120040229.grid"
+  [411] "totals_2004030120040331.grid" "totals_2004040120040430.grid"
+  [413] "totals_2004050120040531.grid" "totals_2004060120040630.grid"
+  [415] "totals_2004070120040731.grid" "totals_2004080120040831.grid"
+  [417] "totals_2004090120040930.grid" "totals_2004100120041031.grid"
+  [419] "totals_2004110120041130.grid" "totals_2004120120041231.grid"
+  [421] "totals_2005010120050131.grid" "totals_2005020120050228.grid"
+  [423] "totals_2005030120050331.grid" "totals_2005040120050430.grid"
+  [425] "totals_2005050120050531.grid" "totals_2005060120050630.grid"
+  [427] "totals_2005070120050731.grid" "totals_2005080120050831.grid"
+  [429] "totals_2005090120050930.grid" "totals_2005100120051031.grid"
+  [431] "totals_2005110120051130.grid" "totals_2005120120051231.grid"
+  [433] "totals_2006010120060131.grid" "totals_2006020120060228.grid"
+  [435] "totals_2006030120060331.grid" "totals_2006040120060430.grid"
+  [437] "totals_2006050120060531.grid" "totals_2006060120060630.grid"
+  [439] "totals_2006070120060731.grid" "totals_2006080120060831.grid"
+  [441] "totals_2006090120060930.grid" "totals_2006100120061031.grid"
+  [443] "totals_2006110120061130.grid" "totals_2006120120061231.grid"
+  [445] "totals_2007010120070131.grid" "totals_2007020120070228.grid"
+  [447] "totals_2007030120070331.grid" "totals_2007040120070430.grid"
+  [449] "totals_2007050120070531.grid" "totals_2007060120070630.grid"
+  [451] "totals_2007070120070731.grid" "totals_2007080120070831.grid"
+  [453] "totals_2007090120070930.grid" "totals_2007100120071031.grid"
+  [455] "totals_2007110120071130.grid" "totals_2007120120071231.grid"
+  [457] "totals_2008010120080131.grid" "totals_2008020120080229.grid"
+  [459] "totals_2008030120080331.grid" "totals_2008040120080430.grid"
+  [461] "totals_2008050120080531.grid" "totals_2008060120080630.grid"
+  [463] "totals_2008070120080731.grid" "totals_2008080120080831.grid"
+  [465] "totals_2008090120080930.grid" "totals_2008100120081031.grid"
+  [467] "totals_2008110120081130.grid" "totals_2008120120081231.grid"
+  [469] "totals_2009010120090131.grid" "totals_2009020120090228.grid"
+  [471] "totals_2009030120090331.grid" "totals_2009040120090430.grid"
+  [473] "totals_2009050120090531.grid" "totals_2009060120090630.grid"
+  [475] "totals_2009070120090731.grid" "totals_2009080120090831.grid"
+  [477] "totals_2009090120090930.grid" "totals_2009100120091031.grid"
+  [479] "totals_2009110120091130.grid" "totals_2009120120091231.grid"
+  [481] "totals_2010010120100131.grid" "totals_2010020120100228.grid"
+  [483] "totals_2010030120100331.grid" "totals_2010040120100430.grid"
+  [485] "totals_2010050120100531.grid" "totals_2010060120100630.grid"
+  [487] "totals_2010070120100731.grid" "totals_2010080120100831.grid"
+  [489] "totals_2010090120100930.grid" "totals_2010100120101031.grid"
+  [491] "totals_2010110120101130.grid" "totals_2010120120101231.grid"
+  [493] "totals_2011010120110131.grid" "totals_2011020120110228.grid"
+  [495] "totals_2011030120110331.grid" "totals_2011040120110430.grid"
+  [497] "totals_2011050120110531.grid" "totals_2011060120110630.grid"
+  [499] "totals_2011070120110731.grid" "totals_2011080120110831.grid"
+  [501] "totals_2011090120110930.grid" "totals_2011100120111031.grid"
+  [503] "totals_2011110120111130.grid" "totals_2011120120111231.grid"
+  [505] "totals_2012010120120131.grid" "totals_2012020120120229.grid"
+  [507] "totals_2012030120120331.grid" "totals_2012040120120430.grid"
+  [509] "totals_2012050120120531.grid" "totals_2012060120120630.grid"
+  [511] "totals_2012070120120731.grid" "totals_2012080120120831.grid"
+  [513] "totals_2012090120120930.grid" "totals_2012100120121031.grid"
+  [515] "totals_2012110120121130.grid" "totals_2012120120121231.grid"
+  [517] "totals_2013010120130131.grid" "totals_2013020120130228.grid"
+  [519] "totals_2013030120130331.grid" "totals_2013040120130430.grid"
+  [521] "totals_2013050120130531.grid" "totals_2013060120130630.grid"
+  [523] "totals_2013070120130731.grid" "totals_2013080120130831.grid"
+  [525] "totals_2013090120130930.grid" "totals_2013100120131031.grid"
+  [527] "totals_2013110120131130.grid" "totals_2013120120131231.grid"
+  [529] "totals_2014010120140131.grid"
+  > cfiles[1:10]
+   [1] "totals_1970010119700131.grid" "totals_1970020119700228.grid"
+   [3] "totals_1970030119700331.grid" "totals_1970040119700430.grid"
+   [5] "totals_1970050119700531.grid" "totals_1970060119700630.grid"
+   [7] "totals_1970070119700731.grid" "totals_1970080119700831.grid"
+   [9] "totals_1970090119700930.grid" "totals_1970100119701031.grid"
+  > locn <- geocode("prospect dam")
+  Information from URL : http://maps.googleapis.com/maps/api/geocode/json?address=prospect+dam&sensor=false
+  Google Maps API Terms of Service : http://developers.google.com/maps/terms
+  > locn
+         lon       lat
+  1 26.90208 -32.00395
+  > locn <- geocode("prospect reservoir nsw")
+  Information from URL : http://maps.googleapis.com/maps/api/geocode/json?address=prospect+reservoir+nsw&sensor=false
+  Google Maps API Terms of Service : http://developers.google.com/maps/terms
+  > locn
+         lon       lat
+  1 150.8929 -33.82107
+  > shp <- SpatialPointsDataFrame(cbind(locn$lon,locn$lat),locn,
+  +                               proj4string=CRS(epsg$prj4[epsg$code %in% '4283']))
+  >   gridname <- cfiles[[i]]
+  >   r <- raster(gridname)
+  >   e <- extract(r, shp, df=T)
+  >   e1 <- shp
+  >   e1@data$values <- e[,2]
+  >   e1@data$gridname <- gridname
+  > e1@data 
+         lon       lat values                     gridname
+  1 150.8929 -33.82107  110.2 totals_1970010119700131.grid
+  > locn <- geocode(c("prospect reservoir nsw", "parkes nsw"))
+  Information from URL : http://maps.googleapis.com/maps/api/geocode/json?address=prospect+reservoir+nsw&sensor=false
+  Google Maps API Terms of Service : http://developers.google.com/maps/terms
+  Information from URL : http://maps.googleapis.com/maps/api/geocode/json?address=parkes+nsw&sensor=false
+  Google Maps API Terms of Service : http://developers.google.com/maps/terms
+  > locn
+         lon       lat
+  1 150.8929 -33.82107
+  2 148.1748 -33.13786
+  > shp <- SpatialPointsDataFrame(cbind(locn$lon,locn$lat),locn,
+  +                               proj4string=CRS(epsg$prj4[epsg$code %in% '4283']))
+  >   e1 <- shp
+  >   e1@data$values <- e[,2]
+  >   e1@data$gridname <- gridname
+  > e1@data 
+         lon       lat values                     gridname
+  1 150.8929 -33.82107  110.2 totals_1970010119700131.grid
+  2 148.1748 -33.13786  110.2 totals_1970010119700131.grid
+  > locn <- geocode(c("prospect reservoir nsw", "west wyalong nsw"))
+  Information from URL : http://maps.googleapis.com/maps/api/geocode/json?address=prospect+reservoir+nsw&sensor=false
+  Google Maps API Terms of Service : http://developers.google.com/maps/terms
+  Information from URL : http://maps.googleapis.com/maps/api/geocode/json?address=west+wyalong+nsw&sensor=false
+  Google Maps API Terms of Service : http://developers.google.com/maps/terms
+  > locn
+         lon       lat
+  1 150.8929 -33.82107
+  2 147.2053 -33.92350
+  > shp <- SpatialPointsDataFrame(cbind(locn$lon,locn$lat),locn,
+  +                               proj4string=CRS(epsg$prj4[epsg$code %in% '4283']))
+  >   e <- extract(r, shp, df=T)
+  >   e1 <- shp
+  >   e1@data$values <- e[,2]
+  >   e1@data$gridname <- gridname
+  > e1@data
+         lon       lat values                     gridname
+  1 150.8929 -33.82107  110.2 totals_1970010119700131.grid
+  2 147.2053 -33.92350   19.1 totals_1970010119700131.grid
+  > dir(pattern = "csv")
+  character(0)
+  > for (i in seq_len(length(cfiles))) {
+  +   gridname <- cfiles[[i]]
+  +   r <- raster(gridname)
+  +   e <- extract(r, shp, df=T)
+  +   e1 <- shp
+  +   e1@data$values <- e[,2]
+  +   e1@data$gridname <- gridname
+  +   write.table(e1@data,"output.csv",
+  +     col.names = i == 1, append = i>1 , sep = ",", row.names = FALSE)
+  + }
+  > dat <- read.csv("output.csv")
+  > head(dat)
+         lon       lat values                     gridname
+  1 150.8929 -33.82107  110.2 totals_1970010119700131.grid
+  2 147.2053 -33.92350   19.1 totals_1970010119700131.grid
+  3 150.8929 -33.82107   45.8 totals_1970020119700228.grid
+  4 147.2053 -33.92350    2.0 totals_1970020119700228.grid
+  5 150.8929 -33.82107   69.6 totals_1970030119700331.grid
+  6 147.2053 -33.92350   45.2 totals_1970030119700331.grid
+  > library(sqldf)
+  Loading required package: gsubfn
+  Loading required package: proto
+  Loading required package: RSQLite
+  Loading required package: DBI
+  > qc <- sqldf("select * from dat where lon = 150.8929")
+  Loading required package: tcltk
+  > head(qc)
+  [1] lon      lat      values   gridname
+  <0 rows> (or 0-length row.names)
+  > qc <- sqldf("select * from dat where lon > 150")
+  > head(qc)
+         lon       lat values                     gridname
+  1 150.8929 -33.82107  110.2 totals_1970010119700131.grid
+  2 150.8929 -33.82107   45.8 totals_1970020119700228.grid
+  3 150.8929 -33.82107   69.6 totals_1970030119700331.grid
+  4 150.8929 -33.82107   28.1 totals_1970040119700430.grid
+  5 150.8929 -33.82107   16.2 totals_1970050119700531.grid
+  6 150.8929 -33.82107   16.9 totals_1970060119700630.grid
+  > tail(qc)
+           lon       lat values                     gridname
+  524 150.8929 -33.82107    7.8 totals_2013080120130831.grid
+  525 150.8929 -33.82107   18.2 totals_2013090120130930.grid
+  526 150.8929 -33.82107    7.6 totals_2013100120131031.grid
+  527 150.8929 -33.82107  156.3 totals_2013110120131130.grid
+  528 150.8929 -33.82107   31.1 totals_2013120120131231.grid
+  529 150.8929 -33.82107   19.5 totals_2014010120140131.grid
+  > qc2 <- read.table("clipboard", header  = F)
+  > head(qc2)
+            V1    V2   V3 V4   V5 V6
+  1 IDCJAC0001 67019 1970  1 95.6  Y
+  2 IDCJAC0001 67019 1970  2 38.9  Y
+  3 IDCJAC0001 67019 1970  3 75.6  Y
+  4 IDCJAC0001 67019 1970  4 25.6  Y
+  5 IDCJAC0001 67019 1970  5 17.1  Y
+  6 IDCJAC0001 67019 1970  6 16.0  Y
+  > qc3 <- cbind(qc, qc2)
+  Error in data.frame(..., check.names = FALSE) : 
+    arguments imply differing number of rows: 529, 527
+  > tail(qc2)
+              V1    V2   V3 V4    V5 V6
+  522 IDCJAC0001 67019 2013  8   8.6  Y
+  523 IDCJAC0001 67019 2013  9  20.9  Y
+  524 IDCJAC0001 67019 2013 10   9.7  Y
+  525 IDCJAC0001 67019 2013 11 179.1  Y
+  526 IDCJAC0001 67019 2013 12  32.3  Y
+  527 IDCJAC0001 67019 2014  1  20.9  N
+  > dat$raster_layer <- as.character(dat$gridname)
+  > dat$date <- matrix(unlist(strsplit(dat$raster_layer, "_")), ncol = 2, byrow=TRUE)[,2]
+  > head(dat)
+         lon       lat values                     gridname
+  1 150.8929 -33.82107  110.2 totals_1970010119700131.grid
+  2 147.2053 -33.92350   19.1 totals_1970010119700131.grid
+  3 150.8929 -33.82107   45.8 totals_1970020119700228.grid
+  4 147.2053 -33.92350    2.0 totals_1970020119700228.grid
+  5 150.8929 -33.82107   69.6 totals_1970030119700331.grid
+  6 147.2053 -33.92350   45.2 totals_1970030119700331.grid
+                    raster_layer                  date
+  1 totals_1970010119700131.grid 1970010119700131.grid
+  2 totals_1970010119700131.grid 1970010119700131.grid
+  3 totals_1970020119700228.grid 1970020119700228.grid
+  4 totals_1970020119700228.grid 1970020119700228.grid
+  5 totals_1970030119700331.grid 1970030119700331.grid
+  6 totals_1970030119700331.grid 1970030119700331.grid
+  > dat$date <- gsub(".grid","",dat$date)
+  > head(dat )
+         lon       lat values                     gridname
+  1 150.8929 -33.82107  110.2 totals_1970010119700131.grid
+  2 147.2053 -33.92350   19.1 totals_1970010119700131.grid
+  3 150.8929 -33.82107   45.8 totals_1970020119700228.grid
+  4 147.2053 -33.92350    2.0 totals_1970020119700228.grid
+  5 150.8929 -33.82107   69.6 totals_1970030119700331.grid
+  6 147.2053 -33.92350   45.2 totals_1970030119700331.grid
+                    raster_layer             date
+  1 totals_1970010119700131.grid 1970010119700131
+  2 totals_1970010119700131.grid 1970010119700131
+  3 totals_1970020119700228.grid 1970020119700228
+  4 totals_1970020119700228.grid 1970020119700228
+  5 totals_1970030119700331.grid 1970030119700331
+  6 totals_1970030119700331.grid 1970030119700331
+  > dat$date <- paste(substr(dat$date,1,4), substr(dat$date,5,6), substr(dat$date,7,8), sep = "-")
+  > head(dat )
+         lon       lat values                     gridname
+  1 150.8929 -33.82107  110.2 totals_1970010119700131.grid
+  2 147.2053 -33.92350   19.1 totals_1970010119700131.grid
+  3 150.8929 -33.82107   45.8 totals_1970020119700228.grid
+  4 147.2053 -33.92350    2.0 totals_1970020119700228.grid
+  5 150.8929 -33.82107   69.6 totals_1970030119700331.grid
+  6 147.2053 -33.92350   45.2 totals_1970030119700331.grid
+                    raster_layer       date
+  1 totals_1970010119700131.grid 1970-01-01
+  2 totals_1970010119700131.grid 1970-01-01
+  3 totals_1970020119700228.grid 1970-02-01
+  4 totals_1970020119700228.grid 1970-02-01
+  5 totals_1970030119700331.grid 1970-03-01
+  6 totals_1970030119700331.grid 1970-03-01
+  > dat$year <- substr(dat$date,1,4)
+  > dat$month <- substr(dat$date,5,6)
+  > qc3 <- sqldf("select * from qc left join qc2 on qc.year = qc2.V3 and
+    qc.month = qc2.V4")
+  qc3 <- sqldf("select * from qc left join qc2 on qc.year = qc2.V3 and
+  +   qc.month = qc2.V4")
+  Error in sqliteSendQuery(con, statement, bind.data) : 
+    error in statement: no such column: qc.year
+  > qc <- sqldf("select * from dat where lon > 150")
+  > qc3 <- sqldf("select * from qc left join qc2 on qc.year = qc2.V3 and
+    qc.month = qc2.V4")
+  qc3 <- sqldf("select * from qc left join qc2 on qc.year = qc2.V3 and
+  +   qc.month = qc2.V4")
+  > head(qc3)
+         lon       lat values                     gridname
+  1 150.8929 -33.82107  110.2 totals_1970010119700131.grid
+  2 150.8929 -33.82107   45.8 totals_1970020119700228.grid
+  3 150.8929 -33.82107   69.6 totals_1970030119700331.grid
+  4 150.8929 -33.82107   28.1 totals_1970040119700430.grid
+  5 150.8929 -33.82107   16.2 totals_1970050119700531.grid
+  6 150.8929 -33.82107   16.9 totals_1970060119700630.grid
+                    raster_layer       date year month   V1 V2 V3 V4 V5   V6
+  1 totals_1970010119700131.grid 1970-01-01 1970    -0 <NA> NA NA NA NA <NA>
+  2 totals_1970020119700228.grid 1970-02-01 1970    -0 <NA> NA NA NA NA <NA>
+  3 totals_1970030119700331.grid 1970-03-01 1970    -0 <NA> NA NA NA NA <NA>
+  4 totals_1970040119700430.grid 1970-04-01 1970    -0 <NA> NA NA NA NA <NA>
+  5 totals_1970050119700531.grid 1970-05-01 1970    -0 <NA> NA NA NA NA <NA>
+  6 totals_1970060119700630.grid 1970-06-01 1970    -0 <NA> NA NA NA NA <NA>
+  > dat$month <- substr(dat$date,6,7)
+  > qc3 <- sqldf("select * from qc left join qc2 on qc.year = qc2.V3 and
+    qc.month = qc2.V4")
+  qc3 <- sqldf("select * from qc left join qc2 on qc.year = qc2.V3 and
+  +   qc.month = qc2.V4")
+  > head(qc3)
+         lon       lat values                     gridname
+  1 150.8929 -33.82107  110.2 totals_1970010119700131.grid
+  2 150.8929 -33.82107   45.8 totals_1970020119700228.grid
+  3 150.8929 -33.82107   69.6 totals_1970030119700331.grid
+  4 150.8929 -33.82107   28.1 totals_1970040119700430.grid
+  5 150.8929 -33.82107   16.2 totals_1970050119700531.grid
+  6 150.8929 -33.82107   16.9 totals_1970060119700630.grid
+                    raster_layer       date year month   V1 V2 V3 V4 V5   V6
+  1 totals_1970010119700131.grid 1970-01-01 1970    -0 <NA> NA NA NA NA <NA>
+  2 totals_1970020119700228.grid 1970-02-01 1970    -0 <NA> NA NA NA NA <NA>
+  3 totals_1970030119700331.grid 1970-03-01 1970    -0 <NA> NA NA NA NA <NA>
+  4 totals_1970040119700430.grid 1970-04-01 1970    -0 <NA> NA NA NA NA <NA>
+  5 totals_1970050119700531.grid 1970-05-01 1970    -0 <NA> NA NA NA NA <NA>
+  6 totals_1970060119700630.grid 1970-06-01 1970    -0 <NA> NA NA NA NA <NA>
+  > qc <- sqldf("select * from dat where lon > 150")
+  > qc3 <- sqldf("select * from qc left join qc2 on qc.year = qc2.V3 and
+    qc.month = qc2.V4")
+  qc3 <- sqldf("select * from qc left join qc2 on qc.year = qc2.V3 and
+  +   qc.month = qc2.V4")
+  > head(qc3)
+         lon       lat values                     gridname
+  1 150.8929 -33.82107  110.2 totals_1970010119700131.grid
+  2 150.8929 -33.82107   45.8 totals_1970020119700228.grid
+  3 150.8929 -33.82107   69.6 totals_1970030119700331.grid
+  4 150.8929 -33.82107   28.1 totals_1970040119700430.grid
+  5 150.8929 -33.82107   16.2 totals_1970050119700531.grid
+  6 150.8929 -33.82107   16.9 totals_1970060119700630.grid
+                    raster_layer       date year month         V1    V2   V3 V4
+  1 totals_1970010119700131.grid 1970-01-01 1970    01 IDCJAC0001 67019 1970  1
+  2 totals_1970020119700228.grid 1970-02-01 1970    02 IDCJAC0001 67019 1970  2
+  3 totals_1970030119700331.grid 1970-03-01 1970    03 IDCJAC0001 67019 1970  3
+  4 totals_1970040119700430.grid 1970-04-01 1970    04 IDCJAC0001 67019 1970  4
+  5 totals_1970050119700531.grid 1970-05-01 1970    05 IDCJAC0001 67019 1970  5
+  6 totals_1970060119700630.grid 1970-06-01 1970    06 IDCJAC0001 67019 1970  6
+      V5 V6
+  1 95.6  Y
+  2 38.9  Y
+  3 75.6  Y
+  4 25.6  Y
+  5 17.1  Y
+  6 16.0  Y
+  > with(qc3, plot(V5, values))
+  > with(qc3, plot(date, values, type = "l"))
+  Error in plot.window(...) : need finite 'xlim' values
+  In addition: Warning messages:
+  1: In xy.coords(x, y, xlabel, ylabel, log) : NAs introduced by coercion
+  2: In min(x) : no non-missing arguments to min; returning Inf
+  3: In max(x) : no non-missing arguments to max; returning -Inf
+  > with(qc3, plot(as.Date(date), values, type = "l"))
+  > with(qc3, lines(as.Date(date), V5, col = "blue"))
+  > windows()
+  Error: could not find function "windows"
+  > par(mfrow = c(1,2))
+  > with(qc3, plot(V5, values))
+  > with(qc3, plot(as.Date(date), values, type = "l"))
+  > with(qc3, lines(as.Date(date), V5, col = "blue"))
+  > qc3[which(qc3$V5 == ""),]
+   [1] lon          lat          values       gridname     raster_layer
+   [6] date         year         month        V1           V2          
+  [11] V3           V4           V5           V6          
+  <0 rows> (or 0-length row.names)
+  > qc3[which(qc3$V5 == NA),]
+   [1] lon          lat          values       gridname     raster_layer
+   [6] date         year         month        V1           V2          
+  [11] V3           V4           V5           V6          
+  <0 rows> (or 0-length row.names)
+  > qc3[is.na(qc3$V5),]
+           lon       lat values                     gridname
+  395 150.8929 -33.82107   15.5 totals_2002110120021130.grid
+  397 150.8929 -33.82107   20.5 totals_2003010120030131.grid
+                      raster_layer       date year month   V1 V2 V3 V4 V5   V6
+  395 totals_2002110120021130.grid 2002-11-01 2002    11 <NA> NA NA NA NA <NA>
+  397 totals_2003010120030131.grid 2003-01-01 2003    01 <NA> NA NA NA NA <NA>
+  > history(max.show = 25)
+  Error in .External2(C_savehistory, file) : no history available to save
+  > savehistory()
+  Error in .External2(C_savehistory, file) : no history available to save
+  >
+  
+  require(HutchinsonDroughtIndex)
+  
+  qc4 <- sqldf("select * from qc3 where year < 2014")
+  tail(qc4)
+  qc4$rain <- qc4$values
+  indat <- qc4[,c("date","year","month","rain")]
+  str(indat)
+  indat$year <- as.numeric(indat$year)
+  indat$month <- as.numeric(indat$month)
+  
+  drt <- drought_index_stations(data=indat,years=length(names(table(qc4$year))))
+  head(drt)
+  tail(drt)
+  str(drt)
+   qc3=drt[drt$year>=1979 & drt$year < 1984,]
+  qc3$date <- as.Date(qc3$date)
+  par(mfrow=c(4,1),mar=c(2.5,2,1.5,1))
+   plot(qc3$date,qc3$rain,type='l',main='Prospect Reservoir (67019) NSW: raw monthly rainfall')
+   #points(qc3$date,qc3$rain)
+   
+   lines(qc3$date,qc3$sixmnthtot/6, lwd = 2) #,type='l',main='6-monthly total rainfall')
+   points(qc3$date,qc3$sixmnthtot/6)
+   
+   plot(qc3$date,qc3$index,type='l',main='Rescaled percentiles -4 to +4, -1 is Palmer Index Mild Drought',ylim=c(-4,4))
+   points(qc3$date,qc3$index)
+   segments(min(qc3$date),-1,max(qc3$date),-1)
+   segments(min(qc3$date),0,max(qc3$date),0,lty=2)
+   plot(qc3$date,qc3$count,type='l',main='Counts below -1 threshold, count of 5 or more is a drought')
+   points(qc3$date,qc3$count)
+   segments(min(qc3$date),5,max(qc3$date),5)
+   
+   plot(qc3$date,qc3$count2,type='l',main='Enhanced counts of months if already passed count of 5 and percentiles less than 50%')
+   points(qc3$date,qc3$count2)
+   segments(min(qc3$date),5,max(qc3$date),5)
+  
+  
+#+end_src
