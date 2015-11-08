@@ -7,7 +7,7 @@
 -----
 
 * TODOlist
-
+** DONE commit the test get awap data after liz
 ** DONE links to get pgutils
 http://download.osgeo.org/postgis/windows/pg92/
 postgis-pg92-binaries-2.0.2w64.zip	17-Jan-2013 14:25	21M	 
