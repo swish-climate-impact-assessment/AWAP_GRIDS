@@ -24,18 +24,14 @@ load.project()
 
 ####################
 # user definitions, or setup interactively
-<<<<<<< HEAD
-destination_server <- "brawn.anu.edu.au"
-  #"tern5.qern.qcif.edu.au" 
-source_server <- "115.146.92.162" 
-  #"115.146.92.162"
+destination_server <- "tern5.qern.qcif.edu.au" 
+source_server <- "115.146.92.162"
 fresh <- FALSE
 startdate <- '1980-01-01'
-enddate <-   '2013-05-11' #Sys.Date()-2
+enddate <-  '1980-02-01' #Sys.Date()-2
 checkDates <- TRUE
 interactively <- FALSE
-variablenames <- 'totals,vprph09,vprph15,maxave,minave' #,totals,solarave
-
+variablenames <- 'maxave,minave,totals,vprph09,vprph15' #,solarave
 aggregation_factor <- 3
 if(length(grep('linux',sessionInfo()[[1]]$os)) == 1)
 {
