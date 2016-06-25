@@ -2880,7 +2880,7 @@ system('test.bat')
 * DRO awap grids
 ** COMMENT 2013-10-26-extract-weather-data-from-awap-grids
 #+name:extract-weather-data-from-awap-grids-header
-#+begin_src markdown :tangle ~/projects/ivanhanigan.github.com.raw/_posts/2013-10-26-extract-weather-data-from-awap-grids.md :exports none :eval no :padline no
+# +begin_src markdown :tangle ~/projects/ivanhanigan.github.com.raw/_posts/2013-10-26-extract-weather-data-from-awap-grids.md :exports none :eval no :padline no
 ---
 name: extract-weather-data-from-awap-grids
 layout: post
@@ -3089,7 +3089,7 @@ The citation information is provided when you make a request to access the data.
 
 ** COMMENT md-formatted-to-html
 
-#+begin_src markdown :tangle ~/projects/ivanhanigan.github.com.raw/_posts/2013-10-26-extract-weather-data-from-awap-grids.md :exports none :eval no :padline no
+# +begin_src markdown :tangle ~/projects/ivanhanigan.github.com.raw/_posts/2013-10-26-extract-weather-data-from-awap-grids.md :exports none :eval no :padline no
 <body>
 
 <div id="preamble">
