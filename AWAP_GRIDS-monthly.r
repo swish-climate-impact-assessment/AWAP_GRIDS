@@ -1,29 +1,17 @@
-
+# this script downloads monthly rainfall totals and converts to geotifs
 require(devtools)
-install_github("swish-climate-impact-assessment/awaptools")
+install_github("swish-climate-impact-assessment/awaptools", ref = "develop")
 require(awaptools)
-#install_github("swishdbtools", "swish-climate-impact-assessment")
-require(swishdbtools)
-# local customisations
+require(rgdal)
 workdir <- "data"
 setwd(workdir)
-dir()
 startdate <- "2014-01-01"
-enddate <- "2015-10-30"
-# do
+enddate <- "2014-03-28"
 load_monthly(start_date = startdate, end_date = enddate)
-
-# do
 filelist <- dir(pattern = "grid.Z$")
-for(fname in filelist)
-{
-  #fname = filelist[1]
-  #fname
-  unzip_monthly(fname, aggregation_factor = 1)
-  fname <- dir(pattern = "grid$")
-  r <- readGDAL(fname)
-  outfile <- gsub('.grid', '.tif', fname)
-  writeGDAL(r, outfile, drivername="GTiff")
-  file.remove(fname)
-}
+for(fname in filelist){unzip_monthly(fname, aggregation_factor = 1)}
+compress_gtifs(indir = getwd())
+system("rm *.grid")
+system("mv GTif/* ./")
 setwd("..")
+
