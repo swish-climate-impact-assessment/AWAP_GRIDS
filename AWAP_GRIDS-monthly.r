@@ -1,3 +1,4 @@
+
 # this script downloads monthly rainfall totals and converts to geotifs
 require(devtools)
 install_github("swish-climate-impact-assessment/awaptools", ref = "develop")
@@ -14,4 +15,3 @@ compress_gtifs(indir = getwd())
 system("rm *.grid")
 system("mv GTif/* ./")
 setwd("..")
-
